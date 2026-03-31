@@ -12,11 +12,7 @@ class NutriTrackApp extends StatelessWidget {
     return MaterialApp(
       title: 'NutriTrack',
       debugShowCheckedModeBanner: false,
-      home: const Scaffold(
-        body: Center(
-          child: Text('NutriTrack'),
-        ),
-      ),
+      home: const Scaffold(body: Center(child: Text('NutriTrack'))),
     );
   }
 }

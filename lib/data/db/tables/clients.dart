@@ -1,15 +1,8 @@
 import 'package:drift/drift.dart';
 
-enum ClientStatus {
-  active,
-  inactive,
-  pending,
-}
+enum ClientStatus { active, inactive, pending }
 
-enum Sex {
-  male,
-  female,
-}
+enum Sex { male, female }
 
 class Clients extends Table {
   IntColumn get clientId => integer().autoIncrement()();
@@ -29,6 +22,5 @@ class Clients extends Table {
   IntColumn get status =>
       intEnum<ClientStatus>().withDefault(const Constant(0))();
 
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
