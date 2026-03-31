@@ -1,11 +1,11 @@
-import 'package:drift/drift.dart';
+import '../daos/client_dao.dart';
 import '../db/tables/clients.dart';
 import '../db/app_database.dart';
 
 class ClientRepository {
-  final AppDatabase db;
+  final ClientDao clientDao;
 
-  ClientRepository(this.db);
+  ClientRepository(AppDatabase db) : clientDao = ClientDao(db);
 
   Future<int> insertClient({
     required String name,
@@ -16,24 +16,41 @@ class ClientRepository {
     DateTime? birthDate,
     ClientStatus status = ClientStatus.active,
   }) {
-    return db
-        .into(db.clients)
-        .insert(
-          ClientsCompanion.insert(
-            name: name,
-            email: Value(email),
-            phone: Value(phone),
-            height: Value(height),
-            sex: Value(sex),
-            birthDate: Value(birthDate),
-            status: Value(status),
-          ),
-        );
+    return clientDao.insertClient(
+      name: name,
+      email: email,
+      phone: phone,
+      height: height,
+      sex: sex,
+      birthDate: birthDate,
+      status: status,
+    );
+  }
+
+  Future<bool> updateClient(Client client) {
+    return clientDao.updateClient(client);
+  }
+
+  Future<int> updateClientStatus(int clientId, ClientStatus status) {
+    return clientDao.updateClientStatus(clientId, status);
+  }
+
+  Future<Client?> getClientById(int clientId) {
+    return clientDao.getClientById(clientId);
   }
 
   Stream<List<Client>> watchAllClients() {
-    return (db.select(
-      db.clients,
-    )..orderBy([(tbl) => OrderingTerm.asc(tbl.name)])).watch();
+    return clientDao.watchAllClients();
+  }
+
+  Stream<List<Client>> watchClients({
+    String search = '',
+    ClientStatus? status,
+  }) {
+    return clientDao.watchClients(search: search, status: status);
+  }
+
+  Future<int> deleteClient(int clientId) {
+    return clientDao.deleteClient(clientId);
   }
 }

@@ -87,7 +87,7 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
         false,
         type: DriftSqlType.int,
         requiredDuringInsert: false,
-        defaultValue: const Constant(0),
+        defaultValue: Constant(ClientStatus.active.index),
       ).withConverter<ClientStatus>($ClientsTable.$converterstatus);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
