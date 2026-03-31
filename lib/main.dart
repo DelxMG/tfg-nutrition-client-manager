@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_screen.dart';
 
 void main() {
   runApp(const NutriTrackApp());
@@ -12,7 +13,7 @@ class NutriTrackApp extends StatelessWidget {
     return MaterialApp(
       title: 'NutriTrack',
       debugShowCheckedModeBanner: false,
-      home: const Scaffold(body: Center(child: Text('NutriTrack'))),
+      home: const ClientsScreen(),
     );
   }
 }
