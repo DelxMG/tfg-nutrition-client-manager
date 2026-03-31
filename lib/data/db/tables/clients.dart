@@ -20,7 +20,7 @@ class Clients extends Table {
   DateTimeColumn get birthDate => dateTime().nullable()();
 
   IntColumn get status =>
-      intEnum<ClientStatus>().withDefault(const Constant(0))();
+      intEnum<ClientStatus>().withDefault(Constant(ClientStatus.active.index))();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
