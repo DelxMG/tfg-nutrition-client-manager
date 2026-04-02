@@ -7,6 +7,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/clients_filters_
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_page_header.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_sidebar.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_table.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_top_bar.dart';
 
 class ClientsScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     return Theme(
       data: Theme.of(context).copyWith(textTheme: textTheme),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8F8F6),
+        backgroundColor: clientsBgColor,
         body: Row(
           children: [
             ClientsSidebar(
@@ -66,7 +67,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   const ClientsTopBar(),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 20, 24, 18),
+                      padding: const EdgeInsets.fromLTRB(clientsHorizontalPadding, 20, 24, 18),
                       child: StreamBuilder<List<Client>>(
                         stream: repository.watchClients(
                           search: search,

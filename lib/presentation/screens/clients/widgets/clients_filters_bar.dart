@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/tables/clients.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientsFiltersBar extends StatelessWidget {
   final String search;
@@ -34,26 +35,26 @@ class ClientsFiltersBar extends StatelessWidget {
               hintText: 'Buscar por nombre, email...',
               hintStyle: GoogleFonts.inter(
                 fontSize: 14,
-                color: const Color(0xFF7A7A73),
+                color: clientsMutedTextColor,
               ),
               prefixIcon: const Icon(
                 Icons.search,
-                size: 18,
-                color: Color(0xFF6F6F68),
+                size: clientsIconSize,
+                color: clientsSecondaryIconColor,
               ),
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE3E3DE)),
+                borderRadius: clientsBorderRadius,
+                borderSide: const BorderSide(color: clientsInputBorderColor),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE3E3DE)),
+                borderRadius: clientsBorderRadius,
+                borderSide: const BorderSide(color: clientsInputBorderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: clientsBorderRadius,
                 borderSide: const BorderSide(color: Color(0xFFCECEC7)),
               ),
             ),
@@ -63,8 +64,8 @@ class ClientsFiltersBar extends StatelessWidget {
         const SizedBox(width: 12),
         const Icon(
           Icons.filter_alt_outlined,
-          size: 18,
-          color: Color(0xFF7A7A73),
+          size: clientsIconSize,
+          color: clientsMutedTextColor,
         ),
         const SizedBox(width: 12),
         _FilterChip(
@@ -108,21 +109,19 @@ class _FilterChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: clientsChipBorderRadius,
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFDCEFE9) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            color: selected ? clientsSelectedBgColor : Colors.transparent,
+            borderRadius: clientsChipBorderRadius,
           ),
           child: Text(
             label,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: selected
-                  ? const Color(0xFF0FA37F)
-                  : const Color(0xFF5B5B55),
+              color: selected ? clientsBrandColor : const Color(0xFF5B5B55),
               fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

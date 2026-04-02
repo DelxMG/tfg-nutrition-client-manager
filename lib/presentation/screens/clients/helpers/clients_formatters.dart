@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutritrack/data/db/tables/clients.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 String getClientInitials(String name) {
   final trimmed = name.trim();
@@ -43,7 +44,7 @@ extension ClientStatusPresentation on ClientStatus {
   Color get color {
     switch (this) {
       case ClientStatus.active:
-        return const Color(0xFF0FA37F);
+        return clientsBrandColor;
       case ClientStatus.inactive:
         return const Color(0xFFB6B6AF);
       case ClientStatus.pending:

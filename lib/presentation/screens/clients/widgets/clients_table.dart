@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/app_database.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
 
 class ClientsTable extends StatelessWidget {
@@ -17,7 +18,7 @@ class ClientsTable extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E2DD)),
+        border: Border.all(color: clientsBorderColor),
       ),
       child: Column(
         children: [
@@ -29,7 +30,7 @@ class ClientsTable extends StatelessWidget {
                     child: Text(
                       'No hay clientes',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF7A7A73),
+                        color: clientsMutedTextColor,
                         fontSize: 14,
                       ),
                     ),
@@ -54,7 +55,7 @@ class ClientsTable extends StatelessWidget {
 
   Widget _buildTableHeader() {
     return Container(
-      height: 40,
+      height: clientsButtonHeight,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: const BoxDecoration(
         color: Color(0xFFF7F7F4),
@@ -150,7 +151,7 @@ class _ClientRow extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0FA37F),
+                        color: clientsBrandColor,
                       ),
                     ),
                   ),
@@ -178,7 +179,7 @@ class _ClientRow extends StatelessWidget {
                             fontSize: 12.5,
                             fontWeight: FontWeight.w400,
                             height: 1.1,
-                            color: const Color(0xFF7A7A73),
+                            color: clientsMutedTextColor,
                           ),
                         ),
                       ],
@@ -205,7 +206,7 @@ class _ClientRow extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xFF4D4D47),
+                      color: clientsBodyTextColor,
                     ),
                   ),
                 ],
@@ -218,7 +219,7 @@ class _ClientRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xFF7A7A73),
+                  color: clientsMutedTextColor,
                 ),
               ),
             ),
@@ -228,7 +229,7 @@ class _ClientRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xFF4D4D47),
+                  color: clientsBodyTextColor,
                 ),
               ),
             ),
@@ -238,7 +239,7 @@ class _ClientRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xFF7A7A73),
+                  color: clientsMutedTextColor,
                 ),
               ),
             ),
@@ -249,7 +250,7 @@ class _ClientRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xFF7A7A73),
+                  color: clientsMutedTextColor,
                 ),
               ),
             ),
@@ -272,5 +273,5 @@ final TextStyle _headerStyle = GoogleFonts.inter(
   fontSize: 12,
   fontWeight: FontWeight.w700,
   letterSpacing: 0.7,
-  color: const Color(0xFF7A7A73),
+  color: clientsMutedTextColor,
 );

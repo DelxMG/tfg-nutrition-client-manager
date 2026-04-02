@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientsPageHeader extends StatelessWidget {
   final int count;
@@ -24,7 +25,7 @@ class ClientsPageHeader extends StatelessWidget {
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 height: 1.08,
-                color: const Color(0xFF20201D),
+                color: clientsHeadingColor,
               ),
             ),
             const SizedBox(height: 6),
@@ -33,23 +34,23 @@ class ClientsPageHeader extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF7A7A73),
+                color: clientsMutedTextColor,
               ),
             ),
           ],
         ),
         const Spacer(),
         SizedBox(
-          height: 40,
+          height: clientsButtonHeight,
           child: ElevatedButton.icon(
             onPressed: onNewClientPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0FA37F),
+              backgroundColor: clientsBrandColor,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              shape: const RoundedRectangleBorder(
+                borderRadius: clientsBorderRadius,
               ),
             ),
             icon: const Icon(Icons.add, size: 16),

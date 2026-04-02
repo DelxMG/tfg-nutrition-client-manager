@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientsSidebar extends StatelessWidget {
   final bool isCollapsed;
@@ -18,23 +19,23 @@ class ClientsSidebar extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
-      width: isCollapsed ? 72 : 222,
+      width: isCollapsed ? clientsSidebarCollapsedWidth : clientsSidebarExpandedWidth,
       decoration: const BoxDecoration(
         color: Color(0xFFF4F4F2),
         border: Border(
-          right: BorderSide(color: Color(0xFFE2E2DD)),
+          right: BorderSide(color: clientsBorderColor),
         ),
       ),
       child: Column(
         children: [
           Container(
-            height: 74,
-            padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 0 : 10),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFE2E2DD)),
-              ),
+          height: clientsTopBarHeight,
+          padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 0 : 10),
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: clientsBorderColor),
             ),
+          ),
             child: isCollapsed
                 ? Center(
                     child: _buildLogoIcon(),
@@ -54,7 +55,7 @@ class ClientsSidebar extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 height: 1.1,
-                                color: const Color(0xFF20201D),
+                                color: clientsHeadingColor,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -71,14 +72,14 @@ class ClientsSidebar extends StatelessWidget {
                         ),
                       ),
                       InkWell(
-                        borderRadius: BorderRadius.circular(8),
-                        onTap: onCollapse,
-                        child: const Padding(
-                          padding: EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.chevron_left,
-                            size: 18,
-                            color: Color(0xFF6F6F68),
+          borderRadius: clientsChipBorderRadius,
+          onTap: onCollapse,
+          child: const Padding(
+            padding: EdgeInsets.all(6),
+            child: Icon(
+              Icons.chevron_left,
+              size: clientsIconSize,
+              color: clientsSecondaryIconColor,
                           ),
                         ),
                       ),
@@ -118,12 +119,12 @@ class ClientsSidebar extends StatelessWidget {
               height: 52,
               decoration: const BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: Color(0xFFE2E2DD)),
+                  top: BorderSide(color: clientsBorderColor),
                 ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: InkWell(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: clientsBorderRadius,
                 onTap: onCollapse,
                 child: SizedBox(
                   height: 52,
@@ -131,8 +132,8 @@ class ClientsSidebar extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.chevron_left,
-                        size: 18,
-                        color: Color(0xFF6F6F68),
+                        size: clientsIconSize,
+                        color: clientsSecondaryIconColor,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -140,7 +141,7 @@ class ClientsSidebar extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF6F6F68),
+                          color: clientsSecondaryIconColor,
                         ),
                       ),
                     ],
@@ -153,19 +154,19 @@ class ClientsSidebar extends StatelessWidget {
               height: 52,
               decoration: const BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: Color(0xFFE2E2DD)),
+                  top: BorderSide(color: clientsBorderColor),
                 ),
               ),
               child: Center(
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: clientsChipBorderRadius,
                   onTap: onExpand,
                   child: const Padding(
                     padding: EdgeInsets.all(6),
                     child: Icon(
                       Icons.chevron_right,
-                      size: 18,
-                      color: Color(0xFF6F6F68),
+                      size: clientsIconSize,
+                      color: clientsSecondaryIconColor,
                     ),
                   ),
                 ),
@@ -180,14 +181,14 @@ class ClientsSidebar extends StatelessWidget {
     return Container(
       width: 34,
       height: 34,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0FA37F),
-        borderRadius: BorderRadius.circular(10),
+      decoration: const BoxDecoration(
+        color: clientsBrandColor,
+        borderRadius: clientsBorderRadius,
       ),
       child: const Icon(
         Icons.show_chart,
         color: Colors.white,
-        size: 18,
+        size: clientsIconSize,
       ),
     );
   }
@@ -211,16 +212,16 @@ class _SidebarItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: clientsBorderRadius,
         onTap: () {},
         child: Container(
-          height: 40,
+          height: clientsButtonHeight,
           padding: EdgeInsets.symmetric(
             horizontal: isCollapsed ? 0 : 14,
           ),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFDCEFE9) : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: selected ? clientsSelectedBgColor : Colors.transparent,
+            borderRadius: clientsBorderRadius,
           ),
           child: Row(
             mainAxisAlignment: isCollapsed
@@ -229,9 +230,9 @@ class _SidebarItem extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 18,
+                size: clientsIconSize,
                 color: selected
-                    ? const Color(0xFF0FA37F)
+                    ? clientsBrandColor
                     : const Color(0xFF66665F),
               ),
               if (!isCollapsed) ...[
@@ -242,8 +243,8 @@ class _SidebarItem extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     color: selected
-                        ? const Color(0xFF0FA37F)
-                        : const Color(0xFF4D4D47),
+                        ? clientsBrandColor
+                        : clientsBodyTextColor,
                     height: 1,
                   ),
                 ),
