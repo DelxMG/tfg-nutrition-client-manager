@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_screen.dart';
 
 void main() {
@@ -14,6 +16,25 @@ class NutriTrackApp extends StatelessWidget {
       title: 'NutriTrack',
       debugShowCheckedModeBanner: false,
       home: const ClientsScreen(),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.light(
+          primary: clientsBrandColor,
+          surface: Colors.white,
+          onSurface: clientsBodyTextColor,
+        ),
+
+        datePickerTheme: DatePickerThemeData(
+          backgroundColor: Colors.white,
+          headerBackgroundColor: clientsBrandColor,
+          headerForegroundColor: Colors.white,
+          dayForegroundColor: WidgetStatePropertyAll(clientsBodyTextColor),
+        ),
+
+        dropdownMenuTheme: DropdownMenuThemeData(
+          textStyle: GoogleFonts.inter(),
+        ),
+      ),
     );
   }
 }

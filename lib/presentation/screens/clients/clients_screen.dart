@@ -8,6 +8,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/clients_page_hea
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_sidebar.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_table.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/client_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_top_bar.dart';
 
 class ClientsScreen extends StatefulWidget {
@@ -88,7 +89,12 @@ class _ClientsScreenState extends State<ClientsScreen> {
                               ClientsPageHeader(
                                 count: clients.length,
                                 onNewClientPressed: () {
-                                  // TODO: abrir modal nuevo cliente
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => ClientFormDialog(
+                                      repository: repository,
+                                    ),
+                                  );
                                 },
                               ),
                               const SizedBox(height: 18),
