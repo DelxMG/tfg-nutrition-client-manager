@@ -8,6 +8,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/clients_page_hea
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_sidebar.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_table.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
+import 'package:nutritrack/presentation/screens/clients/client_detail_screen.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/client_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_top_bar.dart';
 
@@ -116,6 +117,15 @@ class _ClientsScreenState extends State<ClientsScreen> {
                               Expanded(
                                 child: ClientsTable(
                                   clients: clients,
+                                  onClientTap: (clientId) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ClientDetailScreen(
+                                          clientId: clientId,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],

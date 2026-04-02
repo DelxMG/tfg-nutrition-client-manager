@@ -6,10 +6,12 @@ import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatte
 
 class ClientsTable extends StatelessWidget {
   final List<Client> clients;
+  final ValueChanged<int> onClientTap;
 
   const ClientsTable({
     super.key,
     required this.clients,
+    required this.onClientTap,
   });
 
   @override
@@ -44,7 +46,7 @@ class ClientsTable extends StatelessWidget {
                     ),
                     itemBuilder: (context, index) {
                       final client = clients[index];
-                      return _ClientRow(client: client);
+                      return _ClientRow(client: client, onTap: onClientTap);
                     },
                   ),
           ),
@@ -124,8 +126,9 @@ class ClientsTable extends StatelessWidget {
 
 class _ClientRow extends StatelessWidget {
   final Client client;
+  final ValueChanged<int> onTap;
 
-  const _ClientRow({required this.client});
+  const _ClientRow({required this.client, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +136,7 @@ class _ClientRow extends StatelessWidget {
     final age = calculateClientAge(client.birthDate);
 
     return InkWell(
-      onTap: () {},
+      onTap: () => onTap(client.clientId),
       child: Container(
         height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 16),
