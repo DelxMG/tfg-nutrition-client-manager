@@ -8,7 +8,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/clients_page_hea
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_sidebar.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_table.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
-import 'package:nutritrack/presentation/screens/clients/client_detail_screen.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/client_detail_content.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/client_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_top_bar.dart';
 
@@ -26,6 +26,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
   String search = '';
   ClientStatus? statusFilter;
   bool isSidebarCollapsed = false;
+  int? selectedClientId;
 
   @override
   void initState() {
@@ -84,6 +85,17 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
                           final clients = snapshot.data!;
 
+                          if (selectedClientId != null) {
+                            return ClientDetailContent(
+                              clientId: selectedClientId!,
+                              onBack: () {
+                                setState(() {
+                                  selectedClientId = null;
+                                });
+                              },
+                            );
+                          }
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -118,13 +130,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
                                 child: ClientsTable(
                                   clients: clients,
                                   onClientTap: (clientId) {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => ClientDetailScreen(
-                                          clientId: clientId,
-                                        ),
-                                      ),
-                                    );
+                                    setState(() {
+                                      selectedClientId = clientId;
+                                    });
                                   },
                                 ),
                               ),
