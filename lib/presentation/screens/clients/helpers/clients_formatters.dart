@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutritrack/data/db/tables/clients.dart';
+import 'package:nutritrack/data/db/tables/enums.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 String getClientInitials(String name) {
@@ -28,6 +29,49 @@ int? calculateClientAge(DateTime? birthDate) {
 
   return age;
 }
+
+// ── Date formatting ───────────────────────────────────────────────────────────
+
+String formatDate(DateTime? date) {
+  if (date == null) return '—';
+  final d = date.day.toString().padLeft(2, '0');
+  final m = date.month.toString().padLeft(2, '0');
+  return '$d/$m/${date.year}';
+}
+
+// ── Sex label ─────────────────────────────────────────────────────────────────
+
+extension SexPresentation on Sex {
+  String get label {
+    switch (this) {
+      case Sex.male:
+        return 'Masculino';
+      case Sex.female:
+        return 'Femenino';
+    }
+  }
+}
+
+// ── PhysicalActivity label ────────────────────────────────────────────────────
+
+extension PhysicalActivityPresentation on PhysicalActivity {
+  String get label {
+    switch (this) {
+      case PhysicalActivity.sedentary:
+        return 'Sedentario';
+      case PhysicalActivity.light:
+        return 'Ligero';
+      case PhysicalActivity.moderate:
+        return 'Moderado';
+      case PhysicalActivity.active:
+        return 'Activo';
+      case PhysicalActivity.veryActive:
+        return 'Muy activo';
+    }
+  }
+}
+
+// ── ClientStatus ──────────────────────────────────────────────────────────────
 
 extension ClientStatusPresentation on ClientStatus {
   String get label {
