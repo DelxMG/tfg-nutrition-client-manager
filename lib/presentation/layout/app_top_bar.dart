@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
+import 'package:nutritrack/presentation/layout/app_constants.dart';
 
 class AppTopBar extends StatelessWidget {
   const AppTopBar({super.key});
@@ -8,12 +8,12 @@ class AppTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: clientsTopBarHeight,
+      height: appTopBarHeight,
       padding: const EdgeInsets.fromLTRB(22, 14, 24, 14),
       decoration: const BoxDecoration(
-        color: clientsBgColor,
+        color: appBgColor,
         border: Border(
-          bottom: BorderSide(color: clientsBorderColor),
+          bottom: BorderSide(color: appBorderColor),
         ),
       ),
       child: Row(
@@ -24,18 +24,18 @@ class AppTopBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F1ED),
-              borderRadius: clientsBorderRadius,
-              border: Border.all(color: clientsInputBorderColor),
+              borderRadius: appBorderRadius,
+              border: Border.all(color: appInputBorderColor),
             ),
             child: Row(
               children: [
-                const Icon(Icons.search, size: 16, color: clientsMutedTextColor),
+                const Icon(Icons.search, size: 16, color: appMutedTextColor),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Buscar clientes, planes...',
                     style: GoogleFonts.inter(
-                      color: clientsMutedTextColor,
+                      color: appMutedTextColor,
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
