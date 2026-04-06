@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/app_database.dart';
-<<<<<<< HEAD
 import 'package:nutritrack/data/db/tables/clients.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
-import 'package:nutritrack/data/db/tables/enums.dart';
-=======
-import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
-import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
->>>>>>> b03297d (feat: add anamnesis and measurements tables with daos and repositories)
 
 class ClientDetailHeader extends StatelessWidget {
   final Client client;
@@ -133,10 +127,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-<<<<<<< HEAD
         // ignore: deprecated_member_use
-=======
->>>>>>> b03297d (feat: add anamnesis and measurements tables with daos and repositories)
         color: status.color.withOpacity(0.12),
         borderRadius: clientsChipBorderRadius,
       ),
