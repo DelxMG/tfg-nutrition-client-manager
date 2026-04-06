@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutritrack/presentation/layout/app_shell.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const NutriTrackApp());
+  runApp(const ProviderScope(child: NutriTrackApp()));
 }
 
 class NutriTrackApp extends StatelessWidget {
@@ -16,7 +18,7 @@ class NutriTrackApp extends StatelessWidget {
     return MaterialApp(
       title: 'NutriTrack',
       debugShowCheckedModeBanner: false,
-      home: const ClientsScreen(),
+      home: const AppShell(child: ClientsScreen()),
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.light(

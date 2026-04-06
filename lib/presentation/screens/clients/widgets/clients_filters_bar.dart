@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/tables/clients.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
-class ClientsFiltersBar extends StatelessWidget {
+class ClientsFiltersBar extends StatefulWidget {
   final String search;
   final ClientStatus? statusFilter;
   final ValueChanged<String> onSearchChanged;
@@ -18,6 +18,36 @@ class ClientsFiltersBar extends StatelessWidget {
   });
 
   @override
+  State<ClientsFiltersBar> createState() => _ClientsFiltersBarState();
+}
+
+class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(text: widget.search);
+  }
+
+  @override
+  void didUpdateWidget(ClientsFiltersBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync controller when the parent resets the search value externally
+    // (e.g. a clear button), but only if the text actually changed to avoid
+    // disturbing the cursor position during normal typing.
+    if (widget.search != _searchController.text) {
+      _searchController.text = widget.search;
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Row(
       children: [
@@ -25,8 +55,7 @@ class ClientsFiltersBar extends StatelessWidget {
           width: 280,
           height: 42,
           child: TextField(
-            controller: TextEditingController(text: search)
-              ..selection = TextSelection.collapsed(offset: search.length),
+            controller: _searchController,
             style: GoogleFonts.inter(
               fontSize: 14,
               color: const Color(0xFF2A2A26),
@@ -58,7 +87,7 @@ class ClientsFiltersBar extends StatelessWidget {
                 borderSide: const BorderSide(color: Color(0xFFCECEC7)),
               ),
             ),
-            onChanged: onSearchChanged,
+            onChanged: widget.onSearchChanged,
           ),
         ),
         const SizedBox(width: 12),
@@ -70,23 +99,23 @@ class ClientsFiltersBar extends StatelessWidget {
         const SizedBox(width: 12),
         _FilterChip(
           label: 'Todos',
-          selected: statusFilter == null,
-          onTap: () => onStatusChanged(null),
+          selected: widget.statusFilter == null,
+          onTap: () => widget.onStatusChanged(null),
         ),
         _FilterChip(
           label: 'Activo',
-          selected: statusFilter == ClientStatus.active,
-          onTap: () => onStatusChanged(ClientStatus.active),
+          selected: widget.statusFilter == ClientStatus.active,
+          onTap: () => widget.onStatusChanged(ClientStatus.active),
         ),
         _FilterChip(
           label: 'Inactivo',
-          selected: statusFilter == ClientStatus.inactive,
-          onTap: () => onStatusChanged(ClientStatus.inactive),
+          selected: widget.statusFilter == ClientStatus.inactive,
+          onTap: () => widget.onStatusChanged(ClientStatus.inactive),
         ),
         _FilterChip(
           label: 'Pendiente',
-          selected: statusFilter == ClientStatus.pending,
-          onTap: () => onStatusChanged(ClientStatus.pending),
+          selected: widget.statusFilter == ClientStatus.pending,
+          onTap: () => widget.onStatusChanged(ClientStatus.pending),
         ),
       ],
     );

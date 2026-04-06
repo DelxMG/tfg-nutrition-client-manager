@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutritrack/data/db/app_database.dart';
+import 'package:nutritrack/application/providers/database_provider.dart';
 import 'package:nutritrack/data/models/client_summary.dart';
 import 'package:nutritrack/data/repositories/client_summary_repository.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
@@ -9,7 +10,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_de
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_cards.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_sections.dart';
 
-class ClientDetailContent extends StatefulWidget {
+class ClientDetailContent extends ConsumerStatefulWidget {
   final int clientId;
   final VoidCallback onBack;
 
@@ -20,20 +21,17 @@ class ClientDetailContent extends StatefulWidget {
   });
 
   @override
-  State<ClientDetailContent> createState() => _ClientDetailContentState();
+  ConsumerState<ClientDetailContent> createState() => _ClientDetailContentState();
 }
 
-class _ClientDetailContentState extends State<ClientDetailContent> {
+class _ClientDetailContentState extends ConsumerState<ClientDetailContent> {
   late final ClientSummaryRepository _repo;
   late final Future<ClientSummary?> _summaryFuture;
 
   @override
   void initState() {
     super.initState();
-    // The AppDatabase instance is already open in ClientsScreen; here we open
-    // a second connection only for this widget's lifetime. This is acceptable
-    // for a desktop app but can be unified later via DI when desired.
-    _repo = ClientSummaryRepository(AppDatabase());
+    _repo = ref.read(clientSummaryRepositoryProvider);
     _summaryFuture = _repo.getClientSummary(widget.clientId);
   }
 
