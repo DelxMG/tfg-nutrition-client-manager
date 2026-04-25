@@ -88,7 +88,7 @@ class _ClientDetailContentState extends ConsumerState<ClientDetailContent> {
 
 // ── Body (only rendered when data is ready) ───────────────────────────────────
 
-class _ClientDetailBody extends StatelessWidget {
+class _ClientDetailBody extends ConsumerWidget {
   final ClientSummary summary;
   final VoidCallback onBack;
   final int activeTab;
@@ -102,11 +102,26 @@ class _ClientDetailBody extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final latestMeasurement = ref
+        .watch(clientMeasurementsProvider(summary.client.clientId))
+        .value
+        ?.firstOrNull;
+
+    final reactiveAnamnesis = ref
+        .watch(clientAnamnesisProvider(summary.client.clientId))
+        .maybeWhen(data: (a) => a, orElse: () => summary.anamnesis);
+
+    final reactiveSummary = ClientSummary(
+      client: summary.client,
+      anamnesis: reactiveAnamnesis,
+      latestMeasurement: latestMeasurement,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClientDetailHeader(client: summary.client, onBack: onBack),
+        ClientDetailHeader(client: reactiveSummary.client, onBack: onBack),
         const SizedBox(height: 18),
 
         ClientDetailTabs(activeIndex: activeTab, onTabChanged: onTabChanged),
@@ -115,16 +130,16 @@ class _ClientDetailBody extends StatelessWidget {
         Expanded(
           child: activeTab == 1
               ? MeasurementsTab(
-                  clientId: summary.client.clientId,
-                  clientHeight: summary.client.height,
+                  clientId: reactiveSummary.client.clientId,
+                  clientHeight: reactiveSummary.client.height,
                 )
               : SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClientSummaryCards(summary: summary),
+                      ClientSummaryCards(summary: reactiveSummary),
                       const SizedBox(height: 16),
-                      ClientSummarySections(summary: summary),
+                      ClientSummarySections(summary: reactiveSummary),
                       const SizedBox(height: 24),
                     ],
                   ),

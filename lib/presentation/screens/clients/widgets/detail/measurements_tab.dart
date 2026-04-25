@@ -68,17 +68,13 @@ class _MeasurementsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final latest = measurements.isNotEmpty ? measurements.first : null;
-    final previous = measurements.length > 1 ? measurements[1] : null;
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Metric cards ────────────────────────────────────────────
-          _MetricCardsRow(
-            latest: latest,
-            clientHeight: clientHeight,
-          ),
+          _MetricCardsRow(latest: latest),
           const SizedBox(height: 20),
 
           // ── History header + button ──────────────────────────────────
@@ -125,7 +121,8 @@ class _MeasurementsContent extends StatelessWidget {
               ? _EmptyState(onAdd: () => _openNewMeasurementDialog(context))
               : _MeasurementsList(
                   measurements: measurements,
-                  previousMeasurement: previous,
+                  clientHeight: clientHeight,
+                  repository: repository,
                 ),
           const SizedBox(height: 24),
         ],
@@ -138,16 +135,14 @@ class _MeasurementsContent extends StatelessWidget {
 
 class _MetricCardsRow extends StatelessWidget {
   final Measurement? latest;
-  final int? clientHeight;
 
-  const _MetricCardsRow({required this.latest, required this.clientHeight});
+  const _MetricCardsRow({required this.latest});
 
   @override
   Widget build(BuildContext context) {
     final weight = latest?.weight;
     final bodyFat = latest?.bodyFat;
     final muscleMass = latest?.muscleMass;
-    final bmi = calculateBmi(heightCm: clientHeight, weightKg: weight);
 
     return Row(
       children: [
@@ -168,12 +163,6 @@ class _MetricCardsRow extends StatelessWidget {
           label: 'Masa muscular',
           value:
               muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.calculate_outlined,
-          label: 'IMC',
-          value: bmi != null ? bmi.toStringAsFixed(1) : '—',
         ),
       ],
     );
@@ -238,12 +227,58 @@ class _MetricCard extends StatelessWidget {
 
 class _MeasurementsList extends StatelessWidget {
   final List<Measurement> measurements;
-  final Measurement? previousMeasurement;
+  final int? clientHeight;
+  final MeasurementRepository repository;
 
   const _MeasurementsList({
     required this.measurements,
-    required this.previousMeasurement,
+    required this.clientHeight,
+    required this.repository,
   });
+
+  Future<void> _confirmDelete(BuildContext context, Measurement m) async {
+    final d = m.date;
+    final dateStr =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar medición'),
+        content: Text(
+          '¿Seguro que quieres eliminar la medición del $dateStr? '
+          'Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFD94A4A),
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await repository.deleteMeasurement(m.measurementId);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al eliminar la medición. Inténtalo de nuevo.'),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,25 +290,20 @@ class _MeasurementsList extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header row
           _TableHeader(),
           const Divider(height: 1, color: clientsBorderColor),
-          // Rows
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: measurements.length,
             separatorBuilder: (_, __) =>
                 const Divider(height: 1, color: clientsBorderColor),
-            itemBuilder: (_, index) {
+            itemBuilder: (ctx, index) {
               final m = measurements[index];
-              // Δ weight: only for the latest vs its immediate predecessor
-              final weightDelta = (index == 0 && previousMeasurement != null)
-                  ? _weightDelta(m.weight, previousMeasurement!.weight)
-                  : null;
               return _MeasurementRow(
                 measurement: m,
-                weightDelta: weightDelta,
+                bmi: calculateBmi(heightCm: clientHeight, weightKg: m.weight),
+                onDelete: () => _confirmDelete(ctx, m),
               );
             },
           ),
@@ -282,12 +312,6 @@ class _MeasurementsList extends StatelessWidget {
     );
   }
 
-  String? _weightDelta(double? current, double? previous) {
-    if (current == null || previous == null) return null;
-    final delta = current - previous;
-    final sign = delta >= 0 ? '+' : '';
-    return '$sign${delta.toStringAsFixed(1)} kg';
-  }
 }
 
 class _TableHeader extends StatelessWidget {
@@ -311,8 +335,9 @@ class _TableHeader extends StatelessWidget {
             child: Text('Músculo', style: _headerStyle()),
           ),
           Expanded(
-            child: Text('Variación', style: _headerStyle()),
+            child: Text('IMC', style: _headerStyle()),
           ),
+          const SizedBox(width: 40),
         ],
       ),
     );
@@ -327,22 +352,20 @@ class _TableHeader extends StatelessWidget {
 
 class _MeasurementRow extends StatelessWidget {
   final Measurement measurement;
-  final String? weightDelta;
+  final double? bmi;
+  final VoidCallback? onDelete;
 
-  const _MeasurementRow({required this.measurement, this.weightDelta});
+  const _MeasurementRow({
+    required this.measurement,
+    this.bmi,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     final d = measurement.date;
     final dateStr =
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-
-    Color? deltaColor;
-    if (weightDelta != null) {
-      deltaColor = weightDelta!.startsWith('+')
-          ? const Color(0xFFD94A4A)
-          : const Color(0xFF0FA37F);
-    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -377,15 +400,14 @@ class _MeasurementRow extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: weightDelta != null
-                ? Text(
-                    weightDelta!,
-                    style: _cellStyle().copyWith(
-                      color: deltaColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  )
-                : Text('—', style: _cellStyle()),
+            child: Text(
+              bmi != null ? bmi!.toStringAsFixed(1) : '—',
+              style: _cellStyle(),
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Center(child: _DeleteButton(onPressed: onDelete)),
           ),
         ],
       ),
@@ -397,6 +419,106 @@ class _MeasurementRow extends StatelessWidget {
         fontWeight: FontWeight.w500,
         color: clientsBodyTextColor,
       );
+}
+
+// ── Delete button with hover animation ───────────────────────────────────────
+
+class _DeleteButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+
+  const _DeleteButton({this.onPressed});
+
+  @override
+  State<_DeleteButton> createState() => _DeleteButtonState();
+}
+
+class _DeleteButtonState extends State<_DeleteButton>
+    with SingleTickerProviderStateMixin {
+  bool _hovered = false;
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  static const _red = Color(0xFFD94A4A);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onPressed != null;
+
+    return Tooltip(
+      message: 'Eliminar medición',
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+        onEnter: enabled
+            ? (_) {
+                setState(() => _hovered = true);
+                _controller.forward();
+              }
+            : null,
+        onExit: enabled
+            ? (_) {
+                setState(() => _hovered = false);
+                _controller.reverse();
+              }
+            : null,
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedBuilder(
+            animation: _scale,
+            builder: (context, child) => Transform.scale(
+              scale: _scale.value,
+              child: child,
+            ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: _hovered
+                    ? _red.withValues(alpha: 0.08)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 150),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: child,
+                ),
+                child: Icon(
+                  _hovered ? Icons.delete : Icons.delete_outline,
+                  key: ValueKey(_hovered),
+                  size: 16,
+                  color: _hovered ? _red : clientsMutedTextColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ── Empty state ───────────────────────────────────────────────────────────────
