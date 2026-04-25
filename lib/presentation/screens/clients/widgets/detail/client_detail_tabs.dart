@@ -11,10 +11,14 @@ const _kTabs = [
 ];
 
 class ClientDetailTabs extends StatelessWidget {
-  /// Index of the active tab. Only 0 (Resumen) is functional for now.
   final int activeIndex;
+  final ValueChanged<int> onTabChanged;
 
-  const ClientDetailTabs({super.key, this.activeIndex = 0});
+  const ClientDetailTabs({
+    super.key,
+    this.activeIndex = 0,
+    required this.onTabChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +30,8 @@ class ClientDetailTabs extends StatelessWidget {
             _TabItem(
               label: _kTabs[i],
               isActive: i == activeIndex,
-              isEnabled: i == 0,
+              isEnabled: i <= 1,
+              onTap: i <= 1 ? () => onTabChanged(i) : null,
             ),
         ],
       ),
@@ -38,11 +43,13 @@ class _TabItem extends StatelessWidget {
   final String label;
   final bool isActive;
   final bool isEnabled;
+  final VoidCallback? onTap;
 
   const _TabItem({
     required this.label,
     required this.isActive,
     required this.isEnabled,
+    this.onTap,
   });
 
   @override
@@ -51,7 +58,7 @@ class _TabItem extends StatelessWidget {
       padding: const EdgeInsets.only(right: 2),
       child: InkWell(
         borderRadius: clientsBorderRadius,
-        onTap: isEnabled ? () {} : null,
+        onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           height: 36,

@@ -9,6 +9,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_de
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_detail_tabs.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_cards.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_sections.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurements_tab.dart';
 
 class ClientDetailContent extends ConsumerStatefulWidget {
   final int clientId;
@@ -27,6 +28,7 @@ class ClientDetailContent extends ConsumerStatefulWidget {
 class _ClientDetailContentState extends ConsumerState<ClientDetailContent> {
   late final ClientSummaryRepository _repo;
   late final Future<ClientSummary?> _summaryFuture;
+  int _activeTab = 0;
 
   @override
   void initState() {
@@ -73,7 +75,12 @@ class _ClientDetailContentState extends ConsumerState<ClientDetailContent> {
         }
 
         // ── Content ───────────────────────────────────────────────────────────
-        return _ClientDetailBody(summary: summary, onBack: widget.onBack);
+        return _ClientDetailBody(
+          summary: summary,
+          onBack: widget.onBack,
+          activeTab: _activeTab,
+          onTabChanged: (i) => setState(() => _activeTab = i),
+        );
       },
     );
   }
@@ -84,38 +91,44 @@ class _ClientDetailContentState extends ConsumerState<ClientDetailContent> {
 class _ClientDetailBody extends StatelessWidget {
   final ClientSummary summary;
   final VoidCallback onBack;
+  final int activeTab;
+  final ValueChanged<int> onTabChanged;
 
-  const _ClientDetailBody({required this.summary, required this.onBack});
+  const _ClientDetailBody({
+    required this.summary,
+    required this.onBack,
+    required this.activeTab,
+    required this.onTabChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header: back + avatar + name + meta + edit button
         ClientDetailHeader(client: summary.client, onBack: onBack),
         const SizedBox(height: 18),
 
-        // Tabs bar
-        const ClientDetailTabs(),
+        ClientDetailTabs(activeIndex: activeTab, onTabChanged: onTabChanged),
         const SizedBox(height: 18),
 
-        // Scrollable content area
         Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Metric cards row
-                ClientSummaryCards(summary: summary),
-                const SizedBox(height: 16),
-
-                // Info sections: personal / objetivo / anamnesis
-                ClientSummarySections(summary: summary),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+          child: activeTab == 1
+              ? MeasurementsTab(
+                  clientId: summary.client.clientId,
+                  clientHeight: summary.client.height,
+                )
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClientSummaryCards(summary: summary),
+                      const SizedBox(height: 16),
+                      ClientSummarySections(summary: summary),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
         ),
       ],
     );
