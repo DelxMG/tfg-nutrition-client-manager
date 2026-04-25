@@ -8,6 +8,7 @@ import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_detail_header.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_detail_tabs.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_cards.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/anamnesis_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_sections.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurements_tab.dart';
 
@@ -103,10 +104,10 @@ class _ClientDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final latestMeasurement = ref
+    final allMeasurements = ref
         .watch(clientMeasurementsProvider(summary.client.clientId))
-        .value
-        ?.firstOrNull;
+        .value ?? [];
+    final latestMeasurement = allMeasurements.firstOrNull;
 
     final reactiveAnamnesis = ref
         .watch(clientAnamnesisProvider(summary.client.clientId))
@@ -137,9 +138,25 @@ class _ClientDetailBody extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClientSummaryCards(summary: reactiveSummary),
+                      ClientSummaryCards(
+                        summary: reactiveSummary,
+                        allMeasurements: allMeasurements,
+                      ),
                       const SizedBox(height: 16),
-                      ClientSummarySections(summary: reactiveSummary),
+                      ClientSummarySections(
+                        summary: reactiveSummary,
+                        onEditAnamnesis: () => showDialog<void>(
+                          context: context,
+                          builder: (_) => AnamnesisFormDialog(
+                            clientId: reactiveSummary.client.clientId,
+                            anamnesis: reactiveSummary.anamnesis,
+                            repository: ref.read(anamnesisRepositoryProvider),
+                            hasExistingMeasurements: allMeasurements.isNotEmpty,
+                            measurementRepository:
+                                ref.read(measurementRepositoryProvider),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),

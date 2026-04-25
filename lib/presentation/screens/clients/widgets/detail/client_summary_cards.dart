@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutritrack/data/db/app_database.dart';
 import 'package:nutritrack/data/models/client_summary.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientSummaryCards extends StatelessWidget {
   final ClientSummary summary;
+  final List<Measurement> allMeasurements;
 
-  const ClientSummaryCards({super.key, required this.summary});
+  const ClientSummaryCards({
+    super.key,
+    required this.summary,
+    required this.allMeasurements,
+  });
 
   @override
   Widget build(BuildContext context) {
     final weight = summary.latestMeasurement?.weight;
     final bodyFat = summary.latestMeasurement?.bodyFat;
-    final heightCm = summary.client.height;
+    final muscleMass = summary.latestMeasurement?.muscleMass;
     final bmi = summary.bmi;
+    final weightDelta = _calcWeightDelta(allMeasurements);
 
     return Row(
       children: [
@@ -21,12 +28,7 @@ class ClientSummaryCards extends StatelessWidget {
           icon: Icons.monitor_weight_outlined,
           label: 'Peso actual',
           value: weight != null ? '${weight.toStringAsFixed(1)} kg' : '—',
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.height,
-          label: 'Altura',
-          value: heightCm != null ? '$heightCm cm' : '—',
+          subtitle: weightDelta != null ? _formatDelta(weightDelta) : null,
         ),
         const SizedBox(width: 12),
         _MetricCard(
@@ -41,8 +43,27 @@ class ClientSummaryCards extends StatelessWidget {
           label: 'Grasa corporal',
           value: bodyFat != null ? '${bodyFat.toStringAsFixed(1)} %' : '—',
         ),
+        const SizedBox(width: 12),
+        _MetricCard(
+          icon: Icons.fitness_center_outlined,
+          label: 'Masa muscular',
+          value: muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
+        ),
       ],
     );
+  }
+
+  double? _calcWeightDelta(List<Measurement> measurements) {
+    if (measurements.length < 2) return null;
+    final latest = measurements.first.weight;
+    final oldest = measurements.last.weight;
+    if (latest == null || oldest == null) return null;
+    return latest - oldest;
+  }
+
+  String _formatDelta(double delta) {
+    final sign = delta >= 0 ? '+' : '';
+    return '$sign${delta.toStringAsFixed(1)} kg desde inicio';
   }
 
   _BmiLabel _bmiBadge(double bmi) {
@@ -59,12 +80,14 @@ class _MetricCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final String? subtitle;
   final _BmiLabel? badge;
 
   const _MetricCard({
     required this.icon,
     required this.label,
     required this.value,
+    this.subtitle,
     this.badge,
   });
 
@@ -114,6 +137,17 @@ class _MetricCard extends StatelessWidget {
                 ],
               ],
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: clientsMutedTextColor,
+                ),
+              ),
+            ],
           ],
         ),
       ),
