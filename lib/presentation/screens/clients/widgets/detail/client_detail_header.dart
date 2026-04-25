@@ -4,7 +4,6 @@ import 'package:nutritrack/data/db/app_database.dart';
 import 'package:nutritrack/data/db/tables/clients.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
-import 'package:nutritrack/data/db/tables/enums.dart';
 
 class ClientDetailHeader extends StatelessWidget {
   final Client client;
@@ -101,7 +100,7 @@ class ClientDetailHeader extends StatelessWidget {
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: clientsBodyTextColor,
-                  disabledForegroundColor: clientsBodyTextColor.withOpacity(0.6),
+                  disabledForegroundColor: clientsBodyTextColor.withValues(alpha: 0.6),
                   side: const BorderSide(color: clientsBorderColor),
                   shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),

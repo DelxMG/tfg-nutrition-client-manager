@@ -84,7 +84,7 @@ class AnamnesisDao extends DatabaseAccessor<AppDatabase>
     } else {
       await updateAnamnesis(
         existing.copyWith(
-          date: date != null ? date : existing.date,
+          date: date ?? existing.date,
           objective: Value(objective),
           initialWeight: Value(initialWeight),
           observations: Value(observations),

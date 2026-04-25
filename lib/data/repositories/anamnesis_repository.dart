@@ -2,7 +2,6 @@ import 'package:nutritrack/domain/enums.dart';
 
 import '../daos/anamnesis_dao.dart';
 import '../db/app_database.dart';
-import '../db/tables/anamnesis.dart';
 
 class AnamnesisRepository {
   final AnamnesisDao anamnesisDao;

@@ -1,8 +1,6 @@
 import 'package:nutritrack/domain/services/bmi_calculator.dart';
 
 import '../db/app_database.dart';
-import '../db/tables/anamnesis.dart';
-import '../db/tables/measurements.dart';
 
 /// Aggregate of the three data sources needed to render the client detail
 /// summary tab. All fields are nullable — the UI decides what to show when

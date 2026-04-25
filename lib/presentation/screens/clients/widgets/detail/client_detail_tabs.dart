@@ -70,7 +70,7 @@ class _TabItem extends StatelessWidget {
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
               color: isActive
                   ? clientsHeadingColor
-                  : clientsMutedTextColor.withOpacity(isEnabled ? 1.0 : 0.55),
+                  : clientsMutedTextColor.withValues(alpha: isEnabled ? 1.0 : 0.55),
             ),
           ),
         ),

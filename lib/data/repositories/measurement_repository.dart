@@ -1,6 +1,5 @@
 import '../daos/measurement_dao.dart';
 import '../db/app_database.dart';
-import '../db/tables/measurements.dart';
 
 class MeasurementRepository {
   final MeasurementDao measurementDao;
