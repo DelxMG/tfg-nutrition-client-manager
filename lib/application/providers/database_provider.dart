@@ -19,6 +19,12 @@ final clientRepositoryProvider = Provider<ClientRepository>((ref) {
   return ClientRepository(ref.watch(appDatabaseProvider));
 });
 
+/// Reactive single client by ID. Emits null if the client is deleted.
+final clientByIdProvider =
+    StreamProvider.family<Client?, int>((ref, clientId) {
+  return ref.watch(clientRepositoryProvider).watchClientById(clientId);
+});
+
 /// [ClientSummaryRepository] built on top of the shared [AppDatabase].
 final clientSummaryRepositoryProvider = Provider<ClientSummaryRepository>((ref) {
   return ClientSummaryRepository(ref.watch(appDatabaseProvider));

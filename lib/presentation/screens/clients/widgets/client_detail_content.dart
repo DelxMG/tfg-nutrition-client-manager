@@ -104,6 +104,10 @@ class _ClientDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final reactiveClient = ref
+        .watch(clientByIdProvider(summary.client.clientId))
+        .maybeWhen(data: (c) => c ?? summary.client, orElse: () => summary.client);
+
     final allMeasurements = ref
         .watch(clientMeasurementsProvider(summary.client.clientId))
         .value ?? [];
@@ -114,7 +118,7 @@ class _ClientDetailBody extends ConsumerWidget {
         .maybeWhen(data: (a) => a, orElse: () => summary.anamnesis);
 
     final reactiveSummary = ClientSummary(
-      client: summary.client,
+      client: reactiveClient,
       anamnesis: reactiveAnamnesis,
       latestMeasurement: latestMeasurement,
     );

@@ -39,6 +39,10 @@ class ClientRepository {
     return clientDao.getClientById(clientId);
   }
 
+  Stream<Client?> watchClientById(int clientId) {
+    return clientDao.watchClientById(clientId);
+  }
+
   Stream<List<Client>> watchAllClients() {
     return clientDao.watchAllClients();
   }

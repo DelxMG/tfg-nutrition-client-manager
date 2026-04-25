@@ -47,6 +47,11 @@ class ClientDao extends DatabaseAccessor<AppDatabase> with _$ClientDaoMixin {
         .getSingleOrNull();
   }
 
+  Stream<Client?> watchClientById(int clientId) {
+    return (select(clients)..where((tbl) => tbl.clientId.equals(clientId)))
+        .watchSingleOrNull();
+  }
+
   Stream<List<Client>> watchAllClients() {
     return (select(clients)
           ..orderBy([(tbl) => OrderingTerm.asc(tbl.name)]))
