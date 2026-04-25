@@ -7,8 +7,13 @@ import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatte
 /// Three info blocks rendered side-by-side on desktop.
 class ClientSummarySections extends StatelessWidget {
   final ClientSummary summary;
+  final VoidCallback? onEditAnamnesis;
 
-  const ClientSummarySections({super.key, required this.summary});
+  const ClientSummarySections({
+    super.key,
+    required this.summary,
+    this.onEditAnamnesis,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +35,7 @@ class ClientSummarySections extends StatelessWidget {
               _InfoRow('Teléfono', client.phone ?? '—'),
               _InfoRow('Edad', age != null ? '$age años' : '—'),
               _InfoRow('Género', client.sex?.label ?? '—'),
+              _InfoRow('Altura', client.height != null ? '${client.height} cm' : '—'),
               _InfoRow('Ocupación', anamnesis?.occupation ?? '—'),
               _InfoRow('Fecha de inicio', formatDate(client.createdAt)),
             ],
@@ -46,6 +52,11 @@ class ClientSummarySections extends StatelessWidget {
                 'Nivel de actividad',
                 anamnesis?.physicalActivity?.label ?? '—',
               ),
+              _InfoRow(
+                'Suplementos',
+                anamnesis?.supplements ?? '—',
+                multiline: true,
+              ),
               _InfoRow('Última visita', formatDate(summary.lastVisit)),
             ],
           ),
@@ -55,7 +66,37 @@ class ClientSummarySections extends StatelessWidget {
         Expanded(
           child: _InfoCard(
             title: 'Anamnesis',
+            action: onEditAnamnesis == null
+                ? null
+                : anamnesis == null
+                    ? TextButton.icon(
+                        onPressed: onEditAnamnesis,
+                        icon: const Icon(Icons.add_circle_outline, size: 14),
+                        label: Text(
+                          'Completar',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: clientsBrandColor,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: onEditAnamnesis,
+                        icon: const Icon(Icons.edit_outlined, size: 15),
+                        color: clientsMutedTextColor,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Editar anamnesis',
+                      ),
             rows: [
+              _InfoRow('Fecha de anamnesis', formatDate(anamnesis?.date)),
               _InfoRow(
                 'Alergias e intolerancias',
                 anamnesis?.allergies ?? '—',
@@ -84,8 +125,9 @@ class ClientSummarySections extends StatelessWidget {
 class _InfoCard extends StatelessWidget {
   final String title;
   final List<_InfoRow> rows;
+  final Widget? action;
 
-  const _InfoCard({required this.title, required this.rows});
+  const _InfoCard({required this.title, required this.rows, this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -99,14 +141,22 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: clientsHeadingColor,
-              letterSpacing: 0.1,
-            ),
+          Row(
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: clientsHeadingColor,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              if (action != null) ...[
+                const Spacer(),
+                action!,
+              ],
+            ],
           ),
           const SizedBox(height: 14),
           for (final row in rows) ...[
