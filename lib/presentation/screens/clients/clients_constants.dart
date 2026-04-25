@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:nutritrack/presentation/layout/app_constants.dart';
 
-// ── Background / surface colors ──────────────────────────────────────────────
-const Color clientsBgColor = Color(0xFFF8F8F6);
+export 'package:nutritrack/presentation/layout/app_constants.dart';
 
-// ── Border colors ─────────────────────────────────────────────────────────────
-const Color clientsBorderColor = Color(0xFFE2E2DD);
-const Color clientsInputBorderColor = Color(0xFFE3E3DE);
+// ── Aliases — keep every clients* name so existing imports don't break ─────────
+const Color clientsBgColor = appBgColor;
+const Color clientsBorderColor = appBorderColor;
+const Color clientsInputBorderColor = appInputBorderColor;
+const Color clientsBrandColor = appBrandColor;
+const Color clientsSelectedBgColor = appSelectedBgColor;
+const Color clientsMutedTextColor = appMutedTextColor;
+const Color clientsSecondaryIconColor = appSecondaryIconColor;
+const Color clientsBodyTextColor = appBodyTextColor;
+const Color clientsHeadingColor = appHeadingColor;
+const BorderRadius clientsBorderRadius = appBorderRadius;
+const BorderRadius clientsChipBorderRadius = appChipBorderRadius;
+const double clientsTopBarHeight = appTopBarHeight;
+const double clientsButtonHeight = appButtonHeight;
+const double clientsIconSize = appIconSize;
+const double clientsSidebarExpandedWidth = appSidebarExpandedWidth;
+const double clientsSidebarCollapsedWidth = appSidebarCollapsedWidth;
 
-// ── State / accent colors ─────────────────────────────────────────────────────
-const Color clientsBrandColor = Color(0xFF0FA37F);
-const Color clientsSelectedBgColor = Color(0xFFDCEFE9);
-
-// ── Text / icon colors ────────────────────────────────────────────────────────
-const Color clientsMutedTextColor = Color(0xFF7A7A73);
-const Color clientsSecondaryIconColor = Color(0xFF6F6F68);
-const Color clientsBodyTextColor = Color(0xFF4D4D47);
-const Color clientsHeadingColor = Color(0xFF20201D);
-
-// ── Border radii ──────────────────────────────────────────────────────────────
-const BorderRadius clientsBorderRadius = BorderRadius.all(Radius.circular(10));
-const BorderRadius clientsChipBorderRadius = BorderRadius.all(Radius.circular(8));
-
-// ── Shared dimensions ─────────────────────────────────────────────────────────
-const double clientsTopBarHeight = 74;
-const double clientsButtonHeight = 40;
-const double clientsIconSize = 18;
-const double clientsSidebarExpandedWidth = 222;
-const double clientsSidebarCollapsedWidth = 72;
+// ── Clients-specific (not promoted to global layout) ──────────────────────────
 const double clientsHorizontalPadding = 22;

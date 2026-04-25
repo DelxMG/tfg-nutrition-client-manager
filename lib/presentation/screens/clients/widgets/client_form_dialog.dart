@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutritrack/data/db/tables/clients.dart';
 import 'package:nutritrack/data/repositories/client_repository.dart';
+import 'package:nutritrack/domain/enums.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientFormDialog extends StatefulWidget {
@@ -51,21 +51,31 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
 
     setState(() => _submitting = true);
 
-    await widget.repository.insertClient(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim().isEmpty
-          ? null
-          : _emailController.text.trim(),
-      phone: _phoneController.text.trim().isEmpty
-          ? null
-          : _phoneController.text.trim(),
-      height: int.tryParse(_heightController.text.trim()),
-      sex: _sex,
-      birthDate: _birthDate,
-      status: _status,
-    );
+    try {
+      await widget.repository.insertClient(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim().isEmpty
+            ? null
+            : _emailController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        height: int.tryParse(_heightController.text.trim()),
+        sex: _sex,
+        birthDate: _birthDate,
+        status: _status,
+      );
 
-    if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al guardar el cliente. Inténtalo de nuevo.'),
+        ),
+      );
+    }
   }
 
   @override

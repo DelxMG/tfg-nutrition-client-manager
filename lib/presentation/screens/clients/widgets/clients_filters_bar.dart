@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutritrack/data/db/tables/clients.dart';
+import 'package:nutritrack/domain/enums.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientsFiltersBar extends StatefulWidget {

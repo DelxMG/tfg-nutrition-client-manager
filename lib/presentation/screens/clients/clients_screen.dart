@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nutritrack/application/providers/database_provider.dart';
 import 'package:nutritrack/data/db/app_database.dart';
-import 'package:nutritrack/data/db/tables/clients.dart';
+import 'package:nutritrack/domain/enums.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/client_detail_content.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/client_form_dialog.dart';

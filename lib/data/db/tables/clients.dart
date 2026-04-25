@@ -1,8 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:nutritrack/domain/enums.dart';
 
-enum ClientStatus { active, inactive, pending }
-
-enum Sex { male, female }
+export 'package:nutritrack/domain/enums.dart' show ClientStatus, Sex;
 
 class Clients extends Table {
   IntColumn get clientId => integer().autoIncrement()();
