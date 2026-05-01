@@ -54,6 +54,8 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(right: 2),
       child: InkWell(
@@ -63,11 +65,9 @@ class _TabItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           height: 36,
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
+            color: isActive ? cs.surfaceContainer : Colors.transparent,
             borderRadius: clientsBorderRadius,
-            border: isActive
-                ? Border.all(color: clientsBorderColor)
-                : null,
+            border: isActive ? Border.all(color: cs.outlineVariant) : null,
           ),
           alignment: Alignment.center,
           child: Text(
@@ -76,8 +76,8 @@ class _TabItem extends StatelessWidget {
               fontSize: 13,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
               color: isActive
-                  ? clientsHeadingColor
-                  : clientsMutedTextColor.withValues(alpha: isEnabled ? 1.0 : 0.55),
+                  ? cs.onSurface
+                  : cs.onSurfaceVariant.withValues(alpha: isEnabled ? 1.0 : 0.55),
             ),
           ),
         ),

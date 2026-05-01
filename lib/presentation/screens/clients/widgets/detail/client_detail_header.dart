@@ -19,12 +19,13 @@ class ClientDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final initials = getClientInitials(client.name);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: clientsBorderColor)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +39,7 @@ class ClientDetailHeader extends StatelessWidget {
               style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
             ),
             style: TextButton.styleFrom(
-              foregroundColor: clientsMutedTextColor,
+              foregroundColor: cs.onSurfaceVariant,
               padding: EdgeInsets.zero,
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -74,7 +75,7 @@ class ClientDetailHeader extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: clientsHeadingColor,
+                            color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -101,9 +102,9 @@ class ClientDetailHeader extends StatelessWidget {
                   style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: clientsBodyTextColor,
-                  disabledForegroundColor: clientsBodyTextColor.withValues(alpha: 0.6),
-                  side: const BorderSide(color: clientsBorderColor),
+                  foregroundColor: cs.onSurface,
+                  disabledForegroundColor: cs.onSurface.withValues(alpha: 0.4),
+                  side: BorderSide(color: cs.outlineVariant),
                   shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
                   minimumSize: const Size(0, clientsButtonHeight),
@@ -168,6 +169,8 @@ class _MetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     if (items.isEmpty) return const SizedBox.shrink();
     return Wrap(
       spacing: 0,
@@ -177,14 +180,14 @@ class _MetaRow extends StatelessWidget {
             items[i],
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: clientsMutedTextColor,
+              color: cs.onSurfaceVariant,
               fontWeight: FontWeight.w400,
             ),
           ),
           if (i < items.length - 1)
             Text(
               '  ·  ',
-              style: GoogleFonts.inter(fontSize: 13, color: clientsBorderColor),
+              style: GoogleFonts.inter(fontSize: 13, color: cs.outlineVariant),
             ),
         ],
       ],

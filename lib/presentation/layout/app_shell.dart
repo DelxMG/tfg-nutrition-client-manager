@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/presentation/layout/app_sidebar.dart';
 import 'package:nutritrack/presentation/layout/app_top_bar.dart';
-import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 /// Top-level layout: sidebar + topbar + a content slot.
 /// Owns [isSidebarCollapsed] state so it never leaks into content screens.
@@ -26,7 +25,7 @@ class _AppShellState extends State<AppShell> {
     return Theme(
       data: Theme.of(context).copyWith(textTheme: textTheme),
       child: Scaffold(
-        backgroundColor: clientsBgColor,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: Row(
           children: [
             AppSidebar(

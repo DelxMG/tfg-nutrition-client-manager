@@ -20,6 +20,7 @@ class MeasurementsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
     final measurementsAsync = ref.watch(clientMeasurementsProvider(clientId));
 
     return measurementsAsync.when(
@@ -27,7 +28,7 @@ class MeasurementsTab extends ConsumerWidget {
       error: (_, __) => Center(
         child: Text(
           'Error al cargar las mediciones',
-          style: GoogleFonts.inter(fontSize: 14, color: clientsMutedTextColor),
+          style: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
         ),
       ),
       data: (measurements) => _MeasurementsContent(
@@ -67,17 +68,18 @@ class _MeasurementsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final latest = measurements.isNotEmpty ? measurements.first : null;
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Metric cards ────────────────────────────────────────────
+          // ── Metric cards ──────────────────────────────────────────────
           _MetricCardsRow(latest: latest),
           const SizedBox(height: 20),
 
-          // ── History header + button ──────────────────────────────────
+          // ── History header + button ───────────────────────────────────
           Row(
             children: [
               Text(
@@ -85,7 +87,7 @@ class _MeasurementsContent extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: clientsHeadingColor,
+                  color: cs.onSurface,
                 ),
               ),
               const Spacer(),
@@ -102,7 +104,7 @@ class _MeasurementsContent extends StatelessWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: clientsBrandColor,
+                    backgroundColor: cs.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -116,7 +118,7 @@ class _MeasurementsContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // ── History list ─────────────────────────────────────────────
+          // ── History list ──────────────────────────────────────────────
           measurements.isEmpty
               ? _EmptyState(onAdd: () => _openNewMeasurementDialog(context))
               : _MeasurementsList(
@@ -161,8 +163,7 @@ class _MetricCardsRow extends StatelessWidget {
         _MetricCard(
           icon: Icons.fitness_center_outlined,
           label: 'Masa muscular',
-          value:
-              muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
+          value: muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
         ),
       ],
     );
@@ -182,27 +183,29 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surface,
           borderRadius: clientsBorderRadius,
-          border: Border.all(color: clientsBorderColor),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 15, color: clientsMutedTextColor),
+                Icon(icon, size: 15, color: cs.onSurfaceVariant),
                 const SizedBox(width: 6),
                 Text(
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: clientsMutedTextColor,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -213,7 +216,7 @@ class _MetricCard extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: clientsHeadingColor,
+                color: cs.onSurface,
               ),
             ),
           ],
@@ -282,22 +285,28 @@ class _MeasurementsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: clientsBorderRadius,
-        border: Border.all(color: clientsBorderColor),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          _TableHeader(),
-          const Divider(height: 1, color: clientsBorderColor),
+          const _TableHeader(),
+          Divider(height: 1, color: cs.outlineVariant),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: measurements.length,
-            separatorBuilder: (_, __) =>
-                const Divider(height: 1, color: clientsBorderColor),
+            separatorBuilder: (_, __) => Builder(
+              builder: (ctx) => Divider(
+                height: 1,
+                color: Theme.of(ctx).colorScheme.outlineVariant,
+              ),
+            ),
             itemBuilder: (ctx, index) {
               final m = measurements[index];
               return _MeasurementRow(
@@ -311,42 +320,34 @@ class _MeasurementsList extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _TableHeader extends StatelessWidget {
+  const _TableHeader();
+
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          Expanded(
-            flex: 2,
-            child: Text('Fecha', style: _headerStyle()),
-          ),
-          Expanded(
-            child: Text('Peso', style: _headerStyle()),
-          ),
-          Expanded(
-            child: Text('Grasa', style: _headerStyle()),
-          ),
-          Expanded(
-            child: Text('Músculo', style: _headerStyle()),
-          ),
-          Expanded(
-            child: Text('IMC', style: _headerStyle()),
-          ),
+          Expanded(flex: 2, child: Text('Fecha', style: _headerStyle(cs))),
+          Expanded(child: Text('Peso', style: _headerStyle(cs))),
+          Expanded(child: Text('Grasa', style: _headerStyle(cs))),
+          Expanded(child: Text('Músculo', style: _headerStyle(cs))),
+          Expanded(child: Text('IMC', style: _headerStyle(cs))),
           const SizedBox(width: 40),
         ],
       ),
     );
   }
 
-  TextStyle _headerStyle() => GoogleFonts.inter(
+  TextStyle _headerStyle(ColorScheme cs) => GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: clientsMutedTextColor,
+        color: cs.onSurfaceVariant,
       );
 }
 
@@ -363,6 +364,7 @@ class _MeasurementRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final d = measurement.date;
     final dateStr =
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -371,16 +373,13 @@ class _MeasurementRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Expanded(
-            flex: 2,
-            child: Text(dateStr, style: _cellStyle()),
-          ),
+          Expanded(flex: 2, child: Text(dateStr, style: _cellStyle(cs))),
           Expanded(
             child: Text(
               measurement.weight != null
                   ? '${measurement.weight!.toStringAsFixed(1)} kg'
                   : '—',
-              style: _cellStyle(),
+              style: _cellStyle(cs),
             ),
           ),
           Expanded(
@@ -388,7 +387,7 @@ class _MeasurementRow extends StatelessWidget {
               measurement.bodyFat != null
                   ? '${measurement.bodyFat!.toStringAsFixed(1)} %'
                   : '—',
-              style: _cellStyle(),
+              style: _cellStyle(cs),
             ),
           ),
           Expanded(
@@ -396,13 +395,13 @@ class _MeasurementRow extends StatelessWidget {
               measurement.muscleMass != null
                   ? '${measurement.muscleMass!.toStringAsFixed(1)} kg'
                   : '—',
-              style: _cellStyle(),
+              style: _cellStyle(cs),
             ),
           ),
           Expanded(
             child: Text(
               bmi != null ? bmi!.toStringAsFixed(1) : '—',
-              style: _cellStyle(),
+              style: _cellStyle(cs),
             ),
           ),
           SizedBox(
@@ -414,10 +413,10 @@ class _MeasurementRow extends StatelessWidget {
     );
   }
 
-  TextStyle _cellStyle() => GoogleFonts.inter(
+  TextStyle _cellStyle(ColorScheme cs) => GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: clientsBodyTextColor,
+        color: cs.onSurface,
       );
 }
 
@@ -464,6 +463,7 @@ class _DeleteButtonState extends State<_DeleteButton>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final enabled = widget.onPressed != null;
 
     return Tooltip(
@@ -510,7 +510,7 @@ class _DeleteButtonState extends State<_DeleteButton>
                   _hovered ? Icons.delete : Icons.delete_outline,
                   key: ValueKey(_hovered),
                   size: 16,
-                  color: _hovered ? _red : clientsMutedTextColor,
+                  color: _hovered ? _red : cs.onSurfaceVariant,
                 ),
               ),
             ),
@@ -530,25 +530,30 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: clientsBorderRadius,
-        border: Border.all(color: clientsBorderColor),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(Icons.monitor_weight_outlined,
-              size: 36, color: clientsMutedTextColor.withValues(alpha: 0.4)),
+          Icon(
+            Icons.monitor_weight_outlined,
+            size: 36,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
           Text(
             'Sin mediciones registradas',
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: clientsMutedTextColor,
+              color: cs.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
@@ -556,7 +561,7 @@ class _EmptyState extends StatelessWidget {
             'Añade la primera medición para empezar a hacer seguimiento.',
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: clientsMutedTextColor.withValues(alpha: 0.7),
+              color: cs.onSurfaceVariant.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 16),
@@ -567,7 +572,7 @@ class _EmptyState extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: clientsBrandColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),

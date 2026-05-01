@@ -78,8 +78,10 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
       child: SizedBox(
         width: 420,
@@ -99,14 +101,14 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: clientsHeadingColor,
+                        color: cs.onSurface,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close, size: 20),
-                      color: clientsMutedTextColor,
+                      color: cs.onSurfaceVariant,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -121,14 +123,14 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                     onTap: _submitting ? null : _pickDate,
                     borderRadius: clientsChipBorderRadius,
                     child: InputDecorator(
-                      decoration: _inputDecoration(null),
+                      decoration: _dec(null, cs),
                       child: Text(
                         '${_date.day.toString().padLeft(2, '0')}/'
                         '${_date.month.toString().padLeft(2, '0')}/'
                         '${_date.year}',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: clientsBodyTextColor,
+                          color: cs.onSurface,
                         ),
                       ),
                     ),
@@ -142,7 +144,7 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                   child: TextFormField(
                     controller: _weightController,
                     enabled: !_submitting,
-                    decoration: _inputDecoration('ej. 72.5'),
+                    decoration: _dec('ej. 72.5', cs),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
@@ -171,7 +173,7 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                         child: TextFormField(
                           controller: _bodyFatController,
                           enabled: !_submitting,
-                          decoration: _inputDecoration('ej. 18.0'),
+                          decoration: _dec('ej. 18.0', cs),
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           inputFormatters: [
@@ -196,7 +198,7 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                         child: TextFormField(
                           controller: _muscleMassController,
                           enabled: !_submitting,
-                          decoration: _inputDecoration('ej. 35.0'),
+                          decoration: _dec('ej. 35.0', cs),
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           inputFormatters: [
@@ -228,7 +230,7 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                       child: Text(
                         'Cancelar',
                         style: GoogleFonts.inter(
-                          color: clientsMutedTextColor,
+                          color: cs.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -239,11 +241,10 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                       child: ElevatedButton(
                         onPressed: _submitting ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: clientsBrandColor,
+                          backgroundColor: cs.primary,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           shape: const RoundedRectangleBorder(
                             borderRadius: clientsBorderRadius,
                           ),
@@ -287,6 +288,7 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,7 +297,7 @@ class _Field extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: clientsBodyTextColor,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -305,22 +307,22 @@ class _Field extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDecoration(String? hint) {
+InputDecoration _dec(String? hint, ColorScheme cs) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: GoogleFonts.inter(fontSize: 14, color: clientsMutedTextColor),
+    hintStyle: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     border: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: const BorderSide(color: clientsInputBorderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: const BorderSide(color: clientsInputBorderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: BorderSide(color: clientsBrandColor.withAlpha(180)),
+      borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
@@ -331,6 +333,6 @@ InputDecoration _inputDecoration(String? hint) {
       borderSide: const BorderSide(color: Color(0xFFE57373)),
     ),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: cs.surfaceContainerHighest,
   );
 }

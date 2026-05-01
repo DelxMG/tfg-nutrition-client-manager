@@ -80,8 +80,10 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
       child: SizedBox(
         width: 480,
@@ -101,14 +103,14 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: clientsHeadingColor,
+                        color: cs.onSurface,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close, size: 20),
-                      color: clientsMutedTextColor,
+                      color: cs.onSurfaceVariant,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -122,7 +124,7 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                   child: TextFormField(
                     controller: _nameController,
                     enabled: !_submitting,
-                    decoration: _inputDecoration('Nombre completo'),
+                    decoration: _dec('Nombre completo', cs),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return 'El nombre es obligatorio';
@@ -142,13 +144,12 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                         child: TextFormField(
                           controller: _emailController,
                           enabled: !_submitting,
-                          decoration: _inputDecoration('correo@ejemplo.com'),
+                          decoration: _dec('correo@ejemplo.com', cs),
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return null;
 
-                            final emailRegex =
-                                RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                            final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                             if (!emailRegex.hasMatch(v.trim())) {
                               return 'Email inválido';
                             }
@@ -165,7 +166,7 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                         child: TextFormField(
                           controller: _phoneController,
                           enabled: !_submitting,
-                          decoration: _inputDecoration('+34 600 000 000'),
+                          decoration: _dec('+34 600 000 000', cs),
                           keyboardType: TextInputType.phone,
                         ),
                       ),
@@ -183,10 +184,10 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                         child: TextFormField(
                           controller: _heightController,
                           enabled: !_submitting,
-                          decoration: _inputDecoration('170'),
+                          decoration: _dec('170', cs),
                           keyboardType: TextInputType.number,
                           inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
+                            FilteringTextInputFormatter.digitsOnly,
                           ],
                           validator: (v) {
                             if (v == null || v.isEmpty) return null;
@@ -207,12 +208,12 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                         label: 'Sexo',
                         child: DropdownButtonFormField<Sex>(
                           value: _sex,
-                          decoration: _inputDecoration(null),
+                          decoration: _dec(null, cs),
                           hint: Text(
                             'Seleccionar',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: clientsMutedTextColor,
+                              color: cs.onSurfaceVariant,
                             ),
                           ),
                           items: const [
@@ -240,7 +241,7 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                           onTap: _submitting ? null : _pickDate,
                           borderRadius: clientsChipBorderRadius,
                           child: InputDecorator(
-                            decoration: _inputDecoration(null),
+                            decoration: _dec(null, cs),
                             child: Text(
                               _birthDate == null
                                   ? 'Seleccionar fecha'
@@ -250,8 +251,8 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 color: _birthDate == null
-                                    ? clientsMutedTextColor
-                                    : clientsBodyTextColor,
+                                    ? cs.onSurfaceVariant
+                                    : cs.onSurface,
                               ),
                             ),
                           ),
@@ -264,7 +265,7 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                         label: 'Estado',
                         child: DropdownButtonFormField<ClientStatus>(
                           value: _status,
-                          decoration: _inputDecoration(null),
+                          decoration: _dec(null, cs),
                           items: const [
                             DropdownMenuItem(
                                 value: ClientStatus.active,
@@ -296,7 +297,7 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                       child: Text(
                         'Cancelar',
                         style: GoogleFonts.inter(
-                          color: clientsMutedTextColor,
+                          color: cs.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -307,11 +308,10 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                       child: ElevatedButton(
                         onPressed: _submitting ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: clientsBrandColor,
+                          backgroundColor: cs.primary,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           shape: const RoundedRectangleBorder(
                             borderRadius: clientsBorderRadius,
                           ),
@@ -355,6 +355,7 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -363,7 +364,7 @@ class _Field extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: clientsBodyTextColor,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -373,26 +374,25 @@ class _Field extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDecoration(String? hint) {
+InputDecoration _dec(String? hint, ColorScheme cs) {
   return InputDecoration(
     hintText: hint,
     hintStyle: GoogleFonts.inter(
       fontSize: 14,
-      color: clientsMutedTextColor,
+      color: cs.onSurfaceVariant,
     ),
-    contentPadding:
-        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     border: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: const BorderSide(color: clientsInputBorderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: const BorderSide(color: clientsInputBorderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: BorderSide(color: clientsBrandColor.withAlpha(180)),
+      borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
@@ -403,6 +403,6 @@ InputDecoration _inputDecoration(String? hint) {
       borderSide: const BorderSide(color: Color(0xFFE57373)),
     ),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: cs.surfaceContainerHighest,
   );
 }

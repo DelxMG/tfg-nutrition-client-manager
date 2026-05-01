@@ -16,33 +16,35 @@ class ClientsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: clientsBorderColor),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          _buildTableHeader(),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFE9E9E3)),
+          _buildTableHeader(cs),
+          Divider(height: 1, thickness: 1, color: cs.outlineVariant),
           Expanded(
             child: clients.isEmpty
                 ? Center(
                     child: Text(
                       'No hay clientes',
                       style: GoogleFonts.inter(
-                        color: clientsMutedTextColor,
+                        color: cs.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
                   )
                 : ListView.separated(
                     itemCount: clients.length,
-                    separatorBuilder: (_, _) => const Divider(
+                    separatorBuilder: (_, _) => Divider(
                       height: 1,
                       thickness: 1,
-                      color: Color(0xFFE9E9E3),
+                      color: cs.outlineVariant,
                     ),
                     itemBuilder: (context, index) {
                       final client = clients[index];
@@ -55,70 +57,47 @@ class ClientsTable extends StatelessWidget {
     );
   }
 
-  Widget _buildTableHeader() {
+  Widget _buildTableHeader(ColorScheme cs) {
     return Container(
       height: clientsButtonHeight,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF7F7F4),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(14),
           topRight: Radius.circular(14),
         ),
       ),
       child: Row(
         children: [
-          Expanded(
-            flex: 3,
-            child: _buildSortableHeader('CLIENTE'),
-          ),
-          Expanded(
-            flex: 2,
-            child: _buildSortableHeader('ESTADO'),
-          ),
-          Expanded(
-            flex: 2,
-            child: _buildSortableHeader('OBJETIVO'),
-          ),
-          Expanded(
-            child: _buildPlainHeader('EDAD'),
-          ),
-          Expanded(
-            child: _buildPlainHeader('PESO'),
-          ),
-          Expanded(
-            flex: 2,
-            child: _buildSortableHeader('ÚLTIMA VISITA'),
-          ),
+          Expanded(flex: 3, child: _buildSortableHeader('CLIENTE', cs)),
+          Expanded(flex: 2, child: _buildSortableHeader('ESTADO', cs)),
+          Expanded(flex: 2, child: _buildSortableHeader('OBJETIVO', cs)),
+          Expanded(child: _buildPlainHeader('EDAD', cs)),
+          Expanded(child: _buildPlainHeader('PESO', cs)),
+          Expanded(flex: 2, child: _buildSortableHeader('ÚLTIMA VISITA', cs)),
           const SizedBox(width: 20),
         ],
       ),
     );
   }
 
-  Widget _buildPlainHeader(String label) {
-    return Text(
-      label,
-      style: _headerStyle,
-    );
+  Widget _buildPlainHeader(String label, ColorScheme cs) {
+    return Text(label, style: _headerTextStyle(cs));
   }
 
-  Widget _buildSortableHeader(String label) {
+  Widget _buildSortableHeader(String label, ColorScheme cs) {
     return Row(
       children: [
         Flexible(
           child: Text(
             label,
-            style: _headerStyle,
+            style: _headerTextStyle(cs),
             overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(width: 4),
-        const Icon(
-          Icons.unfold_more,
-          size: 14,
-          color: Color(0xFF8A8A84),
-        ),
+        Icon(Icons.unfold_more, size: 14, color: cs.onSurfaceVariant),
       ],
     );
   }
@@ -132,6 +111,7 @@ class _ClientRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final initials = getClientInitials(client.name);
     final age = calculateClientAge(client.birthDate);
 
@@ -142,6 +122,7 @@ class _ClientRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
+            // ── Client name + email ───────────────────────────────────────
             Expanded(
               flex: 3,
               child: Row(
@@ -171,7 +152,7 @@ class _ClientRow extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             height: 1.1,
-                            color: const Color(0xFF22221F),
+                            color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -182,7 +163,7 @@ class _ClientRow extends StatelessWidget {
                             fontSize: 12.5,
                             fontWeight: FontWeight.w400,
                             height: 1.1,
-                            color: clientsMutedTextColor,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -191,6 +172,7 @@ class _ClientRow extends StatelessWidget {
                 ],
               ),
             ),
+            // ── Status ────────────────────────────────────────────────────
             Expanded(
               flex: 2,
               child: Row(
@@ -209,12 +191,13 @@ class _ClientRow extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: clientsBodyTextColor,
+                      color: cs.onSurface,
                     ),
                   ),
                 ],
               ),
             ),
+            // ── Objetivo (placeholder) ─────────────────────────────────────
             Expanded(
               flex: 2,
               child: Text(
@@ -222,30 +205,33 @@ class _ClientRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: clientsMutedTextColor,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),
+            // ── Edad ──────────────────────────────────────────────────────
             Expanded(
               child: Text(
                 age?.toString() ?? '—',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: clientsBodyTextColor,
+                  color: cs.onSurface,
                 ),
               ),
             ),
+            // ── Peso (placeholder) ────────────────────────────────────────
             Expanded(
               child: Text(
                 '—',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: clientsMutedTextColor,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),
+            // ── Última visita (placeholder) ───────────────────────────────
             Expanded(
               flex: 2,
               child: Text(
@@ -253,16 +239,16 @@ class _ClientRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: clientsMutedTextColor,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),
-            const SizedBox(
+            SizedBox(
               width: 20,
               child: Icon(
                 Icons.chevron_right,
                 size: 17,
-                color: Color(0xFFB0B0AA),
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -272,9 +258,9 @@ class _ClientRow extends StatelessWidget {
   }
 }
 
-final TextStyle _headerStyle = GoogleFonts.inter(
-  fontSize: 12,
-  fontWeight: FontWeight.w700,
-  letterSpacing: 0.7,
-  color: clientsMutedTextColor,
-);
+TextStyle _headerTextStyle(ColorScheme cs) => GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.7,
+      color: cs.onSurfaceVariant,
+    );

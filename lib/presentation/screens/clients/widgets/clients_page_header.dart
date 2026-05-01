@@ -14,6 +14,8 @@ class ClientsPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Column(
@@ -25,7 +27,7 @@ class ClientsPageHeader extends StatelessWidget {
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 height: 1.08,
-                color: clientsHeadingColor,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 6),
@@ -34,7 +36,7 @@ class ClientsPageHeader extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: clientsMutedTextColor,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -45,7 +47,7 @@ class ClientsPageHeader extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: onNewClientPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: clientsBrandColor,
+              backgroundColor: cs.primary,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16),

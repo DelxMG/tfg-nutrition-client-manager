@@ -49,6 +49,8 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         SizedBox(
@@ -56,45 +58,42 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
           height: 42,
           child: TextField(
             controller: _searchController,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: const Color(0xFF2A2A26),
-            ),
+            style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
             decoration: InputDecoration(
               hintText: 'Buscar por nombre, email...',
               hintStyle: GoogleFonts.inter(
                 fontSize: 14,
-                color: clientsMutedTextColor,
+                color: cs.onSurfaceVariant,
               ),
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.search,
                 size: clientsIconSize,
-                color: clientsSecondaryIconColor,
+                color: cs.onSurfaceVariant,
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: cs.surfaceContainerHighest,
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: clientsBorderRadius,
-                borderSide: const BorderSide(color: clientsInputBorderColor),
+                borderSide: BorderSide(color: cs.outlineVariant),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: clientsBorderRadius,
-                borderSide: const BorderSide(color: clientsInputBorderColor),
+                borderSide: BorderSide(color: cs.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: clientsBorderRadius,
-                borderSide: const BorderSide(color: Color(0xFFCECEC7)),
+                borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
               ),
             ),
             onChanged: widget.onSearchChanged,
           ),
         ),
         const SizedBox(width: 12),
-        const Icon(
+        Icon(
           Icons.filter_alt_outlined,
           size: clientsIconSize,
-          color: clientsMutedTextColor,
+          color: cs.onSurfaceVariant,
         ),
         const SizedBox(width: 12),
         _FilterChip(
@@ -135,6 +134,8 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: InkWell(
@@ -143,14 +144,14 @@ class _FilterChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? clientsSelectedBgColor : Colors.transparent,
+            color: selected ? cs.primaryContainer : Colors.transparent,
             borderRadius: clientsChipBorderRadius,
           ),
           child: Text(
             label,
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: selected ? clientsBrandColor : const Color(0xFF5B5B55),
+              color: selected ? cs.primary : cs.onSurface,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

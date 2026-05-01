@@ -16,14 +16,16 @@ class AppSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
       width: isCollapsed ? appSidebarCollapsedWidth : appSidebarExpandedWidth,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF4F4F2),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
         border: Border(
-          right: BorderSide(color: appBorderColor),
+          right: BorderSide(color: cs.outlineVariant),
         ),
       ),
       child: Column(
@@ -31,9 +33,9 @@ class AppSidebar extends StatelessWidget {
           Container(
             height: appTopBarHeight,
             padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 0 : 10),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: appBorderColor),
+                bottom: BorderSide(color: cs.outlineVariant),
               ),
             ),
             child: isCollapsed
@@ -53,7 +55,7 @@ class AppSidebar extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 height: 1.1,
-                                color: appHeadingColor,
+                                color: cs.onSurface,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -63,7 +65,7 @@ class AppSidebar extends StatelessWidget {
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 height: 1,
-                                color: const Color(0xFF7C7C75),
+                                color: cs.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -72,12 +74,12 @@ class AppSidebar extends StatelessWidget {
                       InkWell(
                         borderRadius: appChipBorderRadius,
                         onTap: onCollapse,
-                        child: const Padding(
-                          padding: EdgeInsets.all(6),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
                           child: Icon(
                             Icons.chevron_left,
                             size: appIconSize,
-                            color: appSecondaryIconColor,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -115,8 +117,8 @@ class AppSidebar extends StatelessWidget {
           if (!isCollapsed)
             Container(
               height: 52,
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: appBorderColor)),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: cs.outlineVariant)),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: InkWell(
@@ -126,10 +128,10 @@ class AppSidebar extends StatelessWidget {
                   height: 52,
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.chevron_left,
                         size: appIconSize,
-                        color: appSecondaryIconColor,
+                        color: cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -137,7 +139,7 @@ class AppSidebar extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: appSecondaryIconColor,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -148,19 +150,19 @@ class AppSidebar extends StatelessWidget {
           else
             Container(
               height: 52,
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: appBorderColor)),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: cs.outlineVariant)),
               ),
               child: Center(
                 child: InkWell(
                   borderRadius: appChipBorderRadius,
                   onTap: onExpand,
-                  child: const Padding(
-                    padding: EdgeInsets.all(6),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
                     child: Icon(
                       Icons.chevron_right,
                       size: appIconSize,
-                      color: appSecondaryIconColor,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -205,6 +207,8 @@ class _SidebarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       child: InkWell(
@@ -214,7 +218,7 @@ class _SidebarItem extends StatelessWidget {
           height: appButtonHeight,
           padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 0 : 14),
           decoration: BoxDecoration(
-            color: selected ? appSelectedBgColor : Colors.transparent,
+            color: selected ? cs.primaryContainer : Colors.transparent,
             borderRadius: appBorderRadius,
           ),
           child: Row(
@@ -224,7 +228,7 @@ class _SidebarItem extends StatelessWidget {
               Icon(
                 icon,
                 size: appIconSize,
-                color: selected ? appBrandColor : const Color(0xFF66665F),
+                color: selected ? appBrandColor : cs.onSurfaceVariant,
               ),
               if (!isCollapsed) ...[
                 const SizedBox(width: 12),
@@ -233,7 +237,7 @@ class _SidebarItem extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                    color: selected ? appBrandColor : appBodyTextColor,
+                    color: selected ? appBrandColor : cs.onSurface,
                     height: 1,
                   ),
                 ),

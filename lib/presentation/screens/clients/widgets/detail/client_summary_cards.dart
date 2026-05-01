@@ -93,27 +93,29 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surface,
           borderRadius: clientsBorderRadius,
-          border: Border.all(color: clientsBorderColor),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 15, color: clientsMutedTextColor),
+                Icon(icon, size: 15, color: cs.onSurfaceVariant),
                 const SizedBox(width: 6),
                 Text(
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: clientsMutedTextColor,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -128,7 +130,7 @@ class _MetricCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: clientsHeadingColor,
+                    color: cs.onSurface,
                   ),
                 ),
                 if (badge != null) ...[
@@ -144,7 +146,7 @@ class _MetricCard extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: clientsMutedTextColor,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],

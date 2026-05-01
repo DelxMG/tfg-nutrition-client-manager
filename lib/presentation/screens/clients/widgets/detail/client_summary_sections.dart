@@ -99,12 +99,14 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: clientsBorderRadius,
-        border: Border.all(color: clientsBorderColor),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +116,7 @@ class _InfoCard extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: clientsHeadingColor,
+              color: cs.onSurface,
               letterSpacing: 0.1,
             ),
           ),
@@ -122,9 +124,9 @@ class _InfoCard extends StatelessWidget {
           for (final row in rows) ...[
             _InfoRowWidget(row: row),
             if (row != rows.last)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Divider(height: 1, thickness: 1, color: Color(0xFFF0F0EC)),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Divider(height: 1, thickness: 1, color: cs.outlineVariant),
               ),
           ],
         ],
@@ -150,6 +152,7 @@ class _InfoRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isEmpty = row.value == '—';
 
     if (row.multiline) {
@@ -161,7 +164,7 @@ class _InfoRowWidget extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: clientsMutedTextColor,
+              color: cs.onSurfaceVariant,
               letterSpacing: 0.4,
             ),
           ),
@@ -171,7 +174,7 @@ class _InfoRowWidget extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w400,
-              color: isEmpty ? clientsMutedTextColor : clientsBodyTextColor,
+              color: isEmpty ? cs.onSurfaceVariant : cs.onSurface,
               height: 1.5,
             ),
           ),
@@ -189,7 +192,7 @@ class _InfoRowWidget extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: clientsMutedTextColor,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -199,7 +202,7 @@ class _InfoRowWidget extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: isEmpty ? clientsMutedTextColor : clientsBodyTextColor,
+              color: isEmpty ? cs.onSurfaceVariant : cs.onSurface,
             ),
           ),
         ),

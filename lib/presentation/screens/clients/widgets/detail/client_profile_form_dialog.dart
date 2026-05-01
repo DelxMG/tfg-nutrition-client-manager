@@ -214,8 +214,10 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
       child: SizedBox(
         width: 600,
@@ -239,12 +241,12 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildPersonalSection(),
+                        _buildPersonalSection(cs),
                         const SizedBox(height: 24),
-                        _buildAnamnesisSection(),
+                        _buildAnamnesisSection(cs),
                         if (!widget.hasExistingMeasurements) ...[
                           const SizedBox(height: 24),
-                          _buildInitialMeasurementSection(),
+                          _buildInitialMeasurementSection(cs),
                         ],
                         const SizedBox(height: 24),
                       ],
@@ -268,7 +270,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
 
   // ── Section builders ──────────────────────────────────────────────────────
 
-  Widget _buildPersonalSection() {
+  Widget _buildPersonalSection(ColorScheme cs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -281,7 +283,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _nameController,
             enabled: !_submitting,
-            decoration: _inputDecoration('Nombre completo'),
+            decoration: _dec('Nombre completo', cs),
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? 'El nombre es obligatorio' : null,
           ),
@@ -294,7 +296,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _emailController,
             enabled: !_submitting,
-            decoration: _inputDecoration('correo@ejemplo.com'),
+            decoration: _dec('correo@ejemplo.com', cs),
             keyboardType: TextInputType.emailAddress,
             validator: (v) {
               if (v == null || v.trim().isEmpty) return null;
@@ -314,7 +316,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 child: TextFormField(
                   controller: _phoneController,
                   enabled: !_submitting,
-                  decoration: _inputDecoration('Ej. 612 345 678'),
+                  decoration: _dec('Ej. 612 345 678', cs),
                   keyboardType: TextInputType.phone,
                 ),
               ),
@@ -326,7 +328,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 child: TextFormField(
                   controller: _heightController,
                   enabled: !_submitting,
-                  decoration: _inputDecoration('Ej. 170'),
+                  decoration: _dec('Ej. 170', cs),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (v) {
@@ -350,8 +352,8 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 label: 'Sexo',
                 child: DropdownButtonFormField<Sex?>(
                   value: _sex,
-                  decoration: _inputDecoration(null),
-                  hint: _hintText('Sin especificar'),
+                  decoration: _dec(null, cs),
+                  hint: _hintText('Sin especificar', cs),
                   items: [
                     _dropdownItem<Sex?>(null, 'Sin especificar'),
                     ...Sex.values.map((s) => _dropdownItem(s, s.label)),
@@ -367,7 +369,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 label: 'Estado',
                 child: DropdownButtonFormField<ClientStatus>(
                   value: _status,
-                  decoration: _inputDecoration(null),
+                  decoration: _dec(null, cs),
                   items: ClientStatus.values
                       .map((s) => _dropdownItem(s, s.label))
                       .toList(),
@@ -422,7 +424,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
     );
   }
 
-  Widget _buildAnamnesisSection() {
+  Widget _buildAnamnesisSection(ColorScheme cs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -437,7 +439,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _objectiveController,
             enabled: !_submitting,
-            decoration: _inputDecoration('Ej. perder peso, ganar músculo...'),
+            decoration: _dec('Ej. perder peso, ganar músculo...', cs),
           ),
         ),
         const SizedBox(height: 12),
@@ -450,8 +452,8 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 label: 'Actividad física',
                 child: DropdownButtonFormField<PhysicalActivity?>(
                   value: _physicalActivity,
-                  decoration: _inputDecoration(null),
-                  hint: _hintText('Sin especificar'),
+                  decoration: _dec(null, cs),
+                  hint: _hintText('Sin especificar', cs),
                   items: [
                     _dropdownItem<PhysicalActivity?>(null, 'Sin especificar'),
                     ...PhysicalActivity.values
@@ -470,7 +472,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 child: TextFormField(
                   controller: _occupationController,
                   enabled: !_submitting,
-                  decoration: _inputDecoration('Ej. administrativo...'),
+                  decoration: _dec('Ej. administrativo...', cs),
                 ),
               ),
             ),
@@ -484,7 +486,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _allergiesController,
             enabled: !_submitting,
-            decoration: _inputDecoration('Ej. gluten, lactosa...'),
+            decoration: _dec('Ej. gluten, lactosa...', cs),
             keyboardType: TextInputType.multiline,
             minLines: 2,
             maxLines: 3,
@@ -498,7 +500,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _pathologiesController,
             enabled: !_submitting,
-            decoration: _inputDecoration('Ej. diabetes, hipertensión...'),
+            decoration: _dec('Ej. diabetes, hipertensión...', cs),
             keyboardType: TextInputType.multiline,
             minLines: 2,
             maxLines: 3,
@@ -512,7 +514,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _observationsController,
             enabled: !_submitting,
-            decoration: _inputDecoration('Notas adicionales...'),
+            decoration: _dec('Notas adicionales...', cs),
             keyboardType: TextInputType.multiline,
             minLines: 2,
             maxLines: 3,
@@ -526,7 +528,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           child: TextFormField(
             controller: _supplementsController,
             enabled: !_submitting,
-            decoration: _inputDecoration('Ej. proteína, creatina...'),
+            decoration: _dec('Ej. proteína, creatina...', cs),
             keyboardType: TextInputType.multiline,
             minLines: 2,
             maxLines: 3,
@@ -536,7 +538,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
 
         // Anamnesis date
         SizedBox(
-          width: (600 - 56 - 12) / 2, // half width minus dialog padding
+          width: (600 - 56 - 12) / 2,
           child: _Field(
             label: 'Fecha de anamnesis',
             child: _DateButton(
@@ -555,7 +557,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
     );
   }
 
-  Widget _buildInitialMeasurementSection() {
+  Widget _buildInitialMeasurementSection(ColorScheme cs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -565,7 +567,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
         const SizedBox(height: 2),
         Text(
           'Opcional. Registra los datos de partida del cliente.',
-          style: GoogleFonts.inter(fontSize: 12, color: clientsMutedTextColor),
+          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 14),
 
@@ -597,7 +599,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 child: TextFormField(
                   controller: _initialWeightController,
                   enabled: !_submitting,
-                  decoration: _inputDecoration('ej. 72.5'),
+                  decoration: _dec('ej. 72.5', cs),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
@@ -619,7 +621,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 child: TextFormField(
                   controller: _initialBodyFatController,
                   enabled: !_submitting,
-                  decoration: _inputDecoration('ej. 18.0'),
+                  decoration: _dec('ej. 18.0', cs),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
@@ -643,7 +645,7 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                 child: TextFormField(
                   controller: _initialMuscleMassController,
                   enabled: !_submitting,
-                  decoration: _inputDecoration('ej. 35.0'),
+                  decoration: _dec('ej. 35.0', cs),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
@@ -674,6 +676,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
       child: Row(
@@ -683,14 +686,14 @@ class _Header extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: clientsHeadingColor,
+              color: cs.onSurface,
             ),
           ),
           const Spacer(),
           IconButton(
             onPressed: onClose,
             icon: const Icon(Icons.close, size: 20),
-            color: clientsMutedTextColor,
+            color: cs.onSurfaceVariant,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -715,6 +718,7 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
       child: Row(
@@ -725,7 +729,7 @@ class _Footer extends StatelessWidget {
             child: Text(
               'Cancelar',
               style: GoogleFonts.inter(
-                color: clientsMutedTextColor,
+                color: cs.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -736,7 +740,7 @@ class _Footer extends StatelessWidget {
             child: ElevatedButton(
               onPressed: submitting ? null : onSave,
               style: ElevatedButton.styleFrom(
-                backgroundColor: clientsBrandColor,
+                backgroundColor: cs.primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -777,12 +781,13 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Text(
       text,
       style: GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w700,
-        color: clientsHeadingColor,
+        color: cs.onSurface,
         letterSpacing: 0.1,
       ),
     );
@@ -794,7 +799,7 @@ class _SectionDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(height: 1, color: Color(0xFFF0F0EC));
+    return Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant);
   }
 }
 
@@ -808,6 +813,7 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -816,7 +822,7 @@ class _Field extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: clientsBodyTextColor,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -843,16 +849,17 @@ class _DateButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: disabled ? null : onTap,
       borderRadius: clientsChipBorderRadius,
       child: InputDecorator(
-        decoration: _inputDecoration(null),
+        decoration: _dec(null, cs),
         child: Text(
           date != null ? formatDate(date) : (placeholder ?? '—'),
           style: GoogleFonts.inter(
             fontSize: 14,
-            color: date != null ? clientsBodyTextColor : clientsMutedTextColor,
+            color: date != null ? cs.onSurface : cs.onSurfaceVariant,
           ),
         ),
       ),
@@ -869,31 +876,31 @@ DropdownMenuItem<T> _dropdownItem<T>(T value, String label) {
   );
 }
 
-Widget _hintText(String text) {
+Widget _hintText(String text, ColorScheme cs) {
   return Text(
     text,
-    style: GoogleFonts.inter(fontSize: 14, color: clientsMutedTextColor),
+    style: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
   );
 }
 
 // ── Input decoration ──────────────────────────────────────────────────────────
 
-InputDecoration _inputDecoration(String? hint) {
+InputDecoration _dec(String? hint, ColorScheme cs) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: GoogleFonts.inter(fontSize: 14, color: clientsMutedTextColor),
+    hintStyle: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     border: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: const BorderSide(color: clientsInputBorderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: const BorderSide(color: clientsInputBorderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
-      borderSide: BorderSide(color: clientsBrandColor.withAlpha(180)),
+      borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: clientsChipBorderRadius,
@@ -904,6 +911,6 @@ InputDecoration _inputDecoration(String? hint) {
       borderSide: const BorderSide(color: Color(0xFFE57373)),
     ),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: cs.surfaceContainerHighest,
   );
 }
