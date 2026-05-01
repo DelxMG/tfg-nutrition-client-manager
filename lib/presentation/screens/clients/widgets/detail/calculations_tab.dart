@@ -11,6 +11,12 @@ import 'package:nutritrack/domain/services/tdee_calculator.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
 
+// ── Macro colour tokens ───────────────────────────────────────────────────────
+
+const _kProteinColor = Color(0xFF22C55E);
+const _kCarbColor    = Color(0xFFE3A12A);
+const _kFatColor     = Color(0xFF3B82F6);
+
 // ── Main tab widget ───────────────────────────────────────────────────────────
 
 class CalculationsTab extends ConsumerStatefulWidget {
@@ -32,74 +38,88 @@ class CalculationsTab extends ConsumerStatefulWidget {
 }
 
 class _CalculationsTabState extends ConsumerState<CalculationsTab> {
-  final _weightController = TextEditingController();
-  final _heightController = TextEditingController();
+  final _weightController       = TextEditingController();
+  final _heightController       = TextEditingController();
+  final _ageController          = TextEditingController();
   final _proteinPerKgController = TextEditingController(text: '2.0');
-  final _fatPerKgController = TextEditingController(text: '0.9');
+  final _fatPerKgController     = TextEditingController(text: '0.9');
 
-  GoalType _goalType = GoalType.maintenance;
-  BmrFormula _formula = BmrFormula.mifflinStJeor;
+  GoalType _goalType      = GoalType.maintenance;
+  BmrFormula _formula     = BmrFormula.mifflinStJeor;
   PhysicalActivity? _activity;
-  bool _saving = false;
-
-  int? _age;
   Sex? _sex;
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    _prefill();
+    for (final c in _controllers) { c.addListener(_onChanged); }
+  }
+
+  List<TextEditingController> get _controllers => [
+        _weightController,
+        _heightController,
+        _ageController,
+        _proteinPerKgController,
+        _fatPerKgController,
+      ];
+
+  void _prefill() {
     final w = widget.latestMeasurement?.weight;
     if (w != null) _weightController.text = w.toStringAsFixed(1);
     final h = widget.client.height;
     if (h != null) _heightController.text = h.toString();
-    _age = calculateClientAge(widget.client.birthDate);
-    _sex = widget.client.sex;
+    final age = calculateClientAge(widget.client.birthDate);
+    if (age != null) _ageController.text = age.toString();
+    _sex      = widget.client.sex;
     _activity = widget.anamnesis?.physicalActivity;
-
-    _weightController.addListener(_onChanged);
-    _heightController.addListener(_onChanged);
-    _proteinPerKgController.addListener(_onChanged);
-    _fatPerKgController.addListener(_onChanged);
   }
 
   void _onChanged() => setState(() {});
 
   @override
   void dispose() {
-    _weightController.removeListener(_onChanged);
-    _heightController.removeListener(_onChanged);
-    _proteinPerKgController.removeListener(_onChanged);
-    _fatPerKgController.removeListener(_onChanged);
-    _weightController.dispose();
-    _heightController.dispose();
-    _proteinPerKgController.dispose();
-    _fatPerKgController.dispose();
+    for (final c in _controllers) {
+      c.removeListener(_onChanged);
+      c.dispose();
+    }
     super.dispose();
   }
 
+  void _reset() {
+    setState(() {
+      _goalType = GoalType.maintenance;
+      _formula  = BmrFormula.mifflinStJeor;
+      _sex      = widget.client.sex;
+      _activity = widget.anamnesis?.physicalActivity;
+
+      final w = widget.latestMeasurement?.weight;
+      _weightController.text = w != null ? w.toStringAsFixed(1) : '';
+      final h = widget.client.height;
+      _heightController.text = h != null ? h.toString() : '';
+      final age = calculateClientAge(widget.client.birthDate);
+      _ageController.text          = age != null ? age.toString() : '';
+      _proteinPerKgController.text = '2.0';
+      _fatPerKgController.text     = '0.9';
+    });
+  }
+
   NutritionResult? get _result {
-    final weight = double.tryParse(_weightController.text.trim());
-    final height = int.tryParse(_heightController.text.trim());
-    final proteinPerKg =
-        double.tryParse(_proteinPerKgController.text.trim()) ?? 2.0;
-    final fatPerKg =
-        double.tryParse(_fatPerKgController.text.trim()) ?? 0.9;
+    final weight       = double.tryParse(_weightController.text.trim());
+    final height       = int.tryParse(_heightController.text.trim());
+    final age          = int.tryParse(_ageController.text.trim());
+    final proteinPerKg = double.tryParse(_proteinPerKgController.text.trim()) ?? 2.0;
+    final fatPerKg     = double.tryParse(_fatPerKgController.text.trim()) ?? 0.9;
 
     final bmr = calculateBmr(
-      weightKg: weight,
-      heightCm: height,
-      age: _age,
-      sex: _sex,
-      formula: _formula,
+      weightKg: weight, heightCm: height, age: age,
+      sex: _sex, formula: _formula,
     );
     final tdee = calculateTdee(bmr: bmr, activity: _activity);
     return calculateNutrition(
-      bmr: bmr,
-      tdee: tdee,
-      goalType: _goalType,
-      weightKg: weight,
-      proteinPerKg: proteinPerKg,
-      fatPerKg: fatPerKg,
+      bmr: bmr, tdee: tdee, goalType: _goalType,
+      weightKg: weight, proteinPerKg: proteinPerKg, fatPerKg: fatPerKg,
     );
   }
 
@@ -109,37 +129,35 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
     final result = _result;
     if (result == null || !result.isValid) return;
 
-    final weight = double.tryParse(_weightController.text.trim());
-    final height = int.tryParse(_heightController.text.trim());
+    final weight       = double.tryParse(_weightController.text.trim());
+    final height       = int.tryParse(_heightController.text.trim());
+    final age          = int.tryParse(_ageController.text.trim());
     final proteinPerKg = double.tryParse(_proteinPerKgController.text.trim());
-    final fatPerKg = double.tryParse(_fatPerKgController.text.trim());
+    final fatPerKg     = double.tryParse(_fatPerKgController.text.trim());
 
     setState(() => _saving = true);
     try {
       await ref.read(nutritionCalculationRepositoryProvider).insertCalculation(
-            clientId: widget.clientId,
-            goalType: _goalType,
-            bmrFormula: _formula,
-            bmr: result.bmr,
-            tdee: result.tdee,
-            kcalTarget: result.kcalTarget,
-            proteins: result.proteins,
-            carbohydrates: result.carbohydrates,
-            fats: result.fats,
-            weightUsed: weight,
-            heightUsed: height,
-            ageUsed: _age,
-            activityFactor:
-                _activity != null ? activityFactorFor(_activity!) : null,
-            proteinPerKg: proteinPerKg,
-            fatPerKg: fatPerKg,
-          );
+        clientId:       widget.clientId,
+        goalType:       _goalType,
+        bmrFormula:     _formula,
+        bmr:            result.bmr,
+        tdee:           result.tdee,
+        kcalTarget:     result.kcalTarget,
+        proteins:       result.proteins,
+        carbohydrates:  result.carbohydrates,
+        fats:           result.fats,
+        weightUsed:     weight,
+        heightUsed:     height,
+        ageUsed:        age,
+        activityFactor: _activity != null ? activityFactorFor(_activity!) : null,
+        proteinPerKg:   proteinPerKg,
+        fatPerKg:       fatPerKg,
+      );
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al guardar el cálculo. Inténtalo de nuevo.'),
-          ),
+          const SnackBar(content: Text('Error al guardar el cálculo. Inténtalo de nuevo.')),
         );
       }
     } finally {
@@ -153,7 +171,7 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
       builder: (ctx) => AlertDialog(
         title: const Text('Eliminar cálculo'),
         content: Text(
-          '¿Seguro que quieres eliminar el cálculo del ${formatDate(calc.date)}? '
+          '¿Seguro que quieres eliminar el cálculo del ${_formatDateShort(calc.date)}? '
           'Esta acción no se puede deshacer.',
         ),
         actions: [
@@ -163,15 +181,12 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFD94A4A),
-            ),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFD94A4A)),
             child: const Text('Eliminar'),
           ),
         ],
       ),
     );
-
     if (confirmed != true) return;
 
     try {
@@ -181,9 +196,7 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al eliminar el cálculo. Inténtalo de nuevo.'),
-          ),
+          const SnackBar(content: Text('Error al eliminar el cálculo. Inténtalo de nuevo.')),
         );
       }
     }
@@ -200,34 +213,61 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Form ──────────────────────────────────────────────────────────
-          _FormCard(
-            goalType: _goalType,
-            formula: _formula,
-            activity: _activity,
-            weightController: _weightController,
-            heightController: _heightController,
-            proteinPerKgController: _proteinPerKgController,
-            fatPerKgController: _fatPerKgController,
-            saving: _saving,
-            onGoalTypeChanged: (g) => setState(() => _goalType = g),
-            onFormulaChanged: (f) => setState(() => _formula = f),
-            onActivityChanged: (a) => setState(() => _activity = a),
-          ),
-          const SizedBox(height: 16),
-
-          // ── Results ───────────────────────────────────────────────────────
-          _ResultsCard(
-            result: result,
-            saving: _saving,
-            canSave: _canSave,
-            onSave: _save,
+          // ── 2-column dashboard ────────────────────────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left column
+              Expanded(
+                child: Column(
+                  children: [
+                    _GoalCard(
+                      goalType: _goalType,
+                      saving: _saving,
+                      onChanged: (g) => setState(() => _goalType = g),
+                    ),
+                    const SizedBox(height: 12),
+                    _ParametersCard(
+                      weightController:      _weightController,
+                      heightController:      _heightController,
+                      ageController:         _ageController,
+                      proteinPerKgController: _proteinPerKgController,
+                      fatPerKgController:    _fatPerKgController,
+                      sex:      _sex,
+                      activity: _activity,
+                      formula:  _formula,
+                      saving:   _saving,
+                      onSexChanged:      (s) => setState(() => _sex = s),
+                      onActivityChanged: (a) => setState(() => _activity = a),
+                      onFormulaChanged:  (f) => setState(() => _formula = f),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Right column
+              Expanded(
+                child: Column(
+                  children: [
+                    _ResultCard(result: result),
+                    const SizedBox(height: 12),
+                    _MacrosCard(
+                      result:   result,
+                      saving:   _saving,
+                      canSave:  _canSave,
+                      onSave:   _save,
+                      onReset:  _reset,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
 
-          // ── History header ────────────────────────────────────────────────
+          // ── History ───────────────────────────────────────────────────
           Text(
-            'Historial de cálculos',
+            'Cálculos guardados',
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -235,31 +275,15 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
             ),
           ),
           const SizedBox(height: 12),
-
-          // ── History list ──────────────────────────────────────────────────
           calculationsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text(
+            error:   (e, _) => Text(
               'Error al cargar el historial',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: cs.onSurfaceVariant,
-              ),
+              style: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
             ),
-            data: (calculations) => calculations.isEmpty
+            data: (calcs) => calcs.isEmpty
                 ? const _EmptyHistoryState()
-                : Column(
-                    children: [
-                      for (int i = 0; i < calculations.length; i++) ...[
-                        _CalcHistoryCard(
-                          calc: calculations[i],
-                          onDelete: () => _confirmDelete(calculations[i]),
-                        ),
-                        if (i < calculations.length - 1)
-                          const SizedBox(height: 8),
-                      ],
-                    ],
-                  ),
+                : _HistoryTable(calculations: calcs, onDelete: _confirmDelete),
           ),
           const SizedBox(height: 24),
         ],
@@ -268,41 +292,25 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
   }
 }
 
-// ── Form card ──────────────────────────────────────────────────────────────────
+// ── _GoalCard — 3 horizontal cards ───────────────────────────────────────────
 
-class _FormCard extends StatelessWidget {
+class _GoalCard extends StatelessWidget {
   final GoalType goalType;
-  final BmrFormula formula;
-  final PhysicalActivity? activity;
-  final TextEditingController weightController;
-  final TextEditingController heightController;
-  final TextEditingController proteinPerKgController;
-  final TextEditingController fatPerKgController;
   final bool saving;
-  final ValueChanged<GoalType> onGoalTypeChanged;
-  final ValueChanged<BmrFormula> onFormulaChanged;
-  final ValueChanged<PhysicalActivity?> onActivityChanged;
+  final ValueChanged<GoalType> onChanged;
 
-  const _FormCard({
+  const _GoalCard({
     required this.goalType,
-    required this.formula,
-    required this.activity,
-    required this.weightController,
-    required this.heightController,
-    required this.proteinPerKgController,
-    required this.fatPerKgController,
     required this.saving,
-    required this.onGoalTypeChanged,
-    required this.onFormulaChanged,
-    required this.onActivityChanged,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final dec = _fieldDecoration(cs);
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -312,65 +320,151 @@ class _FormCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── GoalType chips ───────────────────────────────────────────
           Text(
-            'Objetivo',
+            'Tipo de objetivo',
             style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: cs.onSurfaceVariant,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
             ),
           ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: GoalType.values.map((g) {
-                final selected = g == goalType;
-                final color = _goalTypeColor(g);
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+          const SizedBox(height: 12),
+          Row(
+            children: GoalType.values.asMap().entries.map((e) {
+              final isLast  = e.key == GoalType.values.length - 1;
+              final g       = e.value;
+              final selected = goalType == g;
+              final color   = _goalTypeColor(g);
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: isLast ? 0 : 10),
                   child: InkWell(
-                    borderRadius: clientsChipBorderRadius,
-                    onTap: saving ? null : () => onGoalTypeChanged(g),
+                    borderRadius: clientsBorderRadius,
+                    onTap: saving ? null : () => onChanged(g),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7),
+                      height: 72,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: selected
-                            ? color.withValues(alpha: 0.12)
+                            ? color.withValues(alpha: 0.08)
                             : cs.surfaceContainerHighest,
-                        borderRadius: clientsChipBorderRadius,
+                        borderRadius: clientsBorderRadius,
                         border: Border.all(
-                          color: selected
-                              ? color.withValues(alpha: 0.45)
-                              : cs.outlineVariant,
+                          color: selected ? color : cs.outlineVariant,
+                          width: selected ? 1.5 : 1,
                         ),
                       ),
-                      child: Text(
-                        _goalTypeLabel(g),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight:
-                              selected ? FontWeight.w600 : FontWeight.w500,
-                          color: selected ? color : cs.onSurfaceVariant,
-                        ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _goalTypeLabel(g),
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: selected ? color : cs.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _goalTypeSubtitle(g),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── _ParametersCard ───────────────────────────────────────────────────────────
+
+class _ParametersCard extends StatelessWidget {
+  final TextEditingController weightController;
+  final TextEditingController heightController;
+  final TextEditingController ageController;
+  final TextEditingController proteinPerKgController;
+  final TextEditingController fatPerKgController;
+  final Sex? sex;
+  final PhysicalActivity? activity;
+  final BmrFormula formula;
+  final bool saving;
+  final ValueChanged<Sex?> onSexChanged;
+  final ValueChanged<PhysicalActivity?> onActivityChanged;
+  final ValueChanged<BmrFormula> onFormulaChanged;
+
+  const _ParametersCard({
+    required this.weightController,
+    required this.heightController,
+    required this.ageController,
+    required this.proteinPerKgController,
+    required this.fatPerKgController,
+    required this.sex,
+    required this.activity,
+    required this.formula,
+    required this.saving,
+    required this.onSexChanged,
+    required this.onActivityChanged,
+    required this.onFormulaChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header: title + formula chips ────────────────────────────
+          Row(
+            children: [
+              Text(
+                'Parámetros',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+              ),
+              const Spacer(),
+              ...BmrFormula.values.map((f) => Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: _SelectChip(
+                  label: _bmrFormulaLabel(f),
+                  selected: formula == f,
+                  onTap: saving ? null : () => onFormulaChanged(f),
+                ),
+              )),
+            ],
           ),
           const SizedBox(height: 14),
 
-          // ── Weight + Height ──────────────────────────────────────────
+          // ── Peso | Altura | Edad ─────────────────────────────────────
           Row(
             children: [
               Expanded(
                 child: _NumericField(
-                  label: 'Peso (kg)',
+                  label: 'PESO (KG)',
                   controller: weightController,
                   enabled: !saving,
                   decimal: true,
@@ -379,112 +473,92 @@ class _FormCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _NumericField(
-                  label: 'Altura (cm)',
+                  label: 'ALTURA (CM)',
                   controller: heightController,
+                  enabled: !saving,
+                  decimal: false,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _NumericField(
+                  label: 'EDAD',
+                  controller: ageController,
                   enabled: !saving,
                   decimal: false,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // ── Activity + Formula ───────────────────────────────────────
+          // ── Género | Actividad ───────────────────────────────────────
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Actividad física',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<PhysicalActivity?>(
-                      initialValue: activity,
-                      decoration: dec,
-                      style: GoogleFonts.inter(
-                          fontSize: 14, color: cs.onSurface),
-                      onChanged: saving ? null : onActivityChanged,
-                      items: [
-                        DropdownMenuItem<PhysicalActivity?>(
-                          value: null,
-                          child: Text(
-                            '—',
-                            style: GoogleFonts.inter(
-                                fontSize: 14, color: cs.onSurface),
-                          ),
+              // Género chips
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _FieldLabel('GÉNERO'),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: Sex.values.map((s) {
+                      final isLast = s == Sex.values.last;
+                      return Padding(
+                        padding: EdgeInsets.only(right: isLast ? 0 : 6),
+                        child: _SelectChip(
+                          label: s.label,
+                          selected: sex == s,
+                          onTap: saving ? null : () => onSexChanged(sex == s ? null : s),
                         ),
-                        ...PhysicalActivity.values.map(
-                          (a) => DropdownMenuItem<PhysicalActivity?>(
-                            value: a,
-                            child: Text(
-                              a.label,
-                              style: GoogleFonts.inter(
-                                  fontSize: 14, color: cs.onSurface),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 20),
+              // Actividad chips
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Fórmula TMB',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
+                    const _FieldLabel('NIVEL DE ACTIVIDAD'),
                     const SizedBox(height: 6),
-                    DropdownButtonFormField<BmrFormula>(
-                      initialValue: formula,
-                      decoration: dec,
-                      style: GoogleFonts.inter(
-                          fontSize: 14, color: cs.onSurface),
-                      onChanged: saving
-                          ? null
-                          : (v) {
-                              if (v != null) onFormulaChanged(v);
-                            },
-                      items: BmrFormula.values
-                          .map(
-                            (f) => DropdownMenuItem<BmrFormula>(
-                              value: f,
-                              child: Text(
-                                _bmrFormulaLabel(f),
-                                style: GoogleFonts.inter(
-                                    fontSize: 14, color: cs.onSurface),
-                              ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _SelectChip(
+                            label: '—',
+                            selected: activity == null,
+                            onTap: saving ? null : () => onActivityChanged(null),
+                          ),
+                          ...PhysicalActivity.values.map((a) => Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: _SelectChip(
+                              label: a.label,
+                              selected: activity == a,
+                              onTap: saving ? null : () => onActivityChanged(a),
                             ),
-                          )
-                          .toList(),
+                          )),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // ── Protein + Fat per kg ─────────────────────────────────────
+          // ── Proteína | Grasa g/kg ────────────────────────────────────
           Row(
             children: [
               Expanded(
                 child: _NumericField(
-                  label: 'Proteína (g/kg)',
+                  label: 'PROTEÍNA (G/KG)',
                   controller: proteinPerKgController,
                   enabled: !saving,
                   decimal: true,
@@ -493,7 +567,7 @@ class _FormCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _NumericField(
-                  label: 'Grasa (g/kg)',
+                  label: 'GRASA (G/KG)',
                   controller: fatPerKgController,
                   enabled: !saving,
                   decimal: true,
@@ -507,223 +581,21 @@ class _FormCard extends StatelessWidget {
   }
 }
 
-// ── Results card ──────────────────────────────────────────────────────────────
+// ── _ResultCard ───────────────────────────────────────────────────────────────
 
-class _ResultsCard extends StatelessWidget {
+class _ResultCard extends StatelessWidget {
   final NutritionResult? result;
-  final bool saving;
-  final bool canSave;
-  final VoidCallback onSave;
 
-  const _ResultsCard({
-    required this.result,
-    required this.saving,
-    required this.canSave,
-    required this.onSave,
-  });
+  const _ResultCard({required this.result});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs        = Theme.of(context).colorScheme;
     final hasResult = result != null && result!.isValid;
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: hasResult
-            ? cs.primaryContainer.withValues(alpha: 0.35)
-            : cs.surface,
-        borderRadius: clientsBorderRadius,
-        border: Border.all(
-          color: hasResult
-              ? cs.primary.withValues(alpha: 0.25)
-              : cs.outlineVariant,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Resultados',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface,
-                ),
-              ),
-              const Spacer(),
-              if (!hasResult)
-                Text(
-                  'Completa los datos para calcular',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-            ],
-          ),
-          if (hasResult) ...[
-            const SizedBox(height: 14),
-            // ── Energy row ───────────────────────────────────────────
-            Row(
-              children: [
-                Expanded(
-                  child: _ResultItem(
-                    label: 'TMB',
-                    value: '${result!.bmr.toStringAsFixed(0)} kcal',
-                  ),
-                ),
-                Expanded(
-                  child: _ResultItem(
-                    label: 'TDEE',
-                    value: '${result!.tdee.toStringAsFixed(0)} kcal',
-                  ),
-                ),
-                Expanded(
-                  child: _ResultItem(
-                    label: 'Objetivo',
-                    value: '${result!.kcalTarget.toStringAsFixed(0)} kcal',
-                    highlighted: true,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // ── Macros row ───────────────────────────────────────────
-            Row(
-              children: [
-                Expanded(
-                  child: _ResultItem(
-                    label: 'Proteínas',
-                    value: '${result!.proteins.toStringAsFixed(1)} g',
-                    sub: '${result!.proteinKcal.toStringAsFixed(0)} kcal',
-                  ),
-                ),
-                Expanded(
-                  child: _ResultItem(
-                    label: 'Grasas',
-                    value: '${result!.fats.toStringAsFixed(1)} g',
-                    sub: '${result!.fatKcal.toStringAsFixed(0)} kcal',
-                  ),
-                ),
-                Expanded(
-                  child: _ResultItem(
-                    label: 'Carbohidratos',
-                    value: '${result!.carbohydrates.toStringAsFixed(1)} g',
-                    sub: '${result!.carbKcal.toStringAsFixed(0)} kcal',
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 14),
-          Align(
-            alignment: Alignment.centerRight,
-            child: SizedBox(
-              height: clientsButtonHeight,
-              child: ElevatedButton.icon(
-                onPressed: canSave ? onSave : null,
-                icon: saving
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.save_outlined, size: 15),
-                label: Text(
-                  'Guardar cálculo',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: cs.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: clientsBorderRadius,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ResultItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final String? sub;
-  final bool highlighted;
-
-  const _ResultItem({
-    required this.label,
-    required this.value,
-    this.sub,
-    this.highlighted = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: cs.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: highlighted ? 16 : 14,
-            fontWeight: FontWeight.w700,
-            color: highlighted ? cs.primary : cs.onSurface,
-          ),
-        ),
-        if (sub != null)
-          Text(
-            sub!,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-// ── History card ──────────────────────────────────────────────────────────────
-
-class _CalcHistoryCard extends StatelessWidget {
-  final NutritionCalculation calc;
-  final VoidCallback onDelete;
-
-  const _CalcHistoryCard({required this.calc, required this.onDelete});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final goalColor = _goalTypeColor(calc.goalType);
-
-    return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: clientsBorderRadius,
@@ -732,14 +604,482 @@ class _CalcHistoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header: badge + formula + date + delete ─────────────────
+          // ── Header ──────────────────────────────────────────────────
           Row(
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              Icon(Icons.local_fire_department_outlined,
+                  size: 16, color: cs.primary),
+              const SizedBox(width: 6),
+              Text(
+                'Resultado',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+              ),
+            ],
+          ),
+          if (!hasResult) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Completa los datos para calcular',
+              style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
+            ),
+          ] else ...[
+            const SizedBox(height: 14),
+            // TMB
+            Row(
+              children: [
+                Text('TMB',
+                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface)),
+                const Spacer(),
+                Text(
+                  '${result!.bmr.toStringAsFixed(0)} kcal',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // TDEE
+            Row(
+              children: [
+                Text('TDEE',
+                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface)),
+                const Spacer(),
+                Text(
+                  '${result!.tdee.toStringAsFixed(0)} kcal',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+            const SizedBox(height: 12),
+            // Objetivo calórico
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Objetivo calórico',
+                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+                ),
+                const Spacer(),
+                Text(
+                  '${result!.kcalTarget.toStringAsFixed(0)} kcal',
+                  style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: cs.primary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── _MacrosCard ───────────────────────────────────────────────────────────────
+
+class _MacrosCard extends StatelessWidget {
+  final NutritionResult? result;
+  final bool saving;
+  final bool canSave;
+  final VoidCallback onSave;
+  final VoidCallback onReset;
+
+  const _MacrosCard({
+    required this.result,
+    required this.saving,
+    required this.canSave,
+    required this.onSave,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs        = Theme.of(context).colorScheme;
+    final hasResult = result != null && result!.isValid;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Distribución de macros',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          if (hasResult) ...[
+            _MacroBar(result: result!),
+            const SizedBox(height: 14),
+            _MacroRow(
+              label: 'Proteína',
+              grams: result!.proteins,
+              kcal: result!.proteinKcal,
+              totalKcal: result!.kcalTarget,
+              color: _kProteinColor,
+            ),
+            const SizedBox(height: 8),
+            _MacroRow(
+              label: 'Carbohidratos',
+              grams: result!.carbohydrates,
+              kcal: result!.carbKcal,
+              totalKcal: result!.kcalTarget,
+              color: _kCarbColor,
+            ),
+            const SizedBox(height: 8),
+            _MacroRow(
+              label: 'Grasas',
+              grams: result!.fats,
+              kcal: result!.fatKcal,
+              totalKcal: result!.kcalTarget,
+              color: _kFatColor,
+            ),
+            const SizedBox(height: 16),
+          ] else ...[
+            Container(
+              height: 8,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: clientsChipBorderRadius,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Completa los datos para ver la distribución',
+              style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Buttons ──────────────────────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: clientsButtonHeight,
+                  child: ElevatedButton.icon(
+                    onPressed: canSave ? onSave : null,
+                    icon: saving
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.save_outlined, size: 15),
+                    label: Text(
+                      'Guardar cálculo',
+                      style: GoogleFonts.inter(
+                          fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: clientsBorderRadius),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: clientsButtonHeight,
+                child: OutlinedButton.icon(
+                  onPressed: saving ? null : onReset,
+                  icon: const Icon(Icons.refresh_rounded, size: 15),
+                  label: Text(
+                    'Reset',
+                    style: GoogleFonts.inter(
+                        fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: cs.onSurfaceVariant,
+                    side: BorderSide(color: cs.outlineVariant),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: clientsBorderRadius),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── _MacroBar ─────────────────────────────────────────────────────────────────
+
+class _MacroBar extends StatelessWidget {
+  final NutritionResult result;
+
+  const _MacroBar({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    final target = result.kcalTarget;
+    if (target <= 0) return const SizedBox.shrink();
+
+    final proteinRatio = (result.proteinKcal / target).clamp(0.01, 0.97);
+    final carbRatio    = (result.carbKcal    / target).clamp(0.01, 0.97);
+    final fatRatio     = (1.0 - proteinRatio - carbRatio).clamp(0.01, 0.97);
+
+    return ClipRRect(
+      borderRadius: clientsChipBorderRadius,
+      child: SizedBox(
+        height: 12,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  width: proteinRatio * w,
+                  color: _kProteinColor,
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  width: carbRatio * w,
+                  color: _kCarbColor,
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  width: fatRatio * w,
+                  color: _kFatColor,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ── _MacroRow — dot | label | kcal | % | grams ───────────────────────────────
+
+class _MacroRow extends StatelessWidget {
+  final String label;
+  final double grams;
+  final double kcal;
+  final double totalKcal;
+  final Color color;
+
+  const _MacroRow({
+    required this.label,
+    required this.grams,
+    required this.kcal,
+    required this.totalKcal,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs  = Theme.of(context).colorScheme;
+    final pct = totalKcal > 0 ? (kcal / totalKcal * 100).round() : 0;
+
+    return Row(
+      children: [
+        // Dot
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        // Label
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+          ),
+        ),
+        // kcal
+        Text(
+          '${kcal.toStringAsFixed(0)} kcal',
+          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
+        ),
+        const SizedBox(width: 10),
+        // %
+        SizedBox(
+          width: 32,
+          child: Text(
+            '$pct%',
+            style: GoogleFonts.inter(
+                fontSize: 12, color: cs.onSurfaceVariant),
+            textAlign: TextAlign.right,
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Grams — bold, slightly larger, right-aligned
+        SizedBox(
+          width: 44,
+          child: Text(
+            '${grams.toStringAsFixed(0)}g',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── History table ─────────────────────────────────────────────────────────────
+
+class _HistoryTable extends StatelessWidget {
+  final List<NutritionCalculation> calculations;
+  final Future<void> Function(NutritionCalculation) onDelete;
+
+  const _HistoryTable({
+    required this.calculations,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          // ── Header ───────────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Row(
+              children: const [
+                Expanded(flex: 2, child: _HeaderCell('FECHA')),
+                Expanded(flex: 2, child: _HeaderCell('OBJETIVO')),
+                Expanded(flex: 1, child: _HeaderCell('TMB')),
+                Expanded(flex: 1, child: _HeaderCell('TDEE')),
+                Expanded(flex: 2, child: _HeaderCell('KCAL OBJETIVO')),
+                Expanded(flex: 1, child: _HeaderCell('PROTEÍNA')),
+                Expanded(flex: 1, child: _HeaderCell('CARBOS')),
+                Expanded(flex: 1, child: _HeaderCell('GRASA')),
+                SizedBox(width: 60),
+              ],
+            ),
+          ),
+          // ── Data rows ────────────────────────────────────────────────
+          for (int i = 0; i < calculations.length; i++) ...[
+            Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+            _HistoryRow(
+              calc: calculations[i],
+              onDelete: () => onDelete(calculations[i]),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _HeaderCell extends StatelessWidget {
+  final String text;
+
+  const _HeaderCell(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Text(
+      text,
+      style: GoogleFonts.inter(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: cs.onSurfaceVariant,
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+}
+
+class _HistoryRow extends StatelessWidget {
+  final NutritionCalculation calc;
+  final VoidCallback onDelete;
+
+  const _HistoryRow({required this.calc, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs        = Theme.of(context).colorScheme;
+    final goalColor = _goalTypeColor(calc.goalType);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          // FECHA — teal
+          Expanded(
+            flex: 2,
+            child: Text(
+              _formatDateShort(calc.date),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: cs.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          // OBJETIVO badge
+          Expanded(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: goalColor.withValues(alpha: 0.12),
+                  color: goalColor.withValues(alpha: 0.10),
                   borderRadius: clientsChipBorderRadius,
                 ),
                 child: Text(
@@ -751,137 +1091,81 @@ class _CalcHistoryCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                _bmrFormulaLabel(calc.bmrFormula),
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                formatDate(calc.date),
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 8),
-              _DeleteButton(onPressed: onDelete),
-            ],
+            ),
           ),
-          const SizedBox(height: 10),
-
-          // ── Values: kcal + macros ────────────────────────────────────
-          Row(
-            children: [
-              _HistoryValue(
-                label: 'Objetivo',
-                value: '${calc.kcalTarget.toStringAsFixed(0)} kcal',
-                bold: true,
-              ),
-              const SizedBox(width: 20),
-              _HistoryValue(
-                label: 'P',
-                value: '${calc.proteins.toStringAsFixed(1)} g',
-              ),
-              const SizedBox(width: 12),
-              _HistoryValue(
-                label: 'G',
-                value: '${calc.fats.toStringAsFixed(1)} g',
-              ),
-              const SizedBox(width: 12),
-              _HistoryValue(
-                label: 'C',
-                value: '${calc.carbohydrates.toStringAsFixed(1)} g',
-              ),
-            ],
+          // TMB
+          Expanded(
+            flex: 1,
+            child: Text(
+              calc.bmr.toStringAsFixed(0),
+              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+            ),
           ),
+          // TDEE
+          Expanded(
+            flex: 1,
+            child: Text(
+              calc.tdee.toStringAsFixed(0),
+              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+            ),
+          ),
+          // KCAL OBJETIVO — teal
+          Expanded(
+            flex: 2,
+            child: Text(
+              calc.kcalTarget.toStringAsFixed(0),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: cs.primary,
+              ),
+            ),
+          ),
+          // PROTEÍNA
+          Expanded(
+            flex: 1,
+            child: Text(
+              '${calc.proteins.toStringAsFixed(0)}g',
+              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+            ),
+          ),
+          // CARBOS
+          Expanded(
+            flex: 1,
+            child: Text(
+              '${calc.carbohydrates.toStringAsFixed(0)}g',
+              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+            ),
+          ),
+          // GRASA
+          Expanded(
+            flex: 1,
+            child: Text(
+              '${calc.fats.toStringAsFixed(0)}g',
+              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+            ),
+          ),
+          // Generar plan
+          IconButton(
+            icon: const Icon(Icons.assignment_outlined),
+            iconSize: 18,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            tooltip: 'Generar plan',
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Funcionalidad pendiente')),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Delete
+          _DeleteButton(onPressed: onDelete),
         ],
       ),
     );
   }
 }
 
-class _HistoryValue extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool bold;
-
-  const _HistoryValue({
-    required this.label,
-    required this.value,
-    this.bold = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$label ',
-          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w600,
-            color: bold ? cs.primary : cs.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Shared input widgets ───────────────────────────────────────────────────────
-
-class _NumericField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-  final bool enabled;
-  final bool decimal;
-
-  const _NumericField({
-    required this.label,
-    required this.controller,
-    required this.enabled,
-    required this.decimal,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: cs.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          enabled: enabled,
-          keyboardType:
-              TextInputType.numberWithOptions(decimal: decimal, signed: false),
-          style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
-          decoration: _fieldDecoration(cs),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Delete button (identical pattern to notes_tab) ────────────────────────────
+// ── Delete button ─────────────────────────────────────────────────────────────
 
 class _DeleteButton extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -904,9 +1188,7 @@ class _DeleteButtonState extends State<_DeleteButton>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
+        vsync: this, duration: const Duration(milliseconds: 200));
     _scale = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(
         parent: _controller,
@@ -924,7 +1206,7 @@ class _DeleteButtonState extends State<_DeleteButton>
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs      = Theme.of(context).colorScheme;
     final enabled = widget.onPressed != null;
 
     return Tooltip(
@@ -932,16 +1214,10 @@ class _DeleteButtonState extends State<_DeleteButton>
       child: MouseRegion(
         cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
         onEnter: enabled
-            ? (_) {
-                setState(() => _hovered = true);
-                _controller.forward();
-              }
+            ? (_) { setState(() => _hovered = true);  _controller.forward(); }
             : null,
         onExit: enabled
-            ? (_) {
-                setState(() => _hovered = false);
-                _controller.reverse();
-              }
+            ? (_) { setState(() => _hovered = false); _controller.reverse(); }
             : null,
         child: GestureDetector(
           onTap: widget.onPressed,
@@ -951,8 +1227,7 @@ class _DeleteButtonState extends State<_DeleteButton>
                 Transform.scale(scale: _scale.value, child: child),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
-              width: 28,
-              height: 28,
+              width: 28, height: 28,
               decoration: BoxDecoration(
                 color: _hovered
                     ? _red.withValues(alpha: 0.08)
@@ -996,29 +1271,126 @@ class _EmptyHistoryState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.calculate_outlined,
-            size: 36,
-            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
-          ),
+          Icon(Icons.calculate_outlined,
+              size: 36,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.4)),
           const SizedBox(height: 12),
           Text(
             'Sin cálculos guardados',
             style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: cs.onSurfaceVariant,
-            ),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 4),
           Text(
             'Completa el formulario y guarda para registrar un cálculo.',
             style: GoogleFonts.inter(
-              fontSize: 13,
-              color: cs.onSurfaceVariant.withValues(alpha: 0.7),
-            ),
+                fontSize: 13,
+                color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Shared input widgets ──────────────────────────────────────────────────────
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+
+  const _FieldLabel(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Text(
+      label,
+      style: GoogleFonts.inter(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: cs.onSurfaceVariant,
+        letterSpacing: 0.4,
+      ),
+    );
+  }
+}
+
+class _NumericField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final bool enabled;
+  final bool decimal;
+
+  const _NumericField({
+    required this.label,
+    required this.controller,
+    required this.enabled,
+    required this.decimal,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FieldLabel(label),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          keyboardType:
+              TextInputType.numberWithOptions(decimal: decimal, signed: false),
+          style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
+          decoration: _fieldDecoration(cs),
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  const _SelectChip({
+    required this.label,
+    required this.selected,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs    = Theme.of(context).colorScheme;
+    final color = cs.primary;
+
+    return InkWell(
+      borderRadius: clientsChipBorderRadius,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: 0.10)
+              : Colors.transparent,
+          borderRadius: clientsChipBorderRadius,
+          border: Border.all(
+            color: selected ? color : cs.outlineVariant,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            color: selected ? color : cs.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }
@@ -1030,8 +1402,7 @@ InputDecoration _fieldDecoration(ColorScheme cs) => InputDecoration(
       isDense: true,
       filled: true,
       fillColor: cs.surfaceContainerHighest,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       border: OutlineInputBorder(
         borderRadius: clientsChipBorderRadius,
         borderSide: BorderSide(color: cs.outlineVariant),
@@ -1046,21 +1417,35 @@ InputDecoration _fieldDecoration(ColorScheme cs) => InputDecoration(
       ),
     );
 
-// ── Label / color helpers ─────────────────────────────────────────────────────
+// ── Date / label helpers ──────────────────────────────────────────────────────
+
+String _formatDateShort(DateTime d) {
+  const months = [
+    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+  ];
+  return '${d.day} ${months[d.month - 1]} ${d.year}';
+}
 
 String _goalTypeLabel(GoalType type) => switch (type) {
-      GoalType.deficit      => 'Déficit',
-      GoalType.maintenance  => 'Mantenimiento',
-      GoalType.surplus      => 'Superávit',
+      GoalType.deficit     => 'Déficit',
+      GoalType.maintenance => 'Mantenimiento',
+      GoalType.surplus     => 'Superávit',
+    };
+
+String _goalTypeSubtitle(GoalType type) => switch (type) {
+      GoalType.deficit     => '-10% TDEE',
+      GoalType.maintenance => '= TDEE',
+      GoalType.surplus     => '+10% TDEE',
     };
 
 Color _goalTypeColor(GoalType type) => switch (type) {
-      GoalType.deficit      => const Color(0xFF3B82F6),
-      GoalType.maintenance  => const Color(0xFF22C55E),
-      GoalType.surplus      => const Color(0xFFE3A12A),
+      GoalType.deficit     => const Color(0xFF3B82F6),
+      GoalType.maintenance => const Color(0xFF22C55E),
+      GoalType.surplus     => const Color(0xFFE3A12A),
     };
 
 String _bmrFormulaLabel(BmrFormula formula) => switch (formula) {
-      BmrFormula.mifflinStJeor    => 'Mifflin-St Jeor',
-      BmrFormula.harrisBenedict   => 'Harris-Benedict',
+      BmrFormula.mifflinStJeor  => 'Mifflin-St Jeor',
+      BmrFormula.harrisBenedict => 'Harris-Benedict',
     };

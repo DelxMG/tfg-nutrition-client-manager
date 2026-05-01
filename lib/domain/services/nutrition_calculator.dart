@@ -17,7 +17,7 @@ NutritionResult? calculateNutrition({
   if (weightKg == null || weightKg <= 0) return null;
 
   final kcalTarget = switch (goalType) {
-    GoalType.deficit     => tdee * 0.80,
+    GoalType.deficit     => tdee * 0.90,
     GoalType.maintenance => tdee,
     GoalType.surplus     => tdee * 1.10,
   };
