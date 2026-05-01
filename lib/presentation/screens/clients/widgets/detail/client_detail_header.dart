@@ -8,11 +8,13 @@ import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatte
 class ClientDetailHeader extends StatelessWidget {
   final Client client;
   final VoidCallback onBack;
+  final VoidCallback? onEditPressed;
 
   const ClientDetailHeader({
     super.key,
     required this.client,
     required this.onBack,
+    this.onEditPressed,
   });
 
   @override
@@ -90,9 +92,9 @@ class ClientDetailHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              // Edit button (visual only)
+              // Edit button
               OutlinedButton.icon(
-                onPressed: null,
+                onPressed: onEditPressed,
                 icon: const Icon(Icons.edit_outlined, size: 15),
                 label: Text(
                   'Editar',

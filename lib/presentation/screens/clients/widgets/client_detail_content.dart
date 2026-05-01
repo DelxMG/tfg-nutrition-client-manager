@@ -8,7 +8,7 @@ import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_detail_header.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_detail_tabs.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_cards.dart';
-import 'package:nutritrack/presentation/screens/clients/widgets/detail/anamnesis_form_dialog.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_profile_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_sections.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurements_tab.dart';
 
@@ -126,7 +126,21 @@ class _ClientDetailBody extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClientDetailHeader(client: reactiveSummary.client, onBack: onBack),
+        ClientDetailHeader(
+          client: reactiveSummary.client,
+          onBack: onBack,
+          onEditPressed: () => showDialog<void>(
+            context: context,
+            builder: (_) => ClientProfileFormDialog(
+              client: reactiveClient,
+              anamnesis: reactiveAnamnesis,
+              hasExistingMeasurements: allMeasurements.isNotEmpty,
+              clientRepository: ref.read(clientRepositoryProvider),
+              anamnesisRepository: ref.read(anamnesisRepositoryProvider),
+              measurementRepository: ref.read(measurementRepositoryProvider),
+            ),
+          ),
+        ),
         const SizedBox(height: 18),
 
         ClientDetailTabs(activeIndex: activeTab, onTabChanged: onTabChanged),
@@ -147,20 +161,7 @@ class _ClientDetailBody extends ConsumerWidget {
                         allMeasurements: allMeasurements,
                       ),
                       const SizedBox(height: 16),
-                      ClientSummarySections(
-                        summary: reactiveSummary,
-                        onEditAnamnesis: () => showDialog<void>(
-                          context: context,
-                          builder: (_) => AnamnesisFormDialog(
-                            clientId: reactiveSummary.client.clientId,
-                            anamnesis: reactiveSummary.anamnesis,
-                            repository: ref.read(anamnesisRepositoryProvider),
-                            hasExistingMeasurements: allMeasurements.isNotEmpty,
-                            measurementRepository:
-                                ref.read(measurementRepositoryProvider),
-                          ),
-                        ),
-                      ),
+                      ClientSummarySections(summary: reactiveSummary),
                       const SizedBox(height: 24),
                     ],
                   ),

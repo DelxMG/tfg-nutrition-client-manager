@@ -7,12 +7,10 @@ import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatte
 /// Three info blocks rendered side-by-side on desktop.
 class ClientSummarySections extends StatelessWidget {
   final ClientSummary summary;
-  final VoidCallback? onEditAnamnesis;
 
   const ClientSummarySections({
     super.key,
     required this.summary,
-    this.onEditAnamnesis,
   });
 
   @override
@@ -66,35 +64,6 @@ class ClientSummarySections extends StatelessWidget {
         Expanded(
           child: _InfoCard(
             title: 'Anamnesis',
-            action: onEditAnamnesis == null
-                ? null
-                : anamnesis == null
-                    ? TextButton.icon(
-                        onPressed: onEditAnamnesis,
-                        icon: const Icon(Icons.add_circle_outline, size: 14),
-                        label: Text(
-                          'Completar',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: clientsBrandColor,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      )
-                    : IconButton(
-                        onPressed: onEditAnamnesis,
-                        icon: const Icon(Icons.edit_outlined, size: 15),
-                        color: clientsMutedTextColor,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        tooltip: 'Editar anamnesis',
-                      ),
             rows: [
               _InfoRow('Fecha de anamnesis', formatDate(anamnesis?.date)),
               _InfoRow(
@@ -125,9 +94,8 @@ class ClientSummarySections extends StatelessWidget {
 class _InfoCard extends StatelessWidget {
   final String title;
   final List<_InfoRow> rows;
-  final Widget? action;
 
-  const _InfoCard({required this.title, required this.rows, this.action});
+  const _InfoCard({required this.title, required this.rows});
 
   @override
   Widget build(BuildContext context) {
@@ -141,22 +109,14 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: clientsHeadingColor,
-                  letterSpacing: 0.1,
-                ),
-              ),
-              if (action != null) ...[
-                const Spacer(),
-                action!,
-              ],
-            ],
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: clientsHeadingColor,
+              letterSpacing: 0.1,
+            ),
           ),
           const SizedBox(height: 14),
           for (final row in rows) ...[
