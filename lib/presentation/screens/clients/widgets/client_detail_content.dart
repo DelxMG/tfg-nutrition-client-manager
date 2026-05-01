@@ -11,6 +11,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_su
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_profile_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_summary_sections.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurements_tab.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/notes_tab.dart';
 
 class ClientDetailContent extends ConsumerStatefulWidget {
   final int clientId;
@@ -152,7 +153,9 @@ class _ClientDetailBody extends ConsumerWidget {
                   clientId: reactiveSummary.client.clientId,
                   clientHeight: reactiveSummary.client.height,
                 )
-              : SingleChildScrollView(
+              : activeTab == 2
+                  ? NotesTab(clientId: reactiveSummary.client.clientId)
+                  : SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
