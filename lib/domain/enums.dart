@@ -9,3 +9,5 @@ enum PhysicalActivity {
   active,
   veryActive,
 }
+
+enum NoteType { general, session, followUp, important }
