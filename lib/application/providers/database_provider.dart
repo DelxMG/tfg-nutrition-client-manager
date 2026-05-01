@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nutritrack/data/db/app_database.dart';
+import 'package:nutritrack/data/repositories/anamnesis_repository.dart';
 import 'package:nutritrack/data/repositories/client_repository.dart';
 import 'package:nutritrack/data/repositories/client_summary_repository.dart';
-import 'package:nutritrack/data/repositories/anamnesis_repository.dart';
 import 'package:nutritrack/data/repositories/measurement_repository.dart';
+import 'package:nutritrack/data/repositories/note_repository.dart';
 
 /// Single [AppDatabase] instance for the entire app lifetime.
 /// The connection is closed automatically when the [ProviderScope] is disposed
@@ -54,4 +55,15 @@ final clientMeasurementsProvider =
   return ref
       .watch(measurementRepositoryProvider)
       .watchMeasurementsByClientId(clientId);
+});
+
+/// [NoteRepository] built on top of the shared [AppDatabase].
+final noteRepositoryProvider = Provider<NoteRepository>((ref) {
+  return NoteRepository(ref.watch(appDatabaseProvider));
+});
+
+/// Reactive list of all notes for a given client, ordered by date desc.
+final clientNotesProvider =
+    StreamProvider.family<List<Note>, int>((ref, clientId) {
+  return ref.watch(noteRepositoryProvider).watchNotesByClientId(clientId);
 });
