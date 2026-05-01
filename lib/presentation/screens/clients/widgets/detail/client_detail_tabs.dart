@@ -30,8 +30,8 @@ class ClientDetailTabs extends StatelessWidget {
             _TabItem(
               label: _kTabs[i],
               isActive: i == activeIndex,
-              isEnabled: i <= 2,
-              onTap: i <= 2 ? () => onTabChanged(i) : null,
+              isEnabled: i <= 3,
+              onTap: i <= 3 ? () => onTabChanged(i) : null,
             ),
         ],
       ),
