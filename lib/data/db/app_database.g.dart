@@ -2266,6 +2266,989 @@ class NotesCompanion extends UpdateCompanion<Note> {
   }
 }
 
+class $NutritionCalculationsTable extends NutritionCalculations
+    with TableInfo<$NutritionCalculationsTable, NutritionCalculation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NutritionCalculationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _calculationIdMeta = const VerificationMeta(
+    'calculationId',
+  );
+  @override
+  late final GeneratedColumn<int> calculationId = GeneratedColumn<int>(
+    'calculation_id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<int> clientId = GeneratedColumn<int>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clients (client_id)',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<GoalType, int> goalType =
+      GeneratedColumn<int>(
+        'goal_type',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<GoalType>($NutritionCalculationsTable.$convertergoalType);
+  @override
+  late final GeneratedColumnWithTypeConverter<BmrFormula, int> bmrFormula =
+      GeneratedColumn<int>(
+        'bmr_formula',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: Constant(BmrFormula.mifflinStJeor.index),
+      ).withConverter<BmrFormula>(
+        $NutritionCalculationsTable.$converterbmrFormula,
+      );
+  static const VerificationMeta _bmrMeta = const VerificationMeta('bmr');
+  @override
+  late final GeneratedColumn<double> bmr = GeneratedColumn<double>(
+    'bmr',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tdeeMeta = const VerificationMeta('tdee');
+  @override
+  late final GeneratedColumn<double> tdee = GeneratedColumn<double>(
+    'tdee',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kcalTargetMeta = const VerificationMeta(
+    'kcalTarget',
+  );
+  @override
+  late final GeneratedColumn<double> kcalTarget = GeneratedColumn<double>(
+    'kcal_target',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _proteinsMeta = const VerificationMeta(
+    'proteins',
+  );
+  @override
+  late final GeneratedColumn<double> proteins = GeneratedColumn<double>(
+    'proteins',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _carbohydratesMeta = const VerificationMeta(
+    'carbohydrates',
+  );
+  @override
+  late final GeneratedColumn<double> carbohydrates = GeneratedColumn<double>(
+    'carbohydrates',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fatsMeta = const VerificationMeta('fats');
+  @override
+  late final GeneratedColumn<double> fats = GeneratedColumn<double>(
+    'fats',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _weightUsedMeta = const VerificationMeta(
+    'weightUsed',
+  );
+  @override
+  late final GeneratedColumn<double> weightUsed = GeneratedColumn<double>(
+    'weight_used',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _heightUsedMeta = const VerificationMeta(
+    'heightUsed',
+  );
+  @override
+  late final GeneratedColumn<int> heightUsed = GeneratedColumn<int>(
+    'height_used',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ageUsedMeta = const VerificationMeta(
+    'ageUsed',
+  );
+  @override
+  late final GeneratedColumn<int> ageUsed = GeneratedColumn<int>(
+    'age_used',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _activityFactorMeta = const VerificationMeta(
+    'activityFactor',
+  );
+  @override
+  late final GeneratedColumn<double> activityFactor = GeneratedColumn<double>(
+    'activity_factor',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _proteinPerKgMeta = const VerificationMeta(
+    'proteinPerKg',
+  );
+  @override
+  late final GeneratedColumn<double> proteinPerKg = GeneratedColumn<double>(
+    'protein_per_kg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fatPerKgMeta = const VerificationMeta(
+    'fatPerKg',
+  );
+  @override
+  late final GeneratedColumn<double> fatPerKg = GeneratedColumn<double>(
+    'fat_per_kg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    calculationId,
+    clientId,
+    date,
+    goalType,
+    bmrFormula,
+    bmr,
+    tdee,
+    kcalTarget,
+    proteins,
+    carbohydrates,
+    fats,
+    weightUsed,
+    heightUsed,
+    ageUsed,
+    activityFactor,
+    proteinPerKg,
+    fatPerKg,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'nutrition_calculations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NutritionCalculation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('calculation_id')) {
+      context.handle(
+        _calculationIdMeta,
+        calculationId.isAcceptableOrUnknown(
+          data['calculation_id']!,
+          _calculationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    }
+    if (data.containsKey('bmr')) {
+      context.handle(
+        _bmrMeta,
+        bmr.isAcceptableOrUnknown(data['bmr']!, _bmrMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bmrMeta);
+    }
+    if (data.containsKey('tdee')) {
+      context.handle(
+        _tdeeMeta,
+        tdee.isAcceptableOrUnknown(data['tdee']!, _tdeeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tdeeMeta);
+    }
+    if (data.containsKey('kcal_target')) {
+      context.handle(
+        _kcalTargetMeta,
+        kcalTarget.isAcceptableOrUnknown(data['kcal_target']!, _kcalTargetMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kcalTargetMeta);
+    }
+    if (data.containsKey('proteins')) {
+      context.handle(
+        _proteinsMeta,
+        proteins.isAcceptableOrUnknown(data['proteins']!, _proteinsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_proteinsMeta);
+    }
+    if (data.containsKey('carbohydrates')) {
+      context.handle(
+        _carbohydratesMeta,
+        carbohydrates.isAcceptableOrUnknown(
+          data['carbohydrates']!,
+          _carbohydratesMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_carbohydratesMeta);
+    }
+    if (data.containsKey('fats')) {
+      context.handle(
+        _fatsMeta,
+        fats.isAcceptableOrUnknown(data['fats']!, _fatsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fatsMeta);
+    }
+    if (data.containsKey('weight_used')) {
+      context.handle(
+        _weightUsedMeta,
+        weightUsed.isAcceptableOrUnknown(data['weight_used']!, _weightUsedMeta),
+      );
+    }
+    if (data.containsKey('height_used')) {
+      context.handle(
+        _heightUsedMeta,
+        heightUsed.isAcceptableOrUnknown(data['height_used']!, _heightUsedMeta),
+      );
+    }
+    if (data.containsKey('age_used')) {
+      context.handle(
+        _ageUsedMeta,
+        ageUsed.isAcceptableOrUnknown(data['age_used']!, _ageUsedMeta),
+      );
+    }
+    if (data.containsKey('activity_factor')) {
+      context.handle(
+        _activityFactorMeta,
+        activityFactor.isAcceptableOrUnknown(
+          data['activity_factor']!,
+          _activityFactorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('protein_per_kg')) {
+      context.handle(
+        _proteinPerKgMeta,
+        proteinPerKg.isAcceptableOrUnknown(
+          data['protein_per_kg']!,
+          _proteinPerKgMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fat_per_kg')) {
+      context.handle(
+        _fatPerKgMeta,
+        fatPerKg.isAcceptableOrUnknown(data['fat_per_kg']!, _fatPerKgMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {calculationId};
+  @override
+  NutritionCalculation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NutritionCalculation(
+      calculationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}calculation_id'],
+      )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}client_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      goalType: $NutritionCalculationsTable.$convertergoalType.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}goal_type'],
+        )!,
+      ),
+      bmrFormula: $NutritionCalculationsTable.$converterbmrFormula.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}bmr_formula'],
+        )!,
+      ),
+      bmr: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}bmr'],
+      )!,
+      tdee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}tdee'],
+      )!,
+      kcalTarget: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}kcal_target'],
+      )!,
+      proteins: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}proteins'],
+      )!,
+      carbohydrates: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carbohydrates'],
+      )!,
+      fats: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fats'],
+      )!,
+      weightUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight_used'],
+      ),
+      heightUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}height_used'],
+      ),
+      ageUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}age_used'],
+      ),
+      activityFactor: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}activity_factor'],
+      ),
+      proteinPerKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}protein_per_kg'],
+      ),
+      fatPerKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fat_per_kg'],
+      ),
+    );
+  }
+
+  @override
+  $NutritionCalculationsTable createAlias(String alias) {
+    return $NutritionCalculationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<GoalType, int, int> $convertergoalType =
+      const EnumIndexConverter<GoalType>(GoalType.values);
+  static JsonTypeConverter2<BmrFormula, int, int> $converterbmrFormula =
+      const EnumIndexConverter<BmrFormula>(BmrFormula.values);
+}
+
+class NutritionCalculation extends DataClass
+    implements Insertable<NutritionCalculation> {
+  final int calculationId;
+  final int clientId;
+  final DateTime date;
+  final GoalType goalType;
+  final BmrFormula bmrFormula;
+  final double bmr;
+  final double tdee;
+  final double kcalTarget;
+  final double proteins;
+  final double carbohydrates;
+  final double fats;
+  final double? weightUsed;
+  final int? heightUsed;
+  final int? ageUsed;
+  final double? activityFactor;
+  final double? proteinPerKg;
+  final double? fatPerKg;
+  const NutritionCalculation({
+    required this.calculationId,
+    required this.clientId,
+    required this.date,
+    required this.goalType,
+    required this.bmrFormula,
+    required this.bmr,
+    required this.tdee,
+    required this.kcalTarget,
+    required this.proteins,
+    required this.carbohydrates,
+    required this.fats,
+    this.weightUsed,
+    this.heightUsed,
+    this.ageUsed,
+    this.activityFactor,
+    this.proteinPerKg,
+    this.fatPerKg,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['calculation_id'] = Variable<int>(calculationId);
+    map['client_id'] = Variable<int>(clientId);
+    map['date'] = Variable<DateTime>(date);
+    {
+      map['goal_type'] = Variable<int>(
+        $NutritionCalculationsTable.$convertergoalType.toSql(goalType),
+      );
+    }
+    {
+      map['bmr_formula'] = Variable<int>(
+        $NutritionCalculationsTable.$converterbmrFormula.toSql(bmrFormula),
+      );
+    }
+    map['bmr'] = Variable<double>(bmr);
+    map['tdee'] = Variable<double>(tdee);
+    map['kcal_target'] = Variable<double>(kcalTarget);
+    map['proteins'] = Variable<double>(proteins);
+    map['carbohydrates'] = Variable<double>(carbohydrates);
+    map['fats'] = Variable<double>(fats);
+    if (!nullToAbsent || weightUsed != null) {
+      map['weight_used'] = Variable<double>(weightUsed);
+    }
+    if (!nullToAbsent || heightUsed != null) {
+      map['height_used'] = Variable<int>(heightUsed);
+    }
+    if (!nullToAbsent || ageUsed != null) {
+      map['age_used'] = Variable<int>(ageUsed);
+    }
+    if (!nullToAbsent || activityFactor != null) {
+      map['activity_factor'] = Variable<double>(activityFactor);
+    }
+    if (!nullToAbsent || proteinPerKg != null) {
+      map['protein_per_kg'] = Variable<double>(proteinPerKg);
+    }
+    if (!nullToAbsent || fatPerKg != null) {
+      map['fat_per_kg'] = Variable<double>(fatPerKg);
+    }
+    return map;
+  }
+
+  NutritionCalculationsCompanion toCompanion(bool nullToAbsent) {
+    return NutritionCalculationsCompanion(
+      calculationId: Value(calculationId),
+      clientId: Value(clientId),
+      date: Value(date),
+      goalType: Value(goalType),
+      bmrFormula: Value(bmrFormula),
+      bmr: Value(bmr),
+      tdee: Value(tdee),
+      kcalTarget: Value(kcalTarget),
+      proteins: Value(proteins),
+      carbohydrates: Value(carbohydrates),
+      fats: Value(fats),
+      weightUsed: weightUsed == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weightUsed),
+      heightUsed: heightUsed == null && nullToAbsent
+          ? const Value.absent()
+          : Value(heightUsed),
+      ageUsed: ageUsed == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ageUsed),
+      activityFactor: activityFactor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(activityFactor),
+      proteinPerKg: proteinPerKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(proteinPerKg),
+      fatPerKg: fatPerKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fatPerKg),
+    );
+  }
+
+  factory NutritionCalculation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NutritionCalculation(
+      calculationId: serializer.fromJson<int>(json['calculationId']),
+      clientId: serializer.fromJson<int>(json['clientId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      goalType: $NutritionCalculationsTable.$convertergoalType.fromJson(
+        serializer.fromJson<int>(json['goalType']),
+      ),
+      bmrFormula: $NutritionCalculationsTable.$converterbmrFormula.fromJson(
+        serializer.fromJson<int>(json['bmrFormula']),
+      ),
+      bmr: serializer.fromJson<double>(json['bmr']),
+      tdee: serializer.fromJson<double>(json['tdee']),
+      kcalTarget: serializer.fromJson<double>(json['kcalTarget']),
+      proteins: serializer.fromJson<double>(json['proteins']),
+      carbohydrates: serializer.fromJson<double>(json['carbohydrates']),
+      fats: serializer.fromJson<double>(json['fats']),
+      weightUsed: serializer.fromJson<double?>(json['weightUsed']),
+      heightUsed: serializer.fromJson<int?>(json['heightUsed']),
+      ageUsed: serializer.fromJson<int?>(json['ageUsed']),
+      activityFactor: serializer.fromJson<double?>(json['activityFactor']),
+      proteinPerKg: serializer.fromJson<double?>(json['proteinPerKg']),
+      fatPerKg: serializer.fromJson<double?>(json['fatPerKg']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'calculationId': serializer.toJson<int>(calculationId),
+      'clientId': serializer.toJson<int>(clientId),
+      'date': serializer.toJson<DateTime>(date),
+      'goalType': serializer.toJson<int>(
+        $NutritionCalculationsTable.$convertergoalType.toJson(goalType),
+      ),
+      'bmrFormula': serializer.toJson<int>(
+        $NutritionCalculationsTable.$converterbmrFormula.toJson(bmrFormula),
+      ),
+      'bmr': serializer.toJson<double>(bmr),
+      'tdee': serializer.toJson<double>(tdee),
+      'kcalTarget': serializer.toJson<double>(kcalTarget),
+      'proteins': serializer.toJson<double>(proteins),
+      'carbohydrates': serializer.toJson<double>(carbohydrates),
+      'fats': serializer.toJson<double>(fats),
+      'weightUsed': serializer.toJson<double?>(weightUsed),
+      'heightUsed': serializer.toJson<int?>(heightUsed),
+      'ageUsed': serializer.toJson<int?>(ageUsed),
+      'activityFactor': serializer.toJson<double?>(activityFactor),
+      'proteinPerKg': serializer.toJson<double?>(proteinPerKg),
+      'fatPerKg': serializer.toJson<double?>(fatPerKg),
+    };
+  }
+
+  NutritionCalculation copyWith({
+    int? calculationId,
+    int? clientId,
+    DateTime? date,
+    GoalType? goalType,
+    BmrFormula? bmrFormula,
+    double? bmr,
+    double? tdee,
+    double? kcalTarget,
+    double? proteins,
+    double? carbohydrates,
+    double? fats,
+    Value<double?> weightUsed = const Value.absent(),
+    Value<int?> heightUsed = const Value.absent(),
+    Value<int?> ageUsed = const Value.absent(),
+    Value<double?> activityFactor = const Value.absent(),
+    Value<double?> proteinPerKg = const Value.absent(),
+    Value<double?> fatPerKg = const Value.absent(),
+  }) => NutritionCalculation(
+    calculationId: calculationId ?? this.calculationId,
+    clientId: clientId ?? this.clientId,
+    date: date ?? this.date,
+    goalType: goalType ?? this.goalType,
+    bmrFormula: bmrFormula ?? this.bmrFormula,
+    bmr: bmr ?? this.bmr,
+    tdee: tdee ?? this.tdee,
+    kcalTarget: kcalTarget ?? this.kcalTarget,
+    proteins: proteins ?? this.proteins,
+    carbohydrates: carbohydrates ?? this.carbohydrates,
+    fats: fats ?? this.fats,
+    weightUsed: weightUsed.present ? weightUsed.value : this.weightUsed,
+    heightUsed: heightUsed.present ? heightUsed.value : this.heightUsed,
+    ageUsed: ageUsed.present ? ageUsed.value : this.ageUsed,
+    activityFactor: activityFactor.present
+        ? activityFactor.value
+        : this.activityFactor,
+    proteinPerKg: proteinPerKg.present ? proteinPerKg.value : this.proteinPerKg,
+    fatPerKg: fatPerKg.present ? fatPerKg.value : this.fatPerKg,
+  );
+  NutritionCalculation copyWithCompanion(NutritionCalculationsCompanion data) {
+    return NutritionCalculation(
+      calculationId: data.calculationId.present
+          ? data.calculationId.value
+          : this.calculationId,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      date: data.date.present ? data.date.value : this.date,
+      goalType: data.goalType.present ? data.goalType.value : this.goalType,
+      bmrFormula: data.bmrFormula.present
+          ? data.bmrFormula.value
+          : this.bmrFormula,
+      bmr: data.bmr.present ? data.bmr.value : this.bmr,
+      tdee: data.tdee.present ? data.tdee.value : this.tdee,
+      kcalTarget: data.kcalTarget.present
+          ? data.kcalTarget.value
+          : this.kcalTarget,
+      proteins: data.proteins.present ? data.proteins.value : this.proteins,
+      carbohydrates: data.carbohydrates.present
+          ? data.carbohydrates.value
+          : this.carbohydrates,
+      fats: data.fats.present ? data.fats.value : this.fats,
+      weightUsed: data.weightUsed.present
+          ? data.weightUsed.value
+          : this.weightUsed,
+      heightUsed: data.heightUsed.present
+          ? data.heightUsed.value
+          : this.heightUsed,
+      ageUsed: data.ageUsed.present ? data.ageUsed.value : this.ageUsed,
+      activityFactor: data.activityFactor.present
+          ? data.activityFactor.value
+          : this.activityFactor,
+      proteinPerKg: data.proteinPerKg.present
+          ? data.proteinPerKg.value
+          : this.proteinPerKg,
+      fatPerKg: data.fatPerKg.present ? data.fatPerKg.value : this.fatPerKg,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionCalculation(')
+          ..write('calculationId: $calculationId, ')
+          ..write('clientId: $clientId, ')
+          ..write('date: $date, ')
+          ..write('goalType: $goalType, ')
+          ..write('bmrFormula: $bmrFormula, ')
+          ..write('bmr: $bmr, ')
+          ..write('tdee: $tdee, ')
+          ..write('kcalTarget: $kcalTarget, ')
+          ..write('proteins: $proteins, ')
+          ..write('carbohydrates: $carbohydrates, ')
+          ..write('fats: $fats, ')
+          ..write('weightUsed: $weightUsed, ')
+          ..write('heightUsed: $heightUsed, ')
+          ..write('ageUsed: $ageUsed, ')
+          ..write('activityFactor: $activityFactor, ')
+          ..write('proteinPerKg: $proteinPerKg, ')
+          ..write('fatPerKg: $fatPerKg')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    calculationId,
+    clientId,
+    date,
+    goalType,
+    bmrFormula,
+    bmr,
+    tdee,
+    kcalTarget,
+    proteins,
+    carbohydrates,
+    fats,
+    weightUsed,
+    heightUsed,
+    ageUsed,
+    activityFactor,
+    proteinPerKg,
+    fatPerKg,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NutritionCalculation &&
+          other.calculationId == this.calculationId &&
+          other.clientId == this.clientId &&
+          other.date == this.date &&
+          other.goalType == this.goalType &&
+          other.bmrFormula == this.bmrFormula &&
+          other.bmr == this.bmr &&
+          other.tdee == this.tdee &&
+          other.kcalTarget == this.kcalTarget &&
+          other.proteins == this.proteins &&
+          other.carbohydrates == this.carbohydrates &&
+          other.fats == this.fats &&
+          other.weightUsed == this.weightUsed &&
+          other.heightUsed == this.heightUsed &&
+          other.ageUsed == this.ageUsed &&
+          other.activityFactor == this.activityFactor &&
+          other.proteinPerKg == this.proteinPerKg &&
+          other.fatPerKg == this.fatPerKg);
+}
+
+class NutritionCalculationsCompanion
+    extends UpdateCompanion<NutritionCalculation> {
+  final Value<int> calculationId;
+  final Value<int> clientId;
+  final Value<DateTime> date;
+  final Value<GoalType> goalType;
+  final Value<BmrFormula> bmrFormula;
+  final Value<double> bmr;
+  final Value<double> tdee;
+  final Value<double> kcalTarget;
+  final Value<double> proteins;
+  final Value<double> carbohydrates;
+  final Value<double> fats;
+  final Value<double?> weightUsed;
+  final Value<int?> heightUsed;
+  final Value<int?> ageUsed;
+  final Value<double?> activityFactor;
+  final Value<double?> proteinPerKg;
+  final Value<double?> fatPerKg;
+  const NutritionCalculationsCompanion({
+    this.calculationId = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.goalType = const Value.absent(),
+    this.bmrFormula = const Value.absent(),
+    this.bmr = const Value.absent(),
+    this.tdee = const Value.absent(),
+    this.kcalTarget = const Value.absent(),
+    this.proteins = const Value.absent(),
+    this.carbohydrates = const Value.absent(),
+    this.fats = const Value.absent(),
+    this.weightUsed = const Value.absent(),
+    this.heightUsed = const Value.absent(),
+    this.ageUsed = const Value.absent(),
+    this.activityFactor = const Value.absent(),
+    this.proteinPerKg = const Value.absent(),
+    this.fatPerKg = const Value.absent(),
+  });
+  NutritionCalculationsCompanion.insert({
+    this.calculationId = const Value.absent(),
+    required int clientId,
+    this.date = const Value.absent(),
+    required GoalType goalType,
+    this.bmrFormula = const Value.absent(),
+    required double bmr,
+    required double tdee,
+    required double kcalTarget,
+    required double proteins,
+    required double carbohydrates,
+    required double fats,
+    this.weightUsed = const Value.absent(),
+    this.heightUsed = const Value.absent(),
+    this.ageUsed = const Value.absent(),
+    this.activityFactor = const Value.absent(),
+    this.proteinPerKg = const Value.absent(),
+    this.fatPerKg = const Value.absent(),
+  }) : clientId = Value(clientId),
+       goalType = Value(goalType),
+       bmr = Value(bmr),
+       tdee = Value(tdee),
+       kcalTarget = Value(kcalTarget),
+       proteins = Value(proteins),
+       carbohydrates = Value(carbohydrates),
+       fats = Value(fats);
+  static Insertable<NutritionCalculation> custom({
+    Expression<int>? calculationId,
+    Expression<int>? clientId,
+    Expression<DateTime>? date,
+    Expression<int>? goalType,
+    Expression<int>? bmrFormula,
+    Expression<double>? bmr,
+    Expression<double>? tdee,
+    Expression<double>? kcalTarget,
+    Expression<double>? proteins,
+    Expression<double>? carbohydrates,
+    Expression<double>? fats,
+    Expression<double>? weightUsed,
+    Expression<int>? heightUsed,
+    Expression<int>? ageUsed,
+    Expression<double>? activityFactor,
+    Expression<double>? proteinPerKg,
+    Expression<double>? fatPerKg,
+  }) {
+    return RawValuesInsertable({
+      if (calculationId != null) 'calculation_id': calculationId,
+      if (clientId != null) 'client_id': clientId,
+      if (date != null) 'date': date,
+      if (goalType != null) 'goal_type': goalType,
+      if (bmrFormula != null) 'bmr_formula': bmrFormula,
+      if (bmr != null) 'bmr': bmr,
+      if (tdee != null) 'tdee': tdee,
+      if (kcalTarget != null) 'kcal_target': kcalTarget,
+      if (proteins != null) 'proteins': proteins,
+      if (carbohydrates != null) 'carbohydrates': carbohydrates,
+      if (fats != null) 'fats': fats,
+      if (weightUsed != null) 'weight_used': weightUsed,
+      if (heightUsed != null) 'height_used': heightUsed,
+      if (ageUsed != null) 'age_used': ageUsed,
+      if (activityFactor != null) 'activity_factor': activityFactor,
+      if (proteinPerKg != null) 'protein_per_kg': proteinPerKg,
+      if (fatPerKg != null) 'fat_per_kg': fatPerKg,
+    });
+  }
+
+  NutritionCalculationsCompanion copyWith({
+    Value<int>? calculationId,
+    Value<int>? clientId,
+    Value<DateTime>? date,
+    Value<GoalType>? goalType,
+    Value<BmrFormula>? bmrFormula,
+    Value<double>? bmr,
+    Value<double>? tdee,
+    Value<double>? kcalTarget,
+    Value<double>? proteins,
+    Value<double>? carbohydrates,
+    Value<double>? fats,
+    Value<double?>? weightUsed,
+    Value<int?>? heightUsed,
+    Value<int?>? ageUsed,
+    Value<double?>? activityFactor,
+    Value<double?>? proteinPerKg,
+    Value<double?>? fatPerKg,
+  }) {
+    return NutritionCalculationsCompanion(
+      calculationId: calculationId ?? this.calculationId,
+      clientId: clientId ?? this.clientId,
+      date: date ?? this.date,
+      goalType: goalType ?? this.goalType,
+      bmrFormula: bmrFormula ?? this.bmrFormula,
+      bmr: bmr ?? this.bmr,
+      tdee: tdee ?? this.tdee,
+      kcalTarget: kcalTarget ?? this.kcalTarget,
+      proteins: proteins ?? this.proteins,
+      carbohydrates: carbohydrates ?? this.carbohydrates,
+      fats: fats ?? this.fats,
+      weightUsed: weightUsed ?? this.weightUsed,
+      heightUsed: heightUsed ?? this.heightUsed,
+      ageUsed: ageUsed ?? this.ageUsed,
+      activityFactor: activityFactor ?? this.activityFactor,
+      proteinPerKg: proteinPerKg ?? this.proteinPerKg,
+      fatPerKg: fatPerKg ?? this.fatPerKg,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (calculationId.present) {
+      map['calculation_id'] = Variable<int>(calculationId.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<int>(clientId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (goalType.present) {
+      map['goal_type'] = Variable<int>(
+        $NutritionCalculationsTable.$convertergoalType.toSql(goalType.value),
+      );
+    }
+    if (bmrFormula.present) {
+      map['bmr_formula'] = Variable<int>(
+        $NutritionCalculationsTable.$converterbmrFormula.toSql(
+          bmrFormula.value,
+        ),
+      );
+    }
+    if (bmr.present) {
+      map['bmr'] = Variable<double>(bmr.value);
+    }
+    if (tdee.present) {
+      map['tdee'] = Variable<double>(tdee.value);
+    }
+    if (kcalTarget.present) {
+      map['kcal_target'] = Variable<double>(kcalTarget.value);
+    }
+    if (proteins.present) {
+      map['proteins'] = Variable<double>(proteins.value);
+    }
+    if (carbohydrates.present) {
+      map['carbohydrates'] = Variable<double>(carbohydrates.value);
+    }
+    if (fats.present) {
+      map['fats'] = Variable<double>(fats.value);
+    }
+    if (weightUsed.present) {
+      map['weight_used'] = Variable<double>(weightUsed.value);
+    }
+    if (heightUsed.present) {
+      map['height_used'] = Variable<int>(heightUsed.value);
+    }
+    if (ageUsed.present) {
+      map['age_used'] = Variable<int>(ageUsed.value);
+    }
+    if (activityFactor.present) {
+      map['activity_factor'] = Variable<double>(activityFactor.value);
+    }
+    if (proteinPerKg.present) {
+      map['protein_per_kg'] = Variable<double>(proteinPerKg.value);
+    }
+    if (fatPerKg.present) {
+      map['fat_per_kg'] = Variable<double>(fatPerKg.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionCalculationsCompanion(')
+          ..write('calculationId: $calculationId, ')
+          ..write('clientId: $clientId, ')
+          ..write('date: $date, ')
+          ..write('goalType: $goalType, ')
+          ..write('bmrFormula: $bmrFormula, ')
+          ..write('bmr: $bmr, ')
+          ..write('tdee: $tdee, ')
+          ..write('kcalTarget: $kcalTarget, ')
+          ..write('proteins: $proteins, ')
+          ..write('carbohydrates: $carbohydrates, ')
+          ..write('fats: $fats, ')
+          ..write('weightUsed: $weightUsed, ')
+          ..write('heightUsed: $heightUsed, ')
+          ..write('ageUsed: $ageUsed, ')
+          ..write('activityFactor: $activityFactor, ')
+          ..write('proteinPerKg: $proteinPerKg, ')
+          ..write('fatPerKg: $fatPerKg')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2273,12 +3256,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AnamnesisTableTable anamnesisTable = $AnamnesisTableTable(this);
   late final $MeasurementsTable measurements = $MeasurementsTable(this);
   late final $NotesTable notes = $NotesTable(this);
+  late final $NutritionCalculationsTable nutritionCalculations =
+      $NutritionCalculationsTable(this);
   late final ClientDao clientDao = ClientDao(this as AppDatabase);
   late final AnamnesisDao anamnesisDao = AnamnesisDao(this as AppDatabase);
   late final MeasurementDao measurementDao = MeasurementDao(
     this as AppDatabase,
   );
   late final NoteDao noteDao = NoteDao(this as AppDatabase);
+  late final NutritionCalculationDao nutritionCalculationDao =
+      NutritionCalculationDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2288,6 +3275,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     anamnesisTable,
     measurements,
     notes,
+    nutritionCalculations,
   ];
 }
 
@@ -2375,6 +3363,37 @@ final class $$ClientsTableReferences
     );
 
     final cache = $_typedResult.readTableOrNull(_notesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $NutritionCalculationsTable,
+    List<NutritionCalculation>
+  >
+  _nutritionCalculationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.nutritionCalculations,
+        aliasName: $_aliasNameGenerator(
+          db.clients.clientId,
+          db.nutritionCalculations.clientId,
+        ),
+      );
+
+  $$NutritionCalculationsTableProcessedTableManager
+  get nutritionCalculationsRefs {
+    final manager =
+        $$NutritionCalculationsTableTableManager(
+          $_db,
+          $_db.nutritionCalculations,
+        ).filter(
+          (f) => f.clientId.clientId.sqlEquals($_itemColumn<int>('client_id')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _nutritionCalculationsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2508,6 +3527,32 @@ class $$ClientsTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> nutritionCalculationsRefs(
+    Expression<bool> Function($$NutritionCalculationsTableFilterComposer f) f,
+  ) {
+    final $$NutritionCalculationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.clientId,
+          referencedTable: $db.nutritionCalculations,
+          getReferencedColumn: (t) => t.clientId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NutritionCalculationsTableFilterComposer(
+                $db: $db,
+                $table: $db.nutritionCalculations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -2677,6 +3722,32 @@ class $$ClientsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> nutritionCalculationsRefs<T extends Object>(
+    Expression<T> Function($$NutritionCalculationsTableAnnotationComposer a) f,
+  ) {
+    final $$NutritionCalculationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.clientId,
+          referencedTable: $db.nutritionCalculations,
+          getReferencedColumn: (t) => t.clientId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NutritionCalculationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.nutritionCalculations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$ClientsTableTableManager
@@ -2696,6 +3767,7 @@ class $$ClientsTableTableManager
             bool anamnesisTableRefs,
             bool measurementsRefs,
             bool notesRefs,
+            bool nutritionCalculationsRefs,
           })
         > {
   $$ClientsTableTableManager(_$AppDatabase db, $ClientsTable table)
@@ -2766,6 +3838,7 @@ class $$ClientsTableTableManager
                 anamnesisTableRefs = false,
                 measurementsRefs = false,
                 notesRefs = false,
+                nutritionCalculationsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -2773,6 +3846,7 @@ class $$ClientsTableTableManager
                     if (anamnesisTableRefs) db.anamnesisTable,
                     if (measurementsRefs) db.measurements,
                     if (notesRefs) db.notes,
+                    if (nutritionCalculationsRefs) db.nutritionCalculations,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -2832,6 +3906,27 @@ class $$ClientsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (nutritionCalculationsRefs)
+                        await $_getPrefetchedData<
+                          Client,
+                          $ClientsTable,
+                          NutritionCalculation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ClientsTableReferences
+                              ._nutritionCalculationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ClientsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).nutritionCalculationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.clientId == item.clientId,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -2856,6 +3951,7 @@ typedef $$ClientsTableProcessedTableManager =
         bool anamnesisTableRefs,
         bool measurementsRefs,
         bool notesRefs,
+        bool nutritionCalculationsRefs,
       })
     >;
 typedef $$AnamnesisTableTableCreateCompanionBuilder =
@@ -4057,6 +5153,591 @@ typedef $$NotesTableProcessedTableManager =
       Note,
       PrefetchHooks Function({bool clientId})
     >;
+typedef $$NutritionCalculationsTableCreateCompanionBuilder =
+    NutritionCalculationsCompanion Function({
+      Value<int> calculationId,
+      required int clientId,
+      Value<DateTime> date,
+      required GoalType goalType,
+      Value<BmrFormula> bmrFormula,
+      required double bmr,
+      required double tdee,
+      required double kcalTarget,
+      required double proteins,
+      required double carbohydrates,
+      required double fats,
+      Value<double?> weightUsed,
+      Value<int?> heightUsed,
+      Value<int?> ageUsed,
+      Value<double?> activityFactor,
+      Value<double?> proteinPerKg,
+      Value<double?> fatPerKg,
+    });
+typedef $$NutritionCalculationsTableUpdateCompanionBuilder =
+    NutritionCalculationsCompanion Function({
+      Value<int> calculationId,
+      Value<int> clientId,
+      Value<DateTime> date,
+      Value<GoalType> goalType,
+      Value<BmrFormula> bmrFormula,
+      Value<double> bmr,
+      Value<double> tdee,
+      Value<double> kcalTarget,
+      Value<double> proteins,
+      Value<double> carbohydrates,
+      Value<double> fats,
+      Value<double?> weightUsed,
+      Value<int?> heightUsed,
+      Value<int?> ageUsed,
+      Value<double?> activityFactor,
+      Value<double?> proteinPerKg,
+      Value<double?> fatPerKg,
+    });
+
+final class $$NutritionCalculationsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $NutritionCalculationsTable,
+          NutritionCalculation
+        > {
+  $$NutritionCalculationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ClientsTable _clientIdTable(_$AppDatabase db) =>
+      db.clients.createAlias(
+        $_aliasNameGenerator(
+          db.nutritionCalculations.clientId,
+          db.clients.clientId,
+        ),
+      );
+
+  $$ClientsTableProcessedTableManager get clientId {
+    final $_column = $_itemColumn<int>('client_id')!;
+
+    final manager = $$ClientsTableTableManager(
+      $_db,
+      $_db.clients,
+    ).filter((f) => f.clientId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$NutritionCalculationsTableFilterComposer
+    extends Composer<_$AppDatabase, $NutritionCalculationsTable> {
+  $$NutritionCalculationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get calculationId => $composableBuilder(
+    column: $table.calculationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<GoalType, GoalType, int> get goalType =>
+      $composableBuilder(
+        column: $table.goalType,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<BmrFormula, BmrFormula, int> get bmrFormula =>
+      $composableBuilder(
+        column: $table.bmrFormula,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<double> get bmr => $composableBuilder(
+    column: $table.bmr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get tdee => $composableBuilder(
+    column: $table.tdee,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get kcalTarget => $composableBuilder(
+    column: $table.kcalTarget,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get proteins => $composableBuilder(
+    column: $table.proteins,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carbohydrates => $composableBuilder(
+    column: $table.carbohydrates,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fats => $composableBuilder(
+    column: $table.fats,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weightUsed => $composableBuilder(
+    column: $table.weightUsed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get heightUsed => $composableBuilder(
+    column: $table.heightUsed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ageUsed => $composableBuilder(
+    column: $table.ageUsed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get activityFactor => $composableBuilder(
+    column: $table.activityFactor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get proteinPerKg => $composableBuilder(
+    column: $table.proteinPerKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fatPerKg => $composableBuilder(
+    column: $table.fatPerKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClientsTableFilterComposer get clientId {
+    final $$ClientsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.clients,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientsTableFilterComposer(
+            $db: $db,
+            $table: $db.clients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NutritionCalculationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $NutritionCalculationsTable> {
+  $$NutritionCalculationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get calculationId => $composableBuilder(
+    column: $table.calculationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get goalType => $composableBuilder(
+    column: $table.goalType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bmrFormula => $composableBuilder(
+    column: $table.bmrFormula,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get bmr => $composableBuilder(
+    column: $table.bmr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get tdee => $composableBuilder(
+    column: $table.tdee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get kcalTarget => $composableBuilder(
+    column: $table.kcalTarget,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get proteins => $composableBuilder(
+    column: $table.proteins,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carbohydrates => $composableBuilder(
+    column: $table.carbohydrates,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fats => $composableBuilder(
+    column: $table.fats,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weightUsed => $composableBuilder(
+    column: $table.weightUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get heightUsed => $composableBuilder(
+    column: $table.heightUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ageUsed => $composableBuilder(
+    column: $table.ageUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get activityFactor => $composableBuilder(
+    column: $table.activityFactor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get proteinPerKg => $composableBuilder(
+    column: $table.proteinPerKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fatPerKg => $composableBuilder(
+    column: $table.fatPerKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClientsTableOrderingComposer get clientId {
+    final $$ClientsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.clients,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientsTableOrderingComposer(
+            $db: $db,
+            $table: $db.clients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NutritionCalculationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NutritionCalculationsTable> {
+  $$NutritionCalculationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get calculationId => $composableBuilder(
+    column: $table.calculationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<GoalType, int> get goalType =>
+      $composableBuilder(column: $table.goalType, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BmrFormula, int> get bmrFormula =>
+      $composableBuilder(
+        column: $table.bmrFormula,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get bmr =>
+      $composableBuilder(column: $table.bmr, builder: (column) => column);
+
+  GeneratedColumn<double> get tdee =>
+      $composableBuilder(column: $table.tdee, builder: (column) => column);
+
+  GeneratedColumn<double> get kcalTarget => $composableBuilder(
+    column: $table.kcalTarget,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get proteins =>
+      $composableBuilder(column: $table.proteins, builder: (column) => column);
+
+  GeneratedColumn<double> get carbohydrates => $composableBuilder(
+    column: $table.carbohydrates,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fats =>
+      $composableBuilder(column: $table.fats, builder: (column) => column);
+
+  GeneratedColumn<double> get weightUsed => $composableBuilder(
+    column: $table.weightUsed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get heightUsed => $composableBuilder(
+    column: $table.heightUsed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get ageUsed =>
+      $composableBuilder(column: $table.ageUsed, builder: (column) => column);
+
+  GeneratedColumn<double> get activityFactor => $composableBuilder(
+    column: $table.activityFactor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get proteinPerKg => $composableBuilder(
+    column: $table.proteinPerKg,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fatPerKg =>
+      $composableBuilder(column: $table.fatPerKg, builder: (column) => column);
+
+  $$ClientsTableAnnotationComposer get clientId {
+    final $$ClientsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.clients,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NutritionCalculationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NutritionCalculationsTable,
+          NutritionCalculation,
+          $$NutritionCalculationsTableFilterComposer,
+          $$NutritionCalculationsTableOrderingComposer,
+          $$NutritionCalculationsTableAnnotationComposer,
+          $$NutritionCalculationsTableCreateCompanionBuilder,
+          $$NutritionCalculationsTableUpdateCompanionBuilder,
+          (NutritionCalculation, $$NutritionCalculationsTableReferences),
+          NutritionCalculation,
+          PrefetchHooks Function({bool clientId})
+        > {
+  $$NutritionCalculationsTableTableManager(
+    _$AppDatabase db,
+    $NutritionCalculationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NutritionCalculationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$NutritionCalculationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$NutritionCalculationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> calculationId = const Value.absent(),
+                Value<int> clientId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<GoalType> goalType = const Value.absent(),
+                Value<BmrFormula> bmrFormula = const Value.absent(),
+                Value<double> bmr = const Value.absent(),
+                Value<double> tdee = const Value.absent(),
+                Value<double> kcalTarget = const Value.absent(),
+                Value<double> proteins = const Value.absent(),
+                Value<double> carbohydrates = const Value.absent(),
+                Value<double> fats = const Value.absent(),
+                Value<double?> weightUsed = const Value.absent(),
+                Value<int?> heightUsed = const Value.absent(),
+                Value<int?> ageUsed = const Value.absent(),
+                Value<double?> activityFactor = const Value.absent(),
+                Value<double?> proteinPerKg = const Value.absent(),
+                Value<double?> fatPerKg = const Value.absent(),
+              }) => NutritionCalculationsCompanion(
+                calculationId: calculationId,
+                clientId: clientId,
+                date: date,
+                goalType: goalType,
+                bmrFormula: bmrFormula,
+                bmr: bmr,
+                tdee: tdee,
+                kcalTarget: kcalTarget,
+                proteins: proteins,
+                carbohydrates: carbohydrates,
+                fats: fats,
+                weightUsed: weightUsed,
+                heightUsed: heightUsed,
+                ageUsed: ageUsed,
+                activityFactor: activityFactor,
+                proteinPerKg: proteinPerKg,
+                fatPerKg: fatPerKg,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> calculationId = const Value.absent(),
+                required int clientId,
+                Value<DateTime> date = const Value.absent(),
+                required GoalType goalType,
+                Value<BmrFormula> bmrFormula = const Value.absent(),
+                required double bmr,
+                required double tdee,
+                required double kcalTarget,
+                required double proteins,
+                required double carbohydrates,
+                required double fats,
+                Value<double?> weightUsed = const Value.absent(),
+                Value<int?> heightUsed = const Value.absent(),
+                Value<int?> ageUsed = const Value.absent(),
+                Value<double?> activityFactor = const Value.absent(),
+                Value<double?> proteinPerKg = const Value.absent(),
+                Value<double?> fatPerKg = const Value.absent(),
+              }) => NutritionCalculationsCompanion.insert(
+                calculationId: calculationId,
+                clientId: clientId,
+                date: date,
+                goalType: goalType,
+                bmrFormula: bmrFormula,
+                bmr: bmr,
+                tdee: tdee,
+                kcalTarget: kcalTarget,
+                proteins: proteins,
+                carbohydrates: carbohydrates,
+                fats: fats,
+                weightUsed: weightUsed,
+                heightUsed: heightUsed,
+                ageUsed: ageUsed,
+                activityFactor: activityFactor,
+                proteinPerKg: proteinPerKg,
+                fatPerKg: fatPerKg,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$NutritionCalculationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({clientId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (clientId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.clientId,
+                                referencedTable:
+                                    $$NutritionCalculationsTableReferences
+                                        ._clientIdTable(db),
+                                referencedColumn:
+                                    $$NutritionCalculationsTableReferences
+                                        ._clientIdTable(db)
+                                        .clientId,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$NutritionCalculationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NutritionCalculationsTable,
+      NutritionCalculation,
+      $$NutritionCalculationsTableFilterComposer,
+      $$NutritionCalculationsTableOrderingComposer,
+      $$NutritionCalculationsTableAnnotationComposer,
+      $$NutritionCalculationsTableCreateCompanionBuilder,
+      $$NutritionCalculationsTableUpdateCompanionBuilder,
+      (NutritionCalculation, $$NutritionCalculationsTableReferences),
+      NutritionCalculation,
+      PrefetchHooks Function({bool clientId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4069,4 +5750,6 @@ class $AppDatabaseManager {
       $$MeasurementsTableTableManager(_db, _db.measurements);
   $$NotesTableTableManager get notes =>
       $$NotesTableTableManager(_db, _db.notes);
+  $$NutritionCalculationsTableTableManager get nutritionCalculations =>
+      $$NutritionCalculationsTableTableManager(_db, _db.nutritionCalculations);
 }
