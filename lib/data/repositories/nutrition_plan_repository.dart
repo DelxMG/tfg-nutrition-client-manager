@@ -38,6 +38,7 @@ class NutritionPlanRepository {
     PlanStatus? status,
     String? description,
     int? mealsCount,
+    double? kcalSnapshot,
     String? pdfFile,
   }) =>
       nutritionPlanDao.updatePlan(
@@ -46,6 +47,7 @@ class NutritionPlanRepository {
         status: status,
         description: description,
         mealsCount: mealsCount,
+        kcalSnapshot: kcalSnapshot,
         pdfFile: pdfFile,
       );
 

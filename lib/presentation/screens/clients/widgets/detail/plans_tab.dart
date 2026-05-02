@@ -1,6 +1,4 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/application/providers/database_provider.dart';
@@ -8,16 +6,16 @@ import 'package:nutritrack/data/db/app_database.dart';
 import 'package:nutritrack/data/repositories/nutrition_plan_repository.dart';
 import 'package:nutritrack/domain/enums.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/plan_form_dialog.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:path/path.dart' as p;
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
 
 extension _PlanStatusX on PlanStatus {
   String get label => switch (this) {
-        PlanStatus.draft     => 'Borrador',
-        PlanStatus.active    => 'Activo',
-        PlanStatus.archived  => 'Archivado',
+        PlanStatus.draft    => 'Borrador',
+        PlanStatus.active   => 'Activo',
+        PlanStatus.archived => 'Archivado',
       };
 
   Color get color => switch (this) {
@@ -481,241 +479,6 @@ class _EmptyPlansState extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ── Plan form dialog ───────────────────────────────────────────────────────────
-
-class PlanFormDialog extends ConsumerStatefulWidget {
-  final int clientId;
-  final int? preselectedCalculationId;
-  final NutritionPlan? existingPlan;
-
-  const PlanFormDialog({
-    super.key,
-    required this.clientId,
-    this.preselectedCalculationId,
-    this.existingPlan,
-  });
-
-  @override
-  ConsumerState<PlanFormDialog> createState() => _PlanFormDialogState();
-}
-
-class _PlanFormDialogState extends ConsumerState<PlanFormDialog> {
-  final _nameController  = TextEditingController();
-  final _descController  = TextEditingController();
-  final _mealsController = TextEditingController();
-  int?    _selectedCalculationId;
-  String? _pdfPath;
-  bool    _saving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedCalculationId =
-        widget.preselectedCalculationId ?? widget.existingPlan?.calculationId;
-    final existing = widget.existingPlan;
-    if (existing != null) {
-      _nameController.text  = existing.name;
-      _descController.text  = existing.description ?? '';
-      _mealsController.text = existing.mealsCount?.toString() ?? '';
-      _pdfPath = existing.pdfFile;
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descController.dispose();
-    _mealsController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-    if (result != null && result.files.single.path != null) {
-      setState(() => _pdfPath = result.files.single.path);
-    }
-  }
-
-  Future<void> _save(List<NutritionCalculation> calculations) async {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
-    setState(() => _saving = true);
-
-    final mealsCount = int.tryParse(_mealsController.text.trim());
-    final desc = _descController.text.trim().isEmpty
-        ? null
-        : _descController.text.trim();
-
-    NutritionCalculation? selectedCalc;
-    if (_selectedCalculationId != null) {
-      final idx = calculations.indexWhere(
-        (c) => c.calculationId == _selectedCalculationId,
-      );
-      if (idx >= 0) selectedCalc = calculations[idx];
-    }
-
-    final repo = ref.read(nutritionPlanRepositoryProvider);
-
-    try {
-      if (widget.existingPlan == null) {
-        await repo.insertPlan(
-          clientId: widget.clientId,
-          calculationId: _selectedCalculationId,
-          name: name,
-          description: desc,
-          mealsCount: mealsCount,
-          kcalSnapshot: selectedCalc?.kcalTarget,
-          goalType: selectedCalc?.goalType,
-          pdfFile: _pdfPath,
-        );
-      } else {
-        await repo.updatePlan(
-          widget.existingPlan!.planId,
-          name: name,
-          description: desc,
-          mealsCount: mealsCount,
-          pdfFile: _pdfPath,
-        );
-      }
-      if (mounted) Navigator.of(context).pop();
-    } catch (_) {
-      if (mounted) setState(() => _saving = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs     = Theme.of(context).colorScheme;
-    final isEdit = widget.existingPlan != null;
-    final canSave = !_saving && _nameController.text.trim().isNotEmpty;
-
-    final calculations = ref
-        .watch(clientNutritionCalculationsProvider(widget.clientId))
-        .maybeWhen(data: (c) => c, orElse: () => <NutritionCalculation>[]);
-
-    return AlertDialog(
-      title: Text(isEdit ? 'Editar plan' : 'Nuevo plan'),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Name
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Nombre *'),
-                autofocus: true,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              // Description
-              TextField(
-                controller: _descController,
-                decoration: const InputDecoration(labelText: 'Descripción'),
-                maxLines: 2,
-                minLines: 1,
-              ),
-              const SizedBox(height: 12),
-              // Meals count
-              TextField(
-                controller: _mealsController,
-                decoration: const InputDecoration(labelText: 'Comidas por día'),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 16),
-              // Calculation selector
-              Text(
-                'Cálculo base',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 4),
-              DropdownButtonHideUnderline(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: cs.outline),
-                    borderRadius: clientsChipBorderRadius,
-                  ),
-                  child: DropdownButton<int?>(
-                    value: _selectedCalculationId,
-                    isExpanded: true,
-                    // Calculation selector locked in edit mode
-                    onChanged: isEdit
-                        ? null
-                        : (v) => setState(() => _selectedCalculationId = v),
-                    items: [
-                      const DropdownMenuItem<int?>(
-                        value: null,
-                        child: Text('Sin cálculo (manual)'),
-                      ),
-                      for (final c in calculations)
-                        DropdownMenuItem<int?>(
-                          value: c.calculationId,
-                          child: Text(
-                            '${_fmtDate(c.date)} – ${c.kcalTarget.toStringAsFixed(0)} kcal',
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // PDF picker
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _pdfPath != null
-                          ? p.basename(_pdfPath!)
-                          : 'Sin PDF adjunto',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: cs.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.upload_file_outlined, size: 16),
-                    label: const Text('Subir PDF'),
-                    onPressed: _pickPdf,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: canSave ? () => _save(calculations) : null,
-          child: _saving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(isEdit ? 'Guardar cambios' : 'Crear plan'),
-        ),
-      ],
     );
   }
 }

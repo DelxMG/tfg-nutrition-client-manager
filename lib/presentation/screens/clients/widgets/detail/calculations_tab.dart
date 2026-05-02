@@ -10,7 +10,7 @@ import 'package:nutritrack/domain/services/nutrition_calculator.dart';
 import 'package:nutritrack/domain/services/tdee_calculator.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
-import 'package:nutritrack/presentation/screens/clients/widgets/detail/plans_tab.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/plan_form_dialog.dart';
 
 // ── Macro colour tokens ───────────────────────────────────────────────────────
 
