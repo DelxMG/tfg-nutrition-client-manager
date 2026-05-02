@@ -19,9 +19,9 @@ extension _PlanStatusX on PlanStatus {
       };
 
   Color get color => switch (this) {
-        PlanStatus.draft    => const Color(0xFFB6B6AF),
+        PlanStatus.draft    => const Color(0xFFE3A12A),
         PlanStatus.active   => const Color(0xFF22C55E),
-        PlanStatus.archived => const Color(0xFF6366F1),
+        PlanStatus.archived => const Color(0xFF9E9E9E),
       };
 }
 
@@ -112,10 +112,6 @@ class _PlansContentState extends State<_PlansContent> {
     );
   }
 
-  Future<void> _archivePlan(NutritionPlan plan) async {
-    await widget.repository.updatePlan(plan.planId, status: PlanStatus.archived);
-  }
-
   Future<void> _confirmDelete(NutritionPlan plan) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -151,19 +147,53 @@ class _PlansContentState extends State<_PlansContent> {
       children: [
         // ── Header ──────────────────────────────────────────────────────
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              'Planes',
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Planes de nutrición',
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+                Text(
+                  widget.plans.length == 1
+                      ? '1 plan'
+                      : '${widget.plans.length} planes',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
             const Spacer(),
-            FilledButton.tonal(
-              onPressed: () => _openForm(),
-              child: const Text('Nuevo plan'),
+            SizedBox(
+              height: clientsButtonHeight,
+              child: ElevatedButton.icon(
+                onPressed: () => _openForm(),
+                icon: const Icon(Icons.add, size: 16),
+                label: Text(
+                  'Nuevo plan',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cs.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: clientsBorderRadius,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -180,7 +210,6 @@ class _PlansContentState extends State<_PlansContent> {
                     _PlanCard(
                       plan: plan,
                       onEdit: () => _openForm(existing: plan),
-                      onArchive: () => _archivePlan(plan),
                       onDelete: () => _confirmDelete(plan),
                     ),
                     const SizedBox(height: 12),
@@ -200,13 +229,11 @@ class _PlansContentState extends State<_PlansContent> {
 class _PlanCard extends StatelessWidget {
   final NutritionPlan plan;
   final VoidCallback onEdit;
-  final VoidCallback onArchive;
   final VoidCallback onDelete;
 
   const _PlanCard({
     required this.plan,
     required this.onEdit,
-    required this.onArchive,
     required this.onDelete,
   });
 
@@ -226,31 +253,91 @@ class _PlanCard extends StatelessWidget {
     final cs       = Theme.of(context).colorScheme;
     final goalType = plan.goalType;
 
+    final isActive = plan.status == PlanStatus.active;
+
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: clientsBorderRadius,
-        border: Border.all(color: cs.outlineVariant),
+        border: Border.all(
+          color: isActive
+              ? cs.primary.withValues(alpha: 0.35)
+              : cs.outlineVariant,
+          width: isActive ? 1.5 : 1.0,
+        ),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Name + status ────────────────────────────────────────────
+          // ── Name + inline status · GoalType badge ────────────────────
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Icon(
+                Icons.assignment_outlined,
+                size: 16,
+                color: isActive ? cs.primary : cs.onSurfaceVariant,
+              ),
+              const SizedBox(width: 6),
               Expanded(
-                child: Text(
-                  plan.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        plan.name,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: plan.status.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      plan.status.label,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: plan.status.color,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              _StatusBadge(plan.status),
+              if (goalType != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: goalType.color.withValues(alpha: 0.10),
+                    borderRadius: clientsChipBorderRadius,
+                  ),
+                  child: Text(
+                    goalType.label,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: goalType.color,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
 
@@ -270,7 +357,7 @@ class _PlanCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // ── kcal + meals + goal ──────────────────────────────────────
+          // ── kcal + meals ─────────────────────────────────────────────
           Row(
             children: [
               if (plan.kcalSnapshot != null) ...[
@@ -298,26 +385,6 @@ class _PlanCard extends StatelessWidget {
                   style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
                 ),
               ],
-              const Spacer(),
-              if (goalType != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: goalType.color.withValues(alpha: 0.10),
-                    borderRadius: clientsChipBorderRadius,
-                  ),
-                  child: Text(
-                    goalType.label,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: goalType.color,
-                    ),
-                  ),
-                ),
             ],
           ),
 
@@ -371,35 +438,23 @@ class _PlanCard extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              TextButton(
-                onPressed: plan.pdfFile != null
-                    ? () => _openPdf(context)
-                    : null,
-                child: const Text('Ver'),
-              ),
-              TextButton(
-                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad pendiente')),
-                ),
-                child: const Text('Exportar'),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: (val) {
-                  if (val == 'edit') {
-                    onEdit();
-                  } else if (val == 'archive') {
-                    onArchive();
-                  } else if (val == 'delete') {
-                    onDelete();
+              _ViewButton(
+                onPressed: () {
+                  if (plan.pdfFile != null) {
+                    _openPdf(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Este plan no tiene PDF adjunto'),
+                      ),
+                    );
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Editar')),
-                  PopupMenuItem(value: 'archive', child: Text('Archivar')),
-                  PopupMenuItem(value: 'delete', child: Text('Eliminar')),
-                ],
               ),
+              const SizedBox(width: 4),
+              _EditButton(onPressed: onEdit),
+              const SizedBox(width: 4),
+              _DeleteButton(onPressed: onDelete),
             ],
           ),
         ],
@@ -408,27 +463,207 @@ class _PlanCard extends StatelessWidget {
   }
 }
 
-// ── Status badge ───────────────────────────────────────────────────────────────
+// ── View button (eye toggle on hover) ─────────────────────────────────────────
 
-class _StatusBadge extends StatelessWidget {
-  final PlanStatus status;
+class _ViewButton extends StatefulWidget {
+  final VoidCallback? onPressed;
 
-  const _StatusBadge(this.status);
+  const _ViewButton({this.onPressed});
+
+  @override
+  State<_ViewButton> createState() => _ViewButtonState();
+}
+
+class _ViewButtonState extends State<_ViewButton> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: status.color.withValues(alpha: 0.12),
-        borderRadius: clientsChipBorderRadius,
+    final cs      = Theme.of(context).colorScheme;
+    final enabled = widget.onPressed != null;
+
+    return Tooltip(
+      message: 'Ver PDF',
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+        onEnter: enabled ? (_) => setState(() => _hovered = true)  : null,
+        onExit:  enabled ? (_) => setState(() => _hovered = false) : null,
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.all(Radius.circular(6)),
+            ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+              child: Icon(
+                _hovered
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                key: ValueKey(_hovered),
+                size: 16,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
       ),
-      child: Text(
-        status.label,
-        style: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: status.color,
+    );
+  }
+}
+
+// ── Edit button (primary tint on hover) ────────────────────────────────────────
+
+class _EditButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+
+  const _EditButton({this.onPressed});
+
+  @override
+  State<_EditButton> createState() => _EditButtonState();
+}
+
+class _EditButtonState extends State<_EditButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs      = Theme.of(context).colorScheme;
+    final enabled = widget.onPressed != null;
+
+    return Tooltip(
+      message: 'Editar plan',
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+        onEnter: enabled ? (_) => setState(() => _hovered = true)  : null,
+        onExit:  enabled ? (_) => setState(() => _hovered = false) : null,
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: _hovered
+                  ? cs.primary.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              borderRadius: const BorderRadius.all(Radius.circular(6)),
+            ),
+            child: Icon(
+              Icons.edit_outlined,
+              size: 16,
+              color: _hovered ? cs.primary : cs.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Delete button (scale + red on hover) ──────────────────────────────────────
+
+class _DeleteButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+
+  const _DeleteButton({this.onPressed});
+
+  @override
+  State<_DeleteButton> createState() => _DeleteButtonState();
+}
+
+class _DeleteButtonState extends State<_DeleteButton>
+    with SingleTickerProviderStateMixin {
+  bool _hovered = false;
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  static const _red = Color(0xFFD94A4A);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs      = Theme.of(context).colorScheme;
+    final enabled = widget.onPressed != null;
+
+    return Tooltip(
+      message: 'Eliminar plan',
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+        onEnter: enabled
+            ? (_) {
+                setState(() => _hovered = true);
+                _controller.forward();
+              }
+            : null,
+        onExit: enabled
+            ? (_) {
+                setState(() => _hovered = false);
+                _controller.reverse();
+              }
+            : null,
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedBuilder(
+            animation: _scale,
+            builder: (context, child) => Transform.scale(
+              scale: _scale.value,
+              child: child,
+            ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: _hovered
+                    ? _red.withValues(alpha: 0.08)
+                    : Colors.transparent,
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 150),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: child,
+                ),
+                child: Icon(
+                  _hovered ? Icons.delete : Icons.delete_outline,
+                  key: ValueKey(_hovered),
+                  size: 16,
+                  color: _hovered ? _red : cs.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

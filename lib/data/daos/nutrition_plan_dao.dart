@@ -44,6 +44,7 @@ class NutritionPlanDao extends DatabaseAccessor<AppDatabase>
     String? description,
     int? mealsCount,
     double? kcalSnapshot,
+    GoalType? goalType,
     String? pdfFile,
   }) {
     return (update(nutritionPlans)
@@ -58,6 +59,8 @@ class NutritionPlanDao extends DatabaseAccessor<AppDatabase>
             mealsCount != null ? Value(mealsCount) : const Value.absent(),
         kcalSnapshot:
             kcalSnapshot != null ? Value(kcalSnapshot) : const Value.absent(),
+        goalType:
+            goalType != null ? Value(goalType) : const Value.absent(),
         pdfFile: pdfFile != null ? Value(pdfFile) : const Value.absent(),
         updatedAt: Value(DateTime.now()),
       ),
