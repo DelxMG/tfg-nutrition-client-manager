@@ -13,6 +13,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/detail/client_su
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurements_tab.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/calculations_tab.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/notes_tab.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/plans_tab.dart';
 
 class ClientDetailContent extends ConsumerStatefulWidget {
   final int clientId;
@@ -163,7 +164,9 @@ class _ClientDetailBody extends ConsumerWidget {
                           latestMeasurement: latestMeasurement,
                           anamnesis: reactiveAnamnesis,
                         )
-                      : SingleChildScrollView(
+                      : activeTab == 4
+                          ? PlansTab(clientId: reactiveSummary.client.clientId)
+                          : SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

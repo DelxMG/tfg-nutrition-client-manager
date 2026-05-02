@@ -10,7 +10,7 @@ class NutritionPlans extends Table {
   IntColumn get clientId => integer().references(Clients, #clientId)();
 
   IntColumn get calculationId =>
-      integer().references(NutritionCalculations, #calculationId)();
+      integer().references(NutritionCalculations, #calculationId).nullable()();
 
   TextColumn get name => text()();
 

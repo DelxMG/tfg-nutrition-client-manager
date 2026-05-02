@@ -11,7 +11,7 @@ class NutritionPlanRepository {
 
   Future<int> insertPlan({
     required int clientId,
-    required int calculationId,
+    int? calculationId,
     required String name,
     PlanStatus status = PlanStatus.draft,
     String? description,
@@ -38,6 +38,7 @@ class NutritionPlanRepository {
     PlanStatus? status,
     String? description,
     int? mealsCount,
+    String? pdfFile,
   }) =>
       nutritionPlanDao.updatePlan(
         planId,
@@ -45,6 +46,7 @@ class NutritionPlanRepository {
         status: status,
         description: description,
         mealsCount: mealsCount,
+        pdfFile: pdfFile,
       );
 
   Future<int> deletePlan(int planId) =>

@@ -3289,9 +3289,9 @@ class $NutritionPlansTable extends NutritionPlans
   late final GeneratedColumn<int> calculationId = GeneratedColumn<int>(
     'calculation_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES nutrition_calculations (calculation_id)',
     ),
@@ -3440,8 +3440,6 @@ class $NutritionPlansTable extends NutritionPlans
           _calculationIdMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_calculationIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -3513,7 +3511,7 @@ class $NutritionPlansTable extends NutritionPlans
       calculationId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}calculation_id'],
-      )!,
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -3573,7 +3571,7 @@ class $NutritionPlansTable extends NutritionPlans
 class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
   final int planId;
   final int clientId;
-  final int calculationId;
+  final int? calculationId;
   final String name;
   final PlanStatus status;
   final String? description;
@@ -3586,7 +3584,7 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
   const NutritionPlan({
     required this.planId,
     required this.clientId,
-    required this.calculationId,
+    this.calculationId,
     required this.name,
     required this.status,
     this.description,
@@ -3602,7 +3600,9 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
     final map = <String, Expression>{};
     map['plan_id'] = Variable<int>(planId);
     map['client_id'] = Variable<int>(clientId);
-    map['calculation_id'] = Variable<int>(calculationId);
+    if (!nullToAbsent || calculationId != null) {
+      map['calculation_id'] = Variable<int>(calculationId);
+    }
     map['name'] = Variable<String>(name);
     {
       map['status'] = Variable<int>(
@@ -3637,7 +3637,9 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
     return NutritionPlansCompanion(
       planId: Value(planId),
       clientId: Value(clientId),
-      calculationId: Value(calculationId),
+      calculationId: calculationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(calculationId),
       name: Value(name),
       status: Value(status),
       description: description == null && nullToAbsent
@@ -3670,7 +3672,7 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
     return NutritionPlan(
       planId: serializer.fromJson<int>(json['planId']),
       clientId: serializer.fromJson<int>(json['clientId']),
-      calculationId: serializer.fromJson<int>(json['calculationId']),
+      calculationId: serializer.fromJson<int?>(json['calculationId']),
       name: serializer.fromJson<String>(json['name']),
       status: $NutritionPlansTable.$converterstatus.fromJson(
         serializer.fromJson<int>(json['status']),
@@ -3692,7 +3694,7 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
     return <String, dynamic>{
       'planId': serializer.toJson<int>(planId),
       'clientId': serializer.toJson<int>(clientId),
-      'calculationId': serializer.toJson<int>(calculationId),
+      'calculationId': serializer.toJson<int?>(calculationId),
       'name': serializer.toJson<String>(name),
       'status': serializer.toJson<int>(
         $NutritionPlansTable.$converterstatus.toJson(status),
@@ -3712,7 +3714,7 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
   NutritionPlan copyWith({
     int? planId,
     int? clientId,
-    int? calculationId,
+    Value<int?> calculationId = const Value.absent(),
     String? name,
     PlanStatus? status,
     Value<String?> description = const Value.absent(),
@@ -3725,7 +3727,9 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
   }) => NutritionPlan(
     planId: planId ?? this.planId,
     clientId: clientId ?? this.clientId,
-    calculationId: calculationId ?? this.calculationId,
+    calculationId: calculationId.present
+        ? calculationId.value
+        : this.calculationId,
     name: name ?? this.name,
     status: status ?? this.status,
     description: description.present ? description.value : this.description,
@@ -3816,7 +3820,7 @@ class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
 class NutritionPlansCompanion extends UpdateCompanion<NutritionPlan> {
   final Value<int> planId;
   final Value<int> clientId;
-  final Value<int> calculationId;
+  final Value<int?> calculationId;
   final Value<String> name;
   final Value<PlanStatus> status;
   final Value<String?> description;
@@ -3843,7 +3847,7 @@ class NutritionPlansCompanion extends UpdateCompanion<NutritionPlan> {
   NutritionPlansCompanion.insert({
     this.planId = const Value.absent(),
     required int clientId,
-    required int calculationId,
+    this.calculationId = const Value.absent(),
     required String name,
     this.status = const Value.absent(),
     this.description = const Value.absent(),
@@ -3854,7 +3858,6 @@ class NutritionPlansCompanion extends UpdateCompanion<NutritionPlan> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : clientId = Value(clientId),
-       calculationId = Value(calculationId),
        name = Value(name);
   static Insertable<NutritionPlan> custom({
     Expression<int>? planId,
@@ -3889,7 +3892,7 @@ class NutritionPlansCompanion extends UpdateCompanion<NutritionPlan> {
   NutritionPlansCompanion copyWith({
     Value<int>? planId,
     Value<int>? clientId,
-    Value<int>? calculationId,
+    Value<int?>? calculationId,
     Value<String>? name,
     Value<PlanStatus>? status,
     Value<String?>? description,
@@ -6675,7 +6678,7 @@ typedef $$NutritionPlansTableCreateCompanionBuilder =
     NutritionPlansCompanion Function({
       Value<int> planId,
       required int clientId,
-      required int calculationId,
+      Value<int?> calculationId,
       required String name,
       Value<PlanStatus> status,
       Value<String?> description,
@@ -6690,7 +6693,7 @@ typedef $$NutritionPlansTableUpdateCompanionBuilder =
     NutritionPlansCompanion Function({
       Value<int> planId,
       Value<int> clientId,
-      Value<int> calculationId,
+      Value<int?> calculationId,
       Value<String> name,
       Value<PlanStatus> status,
       Value<String?> description,
@@ -6737,9 +6740,9 @@ final class $$NutritionPlansTableReferences
         ),
       );
 
-  $$NutritionCalculationsTableProcessedTableManager get calculationId {
-    final $_column = $_itemColumn<int>('calculation_id')!;
-
+  $$NutritionCalculationsTableProcessedTableManager? get calculationId {
+    final $_column = $_itemColumn<int>('calculation_id');
+    if ($_column == null) return null;
     final manager = $$NutritionCalculationsTableTableManager(
       $_db,
       $_db.nutritionCalculations,
@@ -7093,7 +7096,7 @@ class $$NutritionPlansTableTableManager
               ({
                 Value<int> planId = const Value.absent(),
                 Value<int> clientId = const Value.absent(),
-                Value<int> calculationId = const Value.absent(),
+                Value<int?> calculationId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<PlanStatus> status = const Value.absent(),
                 Value<String?> description = const Value.absent(),
@@ -7121,7 +7124,7 @@ class $$NutritionPlansTableTableManager
               ({
                 Value<int> planId = const Value.absent(),
                 required int clientId,
-                required int calculationId,
+                Value<int?> calculationId = const Value.absent(),
                 required String name,
                 Value<PlanStatus> status = const Value.absent(),
                 Value<String?> description = const Value.absent(),

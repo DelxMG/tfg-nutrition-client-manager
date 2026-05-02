@@ -10,6 +10,7 @@ import 'package:nutritrack/domain/services/nutrition_calculator.dart';
 import 'package:nutritrack/domain/services/tdee_calculator.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/plans_tab.dart';
 
 // ── Macro colour tokens ───────────────────────────────────────────────────────
 
@@ -202,6 +203,16 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
     }
   }
 
+  void _openPlanForm(NutritionCalculation calc) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => PlanFormDialog(
+        clientId: widget.clientId,
+        preselectedCalculationId: calc.calculationId,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -283,7 +294,11 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
             ),
             data: (calcs) => calcs.isEmpty
                 ? const _EmptyHistoryState()
-                : _HistoryTable(calculations: calcs, onDelete: _confirmDelete),
+                : _HistoryTable(
+                    calculations: calcs,
+                    onDelete: _confirmDelete,
+                    onGeneratePlan: _openPlanForm,
+                  ),
           ),
           const SizedBox(height: 24),
         ],
@@ -968,10 +983,12 @@ class _MacroRow extends StatelessWidget {
 class _HistoryTable extends StatelessWidget {
   final List<NutritionCalculation> calculations;
   final Future<void> Function(NutritionCalculation) onDelete;
+  final void Function(NutritionCalculation) onGeneratePlan;
 
   const _HistoryTable({
     required this.calculations,
     required this.onDelete,
+    required this.onGeneratePlan,
   });
 
   @override
@@ -1016,6 +1033,7 @@ class _HistoryTable extends StatelessWidget {
             _HistoryRow(
               calc: calculations[i],
               onDelete: () => onDelete(calculations[i]),
+              onGeneratePlan: () => onGeneratePlan(calculations[i]),
             ),
           ],
         ],
@@ -1047,8 +1065,13 @@ class _HeaderCell extends StatelessWidget {
 class _HistoryRow extends StatelessWidget {
   final NutritionCalculation calc;
   final VoidCallback onDelete;
+  final VoidCallback onGeneratePlan;
 
-  const _HistoryRow({required this.calc, required this.onDelete});
+  const _HistoryRow({
+    required this.calc,
+    required this.onDelete,
+    required this.onGeneratePlan,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1152,9 +1175,7 @@ class _HistoryRow extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             tooltip: 'Generar plan',
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Funcionalidad pendiente')),
-            ),
+            onPressed: onGeneratePlan,
           ),
           const SizedBox(width: 4),
           // Delete

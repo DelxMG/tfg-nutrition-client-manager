@@ -13,7 +13,7 @@ class NutritionPlanDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> insertPlan({
     required int clientId,
-    required int calculationId,
+    int? calculationId,
     required String name,
     PlanStatus status = PlanStatus.draft,
     String? description,
@@ -25,7 +25,7 @@ class NutritionPlanDao extends DatabaseAccessor<AppDatabase>
     return into(nutritionPlans).insert(
       NutritionPlansCompanion.insert(
         clientId: clientId,
-        calculationId: calculationId,
+        calculationId: Value(calculationId),
         name: name,
         status: Value(status),
         description: Value(description),
@@ -43,6 +43,7 @@ class NutritionPlanDao extends DatabaseAccessor<AppDatabase>
     PlanStatus? status,
     String? description,
     int? mealsCount,
+    String? pdfFile,
   }) {
     return (update(nutritionPlans)
           ..where((tbl) => tbl.planId.equals(planId)))
@@ -54,6 +55,7 @@ class NutritionPlanDao extends DatabaseAccessor<AppDatabase>
             description != null ? Value(description) : const Value.absent(),
         mealsCount:
             mealsCount != null ? Value(mealsCount) : const Value.absent(),
+        pdfFile: pdfFile != null ? Value(pdfFile) : const Value.absent(),
         updatedAt: Value(DateTime.now()),
       ),
     );
