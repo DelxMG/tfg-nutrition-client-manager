@@ -3249,6 +3249,739 @@ class NutritionCalculationsCompanion
   }
 }
 
+class $NutritionPlansTable extends NutritionPlans
+    with TableInfo<$NutritionPlansTable, NutritionPlan> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NutritionPlansTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _planIdMeta = const VerificationMeta('planId');
+  @override
+  late final GeneratedColumn<int> planId = GeneratedColumn<int>(
+    'plan_id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<int> clientId = GeneratedColumn<int>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clients (client_id)',
+    ),
+  );
+  static const VerificationMeta _calculationIdMeta = const VerificationMeta(
+    'calculationId',
+  );
+  @override
+  late final GeneratedColumn<int> calculationId = GeneratedColumn<int>(
+    'calculation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES nutrition_calculations (calculation_id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<PlanStatus, int> status =
+      GeneratedColumn<int>(
+        'status',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: Constant(PlanStatus.draft.index),
+      ).withConverter<PlanStatus>($NutritionPlansTable.$converterstatus);
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mealsCountMeta = const VerificationMeta(
+    'mealsCount',
+  );
+  @override
+  late final GeneratedColumn<int> mealsCount = GeneratedColumn<int>(
+    'meals_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _kcalSnapshotMeta = const VerificationMeta(
+    'kcalSnapshot',
+  );
+  @override
+  late final GeneratedColumn<double> kcalSnapshot = GeneratedColumn<double>(
+    'kcal_snapshot',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<GoalType?, int> goalType =
+      GeneratedColumn<int>(
+        'goal_type',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      ).withConverter<GoalType?>($NutritionPlansTable.$convertergoalTypen);
+  static const VerificationMeta _pdfFileMeta = const VerificationMeta(
+    'pdfFile',
+  );
+  @override
+  late final GeneratedColumn<String> pdfFile = GeneratedColumn<String>(
+    'pdf_file',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    planId,
+    clientId,
+    calculationId,
+    name,
+    status,
+    description,
+    mealsCount,
+    kcalSnapshot,
+    goalType,
+    pdfFile,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'nutrition_plans';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NutritionPlan> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('plan_id')) {
+      context.handle(
+        _planIdMeta,
+        planId.isAcceptableOrUnknown(data['plan_id']!, _planIdMeta),
+      );
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('calculation_id')) {
+      context.handle(
+        _calculationIdMeta,
+        calculationId.isAcceptableOrUnknown(
+          data['calculation_id']!,
+          _calculationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_calculationIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('meals_count')) {
+      context.handle(
+        _mealsCountMeta,
+        mealsCount.isAcceptableOrUnknown(data['meals_count']!, _mealsCountMeta),
+      );
+    }
+    if (data.containsKey('kcal_snapshot')) {
+      context.handle(
+        _kcalSnapshotMeta,
+        kcalSnapshot.isAcceptableOrUnknown(
+          data['kcal_snapshot']!,
+          _kcalSnapshotMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pdf_file')) {
+      context.handle(
+        _pdfFileMeta,
+        pdfFile.isAcceptableOrUnknown(data['pdf_file']!, _pdfFileMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {planId};
+  @override
+  NutritionPlan map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NutritionPlan(
+      planId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plan_id'],
+      )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}client_id'],
+      )!,
+      calculationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}calculation_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      status: $NutritionPlansTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      mealsCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}meals_count'],
+      ),
+      kcalSnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}kcal_snapshot'],
+      ),
+      goalType: $NutritionPlansTable.$convertergoalTypen.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}goal_type'],
+        ),
+      ),
+      pdfFile: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pdf_file'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $NutritionPlansTable createAlias(String alias) {
+    return $NutritionPlansTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<PlanStatus, int, int> $converterstatus =
+      const EnumIndexConverter<PlanStatus>(PlanStatus.values);
+  static JsonTypeConverter2<GoalType, int, int> $convertergoalType =
+      const EnumIndexConverter<GoalType>(GoalType.values);
+  static JsonTypeConverter2<GoalType?, int?, int?> $convertergoalTypen =
+      JsonTypeConverter2.asNullable($convertergoalType);
+}
+
+class NutritionPlan extends DataClass implements Insertable<NutritionPlan> {
+  final int planId;
+  final int clientId;
+  final int calculationId;
+  final String name;
+  final PlanStatus status;
+  final String? description;
+  final int? mealsCount;
+  final double? kcalSnapshot;
+  final GoalType? goalType;
+  final String? pdfFile;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  const NutritionPlan({
+    required this.planId,
+    required this.clientId,
+    required this.calculationId,
+    required this.name,
+    required this.status,
+    this.description,
+    this.mealsCount,
+    this.kcalSnapshot,
+    this.goalType,
+    this.pdfFile,
+    required this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['plan_id'] = Variable<int>(planId);
+    map['client_id'] = Variable<int>(clientId);
+    map['calculation_id'] = Variable<int>(calculationId);
+    map['name'] = Variable<String>(name);
+    {
+      map['status'] = Variable<int>(
+        $NutritionPlansTable.$converterstatus.toSql(status),
+      );
+    }
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || mealsCount != null) {
+      map['meals_count'] = Variable<int>(mealsCount);
+    }
+    if (!nullToAbsent || kcalSnapshot != null) {
+      map['kcal_snapshot'] = Variable<double>(kcalSnapshot);
+    }
+    if (!nullToAbsent || goalType != null) {
+      map['goal_type'] = Variable<int>(
+        $NutritionPlansTable.$convertergoalTypen.toSql(goalType),
+      );
+    }
+    if (!nullToAbsent || pdfFile != null) {
+      map['pdf_file'] = Variable<String>(pdfFile);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  NutritionPlansCompanion toCompanion(bool nullToAbsent) {
+    return NutritionPlansCompanion(
+      planId: Value(planId),
+      clientId: Value(clientId),
+      calculationId: Value(calculationId),
+      name: Value(name),
+      status: Value(status),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      mealsCount: mealsCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mealsCount),
+      kcalSnapshot: kcalSnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(kcalSnapshot),
+      goalType: goalType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalType),
+      pdfFile: pdfFile == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pdfFile),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory NutritionPlan.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NutritionPlan(
+      planId: serializer.fromJson<int>(json['planId']),
+      clientId: serializer.fromJson<int>(json['clientId']),
+      calculationId: serializer.fromJson<int>(json['calculationId']),
+      name: serializer.fromJson<String>(json['name']),
+      status: $NutritionPlansTable.$converterstatus.fromJson(
+        serializer.fromJson<int>(json['status']),
+      ),
+      description: serializer.fromJson<String?>(json['description']),
+      mealsCount: serializer.fromJson<int?>(json['mealsCount']),
+      kcalSnapshot: serializer.fromJson<double?>(json['kcalSnapshot']),
+      goalType: $NutritionPlansTable.$convertergoalTypen.fromJson(
+        serializer.fromJson<int?>(json['goalType']),
+      ),
+      pdfFile: serializer.fromJson<String?>(json['pdfFile']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'planId': serializer.toJson<int>(planId),
+      'clientId': serializer.toJson<int>(clientId),
+      'calculationId': serializer.toJson<int>(calculationId),
+      'name': serializer.toJson<String>(name),
+      'status': serializer.toJson<int>(
+        $NutritionPlansTable.$converterstatus.toJson(status),
+      ),
+      'description': serializer.toJson<String?>(description),
+      'mealsCount': serializer.toJson<int?>(mealsCount),
+      'kcalSnapshot': serializer.toJson<double?>(kcalSnapshot),
+      'goalType': serializer.toJson<int?>(
+        $NutritionPlansTable.$convertergoalTypen.toJson(goalType),
+      ),
+      'pdfFile': serializer.toJson<String?>(pdfFile),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  NutritionPlan copyWith({
+    int? planId,
+    int? clientId,
+    int? calculationId,
+    String? name,
+    PlanStatus? status,
+    Value<String?> description = const Value.absent(),
+    Value<int?> mealsCount = const Value.absent(),
+    Value<double?> kcalSnapshot = const Value.absent(),
+    Value<GoalType?> goalType = const Value.absent(),
+    Value<String?> pdfFile = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => NutritionPlan(
+    planId: planId ?? this.planId,
+    clientId: clientId ?? this.clientId,
+    calculationId: calculationId ?? this.calculationId,
+    name: name ?? this.name,
+    status: status ?? this.status,
+    description: description.present ? description.value : this.description,
+    mealsCount: mealsCount.present ? mealsCount.value : this.mealsCount,
+    kcalSnapshot: kcalSnapshot.present ? kcalSnapshot.value : this.kcalSnapshot,
+    goalType: goalType.present ? goalType.value : this.goalType,
+    pdfFile: pdfFile.present ? pdfFile.value : this.pdfFile,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  NutritionPlan copyWithCompanion(NutritionPlansCompanion data) {
+    return NutritionPlan(
+      planId: data.planId.present ? data.planId.value : this.planId,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      calculationId: data.calculationId.present
+          ? data.calculationId.value
+          : this.calculationId,
+      name: data.name.present ? data.name.value : this.name,
+      status: data.status.present ? data.status.value : this.status,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      mealsCount: data.mealsCount.present
+          ? data.mealsCount.value
+          : this.mealsCount,
+      kcalSnapshot: data.kcalSnapshot.present
+          ? data.kcalSnapshot.value
+          : this.kcalSnapshot,
+      goalType: data.goalType.present ? data.goalType.value : this.goalType,
+      pdfFile: data.pdfFile.present ? data.pdfFile.value : this.pdfFile,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionPlan(')
+          ..write('planId: $planId, ')
+          ..write('clientId: $clientId, ')
+          ..write('calculationId: $calculationId, ')
+          ..write('name: $name, ')
+          ..write('status: $status, ')
+          ..write('description: $description, ')
+          ..write('mealsCount: $mealsCount, ')
+          ..write('kcalSnapshot: $kcalSnapshot, ')
+          ..write('goalType: $goalType, ')
+          ..write('pdfFile: $pdfFile, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    planId,
+    clientId,
+    calculationId,
+    name,
+    status,
+    description,
+    mealsCount,
+    kcalSnapshot,
+    goalType,
+    pdfFile,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NutritionPlan &&
+          other.planId == this.planId &&
+          other.clientId == this.clientId &&
+          other.calculationId == this.calculationId &&
+          other.name == this.name &&
+          other.status == this.status &&
+          other.description == this.description &&
+          other.mealsCount == this.mealsCount &&
+          other.kcalSnapshot == this.kcalSnapshot &&
+          other.goalType == this.goalType &&
+          other.pdfFile == this.pdfFile &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class NutritionPlansCompanion extends UpdateCompanion<NutritionPlan> {
+  final Value<int> planId;
+  final Value<int> clientId;
+  final Value<int> calculationId;
+  final Value<String> name;
+  final Value<PlanStatus> status;
+  final Value<String?> description;
+  final Value<int?> mealsCount;
+  final Value<double?> kcalSnapshot;
+  final Value<GoalType?> goalType;
+  final Value<String?> pdfFile;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  const NutritionPlansCompanion({
+    this.planId = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.calculationId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.status = const Value.absent(),
+    this.description = const Value.absent(),
+    this.mealsCount = const Value.absent(),
+    this.kcalSnapshot = const Value.absent(),
+    this.goalType = const Value.absent(),
+    this.pdfFile = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  NutritionPlansCompanion.insert({
+    this.planId = const Value.absent(),
+    required int clientId,
+    required int calculationId,
+    required String name,
+    this.status = const Value.absent(),
+    this.description = const Value.absent(),
+    this.mealsCount = const Value.absent(),
+    this.kcalSnapshot = const Value.absent(),
+    this.goalType = const Value.absent(),
+    this.pdfFile = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : clientId = Value(clientId),
+       calculationId = Value(calculationId),
+       name = Value(name);
+  static Insertable<NutritionPlan> custom({
+    Expression<int>? planId,
+    Expression<int>? clientId,
+    Expression<int>? calculationId,
+    Expression<String>? name,
+    Expression<int>? status,
+    Expression<String>? description,
+    Expression<int>? mealsCount,
+    Expression<double>? kcalSnapshot,
+    Expression<int>? goalType,
+    Expression<String>? pdfFile,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (planId != null) 'plan_id': planId,
+      if (clientId != null) 'client_id': clientId,
+      if (calculationId != null) 'calculation_id': calculationId,
+      if (name != null) 'name': name,
+      if (status != null) 'status': status,
+      if (description != null) 'description': description,
+      if (mealsCount != null) 'meals_count': mealsCount,
+      if (kcalSnapshot != null) 'kcal_snapshot': kcalSnapshot,
+      if (goalType != null) 'goal_type': goalType,
+      if (pdfFile != null) 'pdf_file': pdfFile,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  NutritionPlansCompanion copyWith({
+    Value<int>? planId,
+    Value<int>? clientId,
+    Value<int>? calculationId,
+    Value<String>? name,
+    Value<PlanStatus>? status,
+    Value<String?>? description,
+    Value<int?>? mealsCount,
+    Value<double?>? kcalSnapshot,
+    Value<GoalType?>? goalType,
+    Value<String?>? pdfFile,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
+  }) {
+    return NutritionPlansCompanion(
+      planId: planId ?? this.planId,
+      clientId: clientId ?? this.clientId,
+      calculationId: calculationId ?? this.calculationId,
+      name: name ?? this.name,
+      status: status ?? this.status,
+      description: description ?? this.description,
+      mealsCount: mealsCount ?? this.mealsCount,
+      kcalSnapshot: kcalSnapshot ?? this.kcalSnapshot,
+      goalType: goalType ?? this.goalType,
+      pdfFile: pdfFile ?? this.pdfFile,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (planId.present) {
+      map['plan_id'] = Variable<int>(planId.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<int>(clientId.value);
+    }
+    if (calculationId.present) {
+      map['calculation_id'] = Variable<int>(calculationId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<int>(
+        $NutritionPlansTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (mealsCount.present) {
+      map['meals_count'] = Variable<int>(mealsCount.value);
+    }
+    if (kcalSnapshot.present) {
+      map['kcal_snapshot'] = Variable<double>(kcalSnapshot.value);
+    }
+    if (goalType.present) {
+      map['goal_type'] = Variable<int>(
+        $NutritionPlansTable.$convertergoalTypen.toSql(goalType.value),
+      );
+    }
+    if (pdfFile.present) {
+      map['pdf_file'] = Variable<String>(pdfFile.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionPlansCompanion(')
+          ..write('planId: $planId, ')
+          ..write('clientId: $clientId, ')
+          ..write('calculationId: $calculationId, ')
+          ..write('name: $name, ')
+          ..write('status: $status, ')
+          ..write('description: $description, ')
+          ..write('mealsCount: $mealsCount, ')
+          ..write('kcalSnapshot: $kcalSnapshot, ')
+          ..write('goalType: $goalType, ')
+          ..write('pdfFile: $pdfFile, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3258,6 +3991,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NotesTable notes = $NotesTable(this);
   late final $NutritionCalculationsTable nutritionCalculations =
       $NutritionCalculationsTable(this);
+  late final $NutritionPlansTable nutritionPlans = $NutritionPlansTable(this);
   late final ClientDao clientDao = ClientDao(this as AppDatabase);
   late final AnamnesisDao anamnesisDao = AnamnesisDao(this as AppDatabase);
   late final MeasurementDao measurementDao = MeasurementDao(
@@ -3266,6 +4000,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final NoteDao noteDao = NoteDao(this as AppDatabase);
   late final NutritionCalculationDao nutritionCalculationDao =
       NutritionCalculationDao(this as AppDatabase);
+  late final NutritionPlanDao nutritionPlanDao = NutritionPlanDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3276,6 +4013,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     measurements,
     notes,
     nutritionCalculations,
+    nutritionPlans,
   ];
 }
 
@@ -3394,6 +4132,27 @@ final class $$ClientsTableReferences
     final cache = $_typedResult.readTableOrNull(
       _nutritionCalculationsRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$NutritionPlansTable, List<NutritionPlan>>
+  _nutritionPlansRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.nutritionPlans,
+    aliasName: $_aliasNameGenerator(
+      db.clients.clientId,
+      db.nutritionPlans.clientId,
+    ),
+  );
+
+  $$NutritionPlansTableProcessedTableManager get nutritionPlansRefs {
+    final manager = $$NutritionPlansTableTableManager($_db, $_db.nutritionPlans)
+        .filter(
+          (f) => f.clientId.clientId.sqlEquals($_itemColumn<int>('client_id')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(_nutritionPlansRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3553,6 +4312,31 @@ class $$ClientsTableFilterComposer
                     $removeJoinBuilderFromRootComposer,
               ),
         );
+    return f(composer);
+  }
+
+  Expression<bool> nutritionPlansRefs(
+    Expression<bool> Function($$NutritionPlansTableFilterComposer f) f,
+  ) {
+    final $$NutritionPlansTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.nutritionPlans,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NutritionPlansTableFilterComposer(
+            $db: $db,
+            $table: $db.nutritionPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return f(composer);
   }
 }
@@ -3748,6 +4532,31 @@ class $$ClientsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> nutritionPlansRefs<T extends Object>(
+    Expression<T> Function($$NutritionPlansTableAnnotationComposer a) f,
+  ) {
+    final $$NutritionPlansTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.nutritionPlans,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NutritionPlansTableAnnotationComposer(
+            $db: $db,
+            $table: $db.nutritionPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClientsTableTableManager
@@ -3768,6 +4577,7 @@ class $$ClientsTableTableManager
             bool measurementsRefs,
             bool notesRefs,
             bool nutritionCalculationsRefs,
+            bool nutritionPlansRefs,
           })
         > {
   $$ClientsTableTableManager(_$AppDatabase db, $ClientsTable table)
@@ -3839,6 +4649,7 @@ class $$ClientsTableTableManager
                 measurementsRefs = false,
                 notesRefs = false,
                 nutritionCalculationsRefs = false,
+                nutritionPlansRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -3847,6 +4658,7 @@ class $$ClientsTableTableManager
                     if (measurementsRefs) db.measurements,
                     if (notesRefs) db.notes,
                     if (nutritionCalculationsRefs) db.nutritionCalculations,
+                    if (nutritionPlansRefs) db.nutritionPlans,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -3927,6 +4739,27 @@ class $$ClientsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (nutritionPlansRefs)
+                        await $_getPrefetchedData<
+                          Client,
+                          $ClientsTable,
+                          NutritionPlan
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ClientsTableReferences
+                              ._nutritionPlansRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ClientsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).nutritionPlansRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.clientId == item.clientId,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3952,6 +4785,7 @@ typedef $$ClientsTableProcessedTableManager =
         bool measurementsRefs,
         bool notesRefs,
         bool nutritionCalculationsRefs,
+        bool nutritionPlansRefs,
       })
     >;
 typedef $$AnamnesisTableTableCreateCompanionBuilder =
@@ -5228,6 +6062,29 @@ final class $$NutritionCalculationsTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
+
+  static MultiTypedResultKey<$NutritionPlansTable, List<NutritionPlan>>
+  _nutritionPlansRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.nutritionPlans,
+    aliasName: $_aliasNameGenerator(
+      db.nutritionCalculations.calculationId,
+      db.nutritionPlans.calculationId,
+    ),
+  );
+
+  $$NutritionPlansTableProcessedTableManager get nutritionPlansRefs {
+    final manager = $$NutritionPlansTableTableManager($_db, $_db.nutritionPlans)
+        .filter(
+          (f) => f.calculationId.calculationId.sqlEquals(
+            $_itemColumn<int>('calculation_id')!,
+          ),
+        );
+
+    final cache = $_typedResult.readTableOrNull(_nutritionPlansRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$NutritionCalculationsTableFilterComposer
@@ -5342,6 +6199,31 @@ class $$NutritionCalculationsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> nutritionPlansRefs(
+    Expression<bool> Function($$NutritionPlansTableFilterComposer f) f,
+  ) {
+    final $$NutritionPlansTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.calculationId,
+      referencedTable: $db.nutritionPlans,
+      getReferencedColumn: (t) => t.calculationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NutritionPlansTableFilterComposer(
+            $db: $db,
+            $table: $db.nutritionPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -5554,6 +6436,31 @@ class $$NutritionCalculationsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> nutritionPlansRefs<T extends Object>(
+    Expression<T> Function($$NutritionPlansTableAnnotationComposer a) f,
+  ) {
+    final $$NutritionPlansTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.calculationId,
+      referencedTable: $db.nutritionPlans,
+      getReferencedColumn: (t) => t.calculationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NutritionPlansTableAnnotationComposer(
+            $db: $db,
+            $table: $db.nutritionPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$NutritionCalculationsTableTableManager
@@ -5569,7 +6476,7 @@ class $$NutritionCalculationsTableTableManager
           $$NutritionCalculationsTableUpdateCompanionBuilder,
           (NutritionCalculation, $$NutritionCalculationsTableReferences),
           NutritionCalculation,
-          PrefetchHooks Function({bool clientId})
+          PrefetchHooks Function({bool clientId, bool nutritionPlansRefs})
         > {
   $$NutritionCalculationsTableTableManager(
     _$AppDatabase db,
@@ -5677,7 +6584,576 @@ class $$NutritionCalculationsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({clientId = false}) {
+          prefetchHooksCallback:
+              ({clientId = false, nutritionPlansRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (nutritionPlansRefs) db.nutritionPlans,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (clientId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.clientId,
+                                    referencedTable:
+                                        $$NutritionCalculationsTableReferences
+                                            ._clientIdTable(db),
+                                    referencedColumn:
+                                        $$NutritionCalculationsTableReferences
+                                            ._clientIdTable(db)
+                                            .clientId,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (nutritionPlansRefs)
+                        await $_getPrefetchedData<
+                          NutritionCalculation,
+                          $NutritionCalculationsTable,
+                          NutritionPlan
+                        >(
+                          currentTable: table,
+                          referencedTable:
+                              $$NutritionCalculationsTableReferences
+                                  ._nutritionPlansRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$NutritionCalculationsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).nutritionPlansRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.calculationId == item.calculationId,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$NutritionCalculationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NutritionCalculationsTable,
+      NutritionCalculation,
+      $$NutritionCalculationsTableFilterComposer,
+      $$NutritionCalculationsTableOrderingComposer,
+      $$NutritionCalculationsTableAnnotationComposer,
+      $$NutritionCalculationsTableCreateCompanionBuilder,
+      $$NutritionCalculationsTableUpdateCompanionBuilder,
+      (NutritionCalculation, $$NutritionCalculationsTableReferences),
+      NutritionCalculation,
+      PrefetchHooks Function({bool clientId, bool nutritionPlansRefs})
+    >;
+typedef $$NutritionPlansTableCreateCompanionBuilder =
+    NutritionPlansCompanion Function({
+      Value<int> planId,
+      required int clientId,
+      required int calculationId,
+      required String name,
+      Value<PlanStatus> status,
+      Value<String?> description,
+      Value<int?> mealsCount,
+      Value<double?> kcalSnapshot,
+      Value<GoalType?> goalType,
+      Value<String?> pdfFile,
+      Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
+    });
+typedef $$NutritionPlansTableUpdateCompanionBuilder =
+    NutritionPlansCompanion Function({
+      Value<int> planId,
+      Value<int> clientId,
+      Value<int> calculationId,
+      Value<String> name,
+      Value<PlanStatus> status,
+      Value<String?> description,
+      Value<int?> mealsCount,
+      Value<double?> kcalSnapshot,
+      Value<GoalType?> goalType,
+      Value<String?> pdfFile,
+      Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
+    });
+
+final class $$NutritionPlansTableReferences
+    extends BaseReferences<_$AppDatabase, $NutritionPlansTable, NutritionPlan> {
+  $$NutritionPlansTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ClientsTable _clientIdTable(_$AppDatabase db) =>
+      db.clients.createAlias(
+        $_aliasNameGenerator(db.nutritionPlans.clientId, db.clients.clientId),
+      );
+
+  $$ClientsTableProcessedTableManager get clientId {
+    final $_column = $_itemColumn<int>('client_id')!;
+
+    final manager = $$ClientsTableTableManager(
+      $_db,
+      $_db.clients,
+    ).filter((f) => f.clientId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $NutritionCalculationsTable _calculationIdTable(_$AppDatabase db) =>
+      db.nutritionCalculations.createAlias(
+        $_aliasNameGenerator(
+          db.nutritionPlans.calculationId,
+          db.nutritionCalculations.calculationId,
+        ),
+      );
+
+  $$NutritionCalculationsTableProcessedTableManager get calculationId {
+    final $_column = $_itemColumn<int>('calculation_id')!;
+
+    final manager = $$NutritionCalculationsTableTableManager(
+      $_db,
+      $_db.nutritionCalculations,
+    ).filter((f) => f.calculationId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_calculationIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$NutritionPlansTableFilterComposer
+    extends Composer<_$AppDatabase, $NutritionPlansTable> {
+  $$NutritionPlansTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get planId => $composableBuilder(
+    column: $table.planId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<PlanStatus, PlanStatus, int> get status =>
+      $composableBuilder(
+        column: $table.status,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mealsCount => $composableBuilder(
+    column: $table.mealsCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get kcalSnapshot => $composableBuilder(
+    column: $table.kcalSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<GoalType?, GoalType, int> get goalType =>
+      $composableBuilder(
+        column: $table.goalType,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get pdfFile => $composableBuilder(
+    column: $table.pdfFile,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClientsTableFilterComposer get clientId {
+    final $$ClientsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.clients,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientsTableFilterComposer(
+            $db: $db,
+            $table: $db.clients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$NutritionCalculationsTableFilterComposer get calculationId {
+    final $$NutritionCalculationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.calculationId,
+          referencedTable: $db.nutritionCalculations,
+          getReferencedColumn: (t) => t.calculationId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NutritionCalculationsTableFilterComposer(
+                $db: $db,
+                $table: $db.nutritionCalculations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$NutritionPlansTableOrderingComposer
+    extends Composer<_$AppDatabase, $NutritionPlansTable> {
+  $$NutritionPlansTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get planId => $composableBuilder(
+    column: $table.planId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mealsCount => $composableBuilder(
+    column: $table.mealsCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get kcalSnapshot => $composableBuilder(
+    column: $table.kcalSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get goalType => $composableBuilder(
+    column: $table.goalType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pdfFile => $composableBuilder(
+    column: $table.pdfFile,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClientsTableOrderingComposer get clientId {
+    final $$ClientsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.clients,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientsTableOrderingComposer(
+            $db: $db,
+            $table: $db.clients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$NutritionCalculationsTableOrderingComposer get calculationId {
+    final $$NutritionCalculationsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.calculationId,
+          referencedTable: $db.nutritionCalculations,
+          getReferencedColumn: (t) => t.calculationId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NutritionCalculationsTableOrderingComposer(
+                $db: $db,
+                $table: $db.nutritionCalculations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$NutritionPlansTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NutritionPlansTable> {
+  $$NutritionPlansTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get planId =>
+      $composableBuilder(column: $table.planId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PlanStatus, int> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get mealsCount => $composableBuilder(
+    column: $table.mealsCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get kcalSnapshot => $composableBuilder(
+    column: $table.kcalSnapshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<GoalType?, int> get goalType =>
+      $composableBuilder(column: $table.goalType, builder: (column) => column);
+
+  GeneratedColumn<String> get pdfFile =>
+      $composableBuilder(column: $table.pdfFile, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ClientsTableAnnotationComposer get clientId {
+    final $$ClientsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clientId,
+      referencedTable: $db.clients,
+      getReferencedColumn: (t) => t.clientId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clients,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$NutritionCalculationsTableAnnotationComposer get calculationId {
+    final $$NutritionCalculationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.calculationId,
+          referencedTable: $db.nutritionCalculations,
+          getReferencedColumn: (t) => t.calculationId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NutritionCalculationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.nutritionCalculations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$NutritionPlansTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NutritionPlansTable,
+          NutritionPlan,
+          $$NutritionPlansTableFilterComposer,
+          $$NutritionPlansTableOrderingComposer,
+          $$NutritionPlansTableAnnotationComposer,
+          $$NutritionPlansTableCreateCompanionBuilder,
+          $$NutritionPlansTableUpdateCompanionBuilder,
+          (NutritionPlan, $$NutritionPlansTableReferences),
+          NutritionPlan,
+          PrefetchHooks Function({bool clientId, bool calculationId})
+        > {
+  $$NutritionPlansTableTableManager(
+    _$AppDatabase db,
+    $NutritionPlansTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NutritionPlansTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NutritionPlansTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NutritionPlansTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> planId = const Value.absent(),
+                Value<int> clientId = const Value.absent(),
+                Value<int> calculationId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<PlanStatus> status = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<int?> mealsCount = const Value.absent(),
+                Value<double?> kcalSnapshot = const Value.absent(),
+                Value<GoalType?> goalType = const Value.absent(),
+                Value<String?> pdfFile = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+              }) => NutritionPlansCompanion(
+                planId: planId,
+                clientId: clientId,
+                calculationId: calculationId,
+                name: name,
+                status: status,
+                description: description,
+                mealsCount: mealsCount,
+                kcalSnapshot: kcalSnapshot,
+                goalType: goalType,
+                pdfFile: pdfFile,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> planId = const Value.absent(),
+                required int clientId,
+                required int calculationId,
+                required String name,
+                Value<PlanStatus> status = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<int?> mealsCount = const Value.absent(),
+                Value<double?> kcalSnapshot = const Value.absent(),
+                Value<GoalType?> goalType = const Value.absent(),
+                Value<String?> pdfFile = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+              }) => NutritionPlansCompanion.insert(
+                planId: planId,
+                clientId: clientId,
+                calculationId: calculationId,
+                name: name,
+                status: status,
+                description: description,
+                mealsCount: mealsCount,
+                kcalSnapshot: kcalSnapshot,
+                goalType: goalType,
+                pdfFile: pdfFile,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$NutritionPlansTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({clientId = false, calculationId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -5702,13 +7178,26 @@ class $$NutritionCalculationsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.clientId,
-                                referencedTable:
-                                    $$NutritionCalculationsTableReferences
-                                        ._clientIdTable(db),
+                                referencedTable: $$NutritionPlansTableReferences
+                                    ._clientIdTable(db),
                                 referencedColumn:
-                                    $$NutritionCalculationsTableReferences
+                                    $$NutritionPlansTableReferences
                                         ._clientIdTable(db)
                                         .clientId,
+                              )
+                              as T;
+                    }
+                    if (calculationId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.calculationId,
+                                referencedTable: $$NutritionPlansTableReferences
+                                    ._calculationIdTable(db),
+                                referencedColumn:
+                                    $$NutritionPlansTableReferences
+                                        ._calculationIdTable(db)
+                                        .calculationId,
                               )
                               as T;
                     }
@@ -5724,19 +7213,19 @@ class $$NutritionCalculationsTableTableManager
       );
 }
 
-typedef $$NutritionCalculationsTableProcessedTableManager =
+typedef $$NutritionPlansTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $NutritionCalculationsTable,
-      NutritionCalculation,
-      $$NutritionCalculationsTableFilterComposer,
-      $$NutritionCalculationsTableOrderingComposer,
-      $$NutritionCalculationsTableAnnotationComposer,
-      $$NutritionCalculationsTableCreateCompanionBuilder,
-      $$NutritionCalculationsTableUpdateCompanionBuilder,
-      (NutritionCalculation, $$NutritionCalculationsTableReferences),
-      NutritionCalculation,
-      PrefetchHooks Function({bool clientId})
+      $NutritionPlansTable,
+      NutritionPlan,
+      $$NutritionPlansTableFilterComposer,
+      $$NutritionPlansTableOrderingComposer,
+      $$NutritionPlansTableAnnotationComposer,
+      $$NutritionPlansTableCreateCompanionBuilder,
+      $$NutritionPlansTableUpdateCompanionBuilder,
+      (NutritionPlan, $$NutritionPlansTableReferences),
+      NutritionPlan,
+      PrefetchHooks Function({bool clientId, bool calculationId})
     >;
 
 class $AppDatabaseManager {
@@ -5752,4 +7241,6 @@ class $AppDatabaseManager {
       $$NotesTableTableManager(_db, _db.notes);
   $$NutritionCalculationsTableTableManager get nutritionCalculations =>
       $$NutritionCalculationsTableTableManager(_db, _db.nutritionCalculations);
+  $$NutritionPlansTableTableManager get nutritionPlans =>
+      $$NutritionPlansTableTableManager(_db, _db.nutritionPlans);
 }

@@ -11,23 +11,25 @@ import '../daos/client_dao.dart';
 import '../daos/measurement_dao.dart';
 import '../daos/note_dao.dart';
 import '../daos/nutrition_calculation_dao.dart';
+import '../daos/nutrition_plan_dao.dart';
 import 'tables/anamnesis.dart';
 import 'tables/clients.dart';
 import 'tables/measurements.dart';
 import 'tables/notes.dart';
 import 'tables/nutrition_calculations.dart';
+import 'tables/nutrition_plans.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Clients, AnamnesisTable, Measurements, Notes, NutritionCalculations],
-  daos: [ClientDao, AnamnesisDao, MeasurementDao, NoteDao, NutritionCalculationDao],
+  tables: [Clients, AnamnesisTable, Measurements, Notes, NutritionCalculations, NutritionPlans],
+  daos: [ClientDao, AnamnesisDao, MeasurementDao, NoteDao, NutritionCalculationDao, NutritionPlanDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -37,6 +39,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 5) {
             await m.createTable(nutritionCalculations);
+          }
+          if (from < 6) {
+            await m.createTable(nutritionPlans);
           }
         },
       );
