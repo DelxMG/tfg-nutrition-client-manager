@@ -6,6 +6,7 @@ import 'package:nutritrack/data/repositories/client_summary_repository.dart';
 import 'package:nutritrack/data/repositories/measurement_repository.dart';
 import 'package:nutritrack/data/repositories/note_repository.dart';
 import 'package:nutritrack/data/repositories/nutrition_calculation_repository.dart';
+import 'package:nutritrack/data/repositories/nutrition_plan_repository.dart';
 
 /// Single [AppDatabase] instance for the entire app lifetime.
 /// The connection is closed automatically when the [ProviderScope] is disposed
@@ -81,4 +82,17 @@ final clientNutritionCalculationsProvider =
   return ref
       .watch(nutritionCalculationRepositoryProvider)
       .watchCalculationsByClientId(clientId);
+});
+
+/// [NutritionPlanRepository] built on top of the shared [AppDatabase].
+final nutritionPlanRepositoryProvider = Provider<NutritionPlanRepository>((ref) {
+  return NutritionPlanRepository(ref.watch(appDatabaseProvider));
+});
+
+/// Reactive list of all nutrition plans for a given client, ordered by createdAt desc.
+final clientNutritionPlansProvider =
+    StreamProvider.family<List<NutritionPlan>, int>((ref, clientId) {
+  return ref
+      .watch(nutritionPlanRepositoryProvider)
+      .watchPlansByClientId(clientId);
 });
