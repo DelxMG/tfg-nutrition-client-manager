@@ -15,8 +15,8 @@ import 'package:nutritrack/presentation/screens/clients/widgets/detail/plan_form
 // ── Macro colour tokens ───────────────────────────────────────────────────────
 
 const _kProteinColor = Color(0xFF22C55E);
-const _kCarbColor    = Color(0xFFE3A12A);
-const _kFatColor     = Color(0xFF3B82F6);
+const _kCarbColor = Color(0xFFE3A12A);
+const _kFatColor = Color(0xFF3B82F6);
 
 // ── Main tab widget ───────────────────────────────────────────────────────────
 
@@ -39,14 +39,14 @@ class CalculationsTab extends ConsumerStatefulWidget {
 }
 
 class _CalculationsTabState extends ConsumerState<CalculationsTab> {
-  final _weightController       = TextEditingController();
-  final _heightController       = TextEditingController();
-  final _ageController          = TextEditingController();
+  final _weightController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _ageController = TextEditingController();
   final _proteinPerKgController = TextEditingController(text: '2.0');
-  final _fatPerKgController     = TextEditingController(text: '0.9');
+  final _fatPerKgController = TextEditingController(text: '0.9');
 
-  GoalType _goalType      = GoalType.maintenance;
-  BmrFormula _formula     = BmrFormula.mifflinStJeor;
+  GoalType _goalType = GoalType.maintenance;
+  BmrFormula _formula = BmrFormula.mifflinStJeor;
   PhysicalActivity? _activity;
   Sex? _sex;
   bool _saving = false;
@@ -55,16 +55,18 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
   void initState() {
     super.initState();
     _prefill();
-    for (final c in _controllers) { c.addListener(_onChanged); }
+    for (final c in _controllers) {
+      c.addListener(_onChanged);
+    }
   }
 
   List<TextEditingController> get _controllers => [
-        _weightController,
-        _heightController,
-        _ageController,
-        _proteinPerKgController,
-        _fatPerKgController,
-      ];
+    _weightController,
+    _heightController,
+    _ageController,
+    _proteinPerKgController,
+    _fatPerKgController,
+  ];
 
   void _prefill() {
     final w = widget.latestMeasurement?.weight;
@@ -73,7 +75,7 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
     if (h != null) _heightController.text = h.toString();
     final age = calculateClientAge(widget.client.birthDate);
     if (age != null) _ageController.text = age.toString();
-    _sex      = widget.client.sex;
+    _sex = widget.client.sex;
     _activity = widget.anamnesis?.physicalActivity;
   }
 
@@ -91,8 +93,8 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
   void _reset() {
     setState(() {
       _goalType = GoalType.maintenance;
-      _formula  = BmrFormula.mifflinStJeor;
-      _sex      = widget.client.sex;
+      _formula = BmrFormula.mifflinStJeor;
+      _sex = widget.client.sex;
       _activity = widget.anamnesis?.physicalActivity;
 
       final w = widget.latestMeasurement?.weight;
@@ -100,27 +102,35 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
       final h = widget.client.height;
       _heightController.text = h != null ? h.toString() : '';
       final age = calculateClientAge(widget.client.birthDate);
-      _ageController.text          = age != null ? age.toString() : '';
+      _ageController.text = age != null ? age.toString() : '';
       _proteinPerKgController.text = '2.0';
-      _fatPerKgController.text     = '0.9';
+      _fatPerKgController.text = '0.9';
     });
   }
 
   NutritionResult? get _result {
-    final weight       = double.tryParse(_weightController.text.trim());
-    final height       = int.tryParse(_heightController.text.trim());
-    final age          = int.tryParse(_ageController.text.trim());
-    final proteinPerKg = double.tryParse(_proteinPerKgController.text.trim()) ?? 2.0;
-    final fatPerKg     = double.tryParse(_fatPerKgController.text.trim()) ?? 0.9;
+    final weight = double.tryParse(_weightController.text.trim());
+    final height = int.tryParse(_heightController.text.trim());
+    final age = int.tryParse(_ageController.text.trim());
+    final proteinPerKg =
+        double.tryParse(_proteinPerKgController.text.trim()) ?? 2.0;
+    final fatPerKg = double.tryParse(_fatPerKgController.text.trim()) ?? 0.9;
 
     final bmr = calculateBmr(
-      weightKg: weight, heightCm: height, age: age,
-      sex: _sex, formula: _formula,
+      weightKg: weight,
+      heightCm: height,
+      age: age,
+      sex: _sex,
+      formula: _formula,
     );
     final tdee = calculateTdee(bmr: bmr, activity: _activity);
     return calculateNutrition(
-      bmr: bmr, tdee: tdee, goalType: _goalType,
-      weightKg: weight, proteinPerKg: proteinPerKg, fatPerKg: fatPerKg,
+      bmr: bmr,
+      tdee: tdee,
+      goalType: _goalType,
+      weightKg: weight,
+      proteinPerKg: proteinPerKg,
+      fatPerKg: fatPerKg,
     );
   }
 
@@ -130,35 +140,41 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
     final result = _result;
     if (result == null || !result.isValid) return;
 
-    final weight       = double.tryParse(_weightController.text.trim());
-    final height       = int.tryParse(_heightController.text.trim());
-    final age          = int.tryParse(_ageController.text.trim());
+    final weight = double.tryParse(_weightController.text.trim());
+    final height = int.tryParse(_heightController.text.trim());
+    final age = int.tryParse(_ageController.text.trim());
     final proteinPerKg = double.tryParse(_proteinPerKgController.text.trim());
-    final fatPerKg     = double.tryParse(_fatPerKgController.text.trim());
+    final fatPerKg = double.tryParse(_fatPerKgController.text.trim());
 
     setState(() => _saving = true);
     try {
-      await ref.read(nutritionCalculationRepositoryProvider).insertCalculation(
-        clientId:       widget.clientId,
-        goalType:       _goalType,
-        bmrFormula:     _formula,
-        bmr:            result.bmr,
-        tdee:           result.tdee,
-        kcalTarget:     result.kcalTarget,
-        proteins:       result.proteins,
-        carbohydrates:  result.carbohydrates,
-        fats:           result.fats,
-        weightUsed:     weight,
-        heightUsed:     height,
-        ageUsed:        age,
-        activityFactor: _activity != null ? activityFactorFor(_activity!) : null,
-        proteinPerKg:   proteinPerKg,
-        fatPerKg:       fatPerKg,
-      );
+      await ref
+          .read(nutritionCalculationRepositoryProvider)
+          .insertCalculation(
+            clientId: widget.clientId,
+            goalType: _goalType,
+            bmrFormula: _formula,
+            bmr: result.bmr,
+            tdee: result.tdee,
+            kcalTarget: result.kcalTarget,
+            proteins: result.proteins,
+            carbohydrates: result.carbohydrates,
+            fats: result.fats,
+            weightUsed: weight,
+            heightUsed: height,
+            ageUsed: age,
+            activityFactor: _activity != null
+                ? activityFactorFor(_activity!)
+                : null,
+            proteinPerKg: proteinPerKg,
+            fatPerKg: fatPerKg,
+          );
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al guardar el cálculo. Inténtalo de nuevo.')),
+          const SnackBar(
+            content: Text('Error al guardar el cálculo. Inténtalo de nuevo.'),
+          ),
         );
       }
     } finally {
@@ -182,7 +198,9 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFD94A4A)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFD94A4A),
+            ),
             child: const Text('Eliminar'),
           ),
         ],
@@ -197,7 +215,9 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al eliminar el cálculo. Inténtalo de nuevo.')),
+          const SnackBar(
+            content: Text('Error al eliminar el cálculo. Inténtalo de nuevo.'),
+          ),
         );
       }
     }
@@ -216,8 +236,9 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final calculationsAsync =
-        ref.watch(clientNutritionCalculationsProvider(widget.clientId));
+    final calculationsAsync = ref.watch(
+      clientNutritionCalculationsProvider(widget.clientId),
+    );
     final result = _result;
 
     return SingleChildScrollView(
@@ -239,18 +260,18 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
                     ),
                     const SizedBox(height: 12),
                     _ParametersCard(
-                      weightController:      _weightController,
-                      heightController:      _heightController,
-                      ageController:         _ageController,
+                      weightController: _weightController,
+                      heightController: _heightController,
+                      ageController: _ageController,
                       proteinPerKgController: _proteinPerKgController,
-                      fatPerKgController:    _fatPerKgController,
-                      sex:      _sex,
+                      fatPerKgController: _fatPerKgController,
+                      sex: _sex,
                       activity: _activity,
-                      formula:  _formula,
-                      saving:   _saving,
-                      onSexChanged:      (s) => setState(() => _sex = s),
+                      formula: _formula,
+                      saving: _saving,
+                      onSexChanged: (s) => setState(() => _sex = s),
                       onActivityChanged: (a) => setState(() => _activity = a),
-                      onFormulaChanged:  (f) => setState(() => _formula = f),
+                      onFormulaChanged: (f) => setState(() => _formula = f),
                     ),
                   ],
                 ),
@@ -263,11 +284,11 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
                     _ResultCard(result: result),
                     const SizedBox(height: 12),
                     _MacrosCard(
-                      result:   result,
-                      saving:   _saving,
-                      canSave:  _canSave,
-                      onSave:   _save,
-                      onReset:  _reset,
+                      result: result,
+                      saving: _saving,
+                      canSave: _canSave,
+                      onSave: _save,
+                      onReset: _reset,
                     ),
                   ],
                 ),
@@ -288,9 +309,12 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
           const SizedBox(height: 12),
           calculationsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error:   (e, _) => Text(
+            error: (e, _) => Text(
               'Error al cargar el historial',
-              style: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: cs.onSurfaceVariant,
+              ),
             ),
             data: (calcs) => calcs.isEmpty
                 ? const _EmptyHistoryState()
@@ -346,10 +370,10 @@ class _GoalCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: GoalType.values.asMap().entries.map((e) {
-              final isLast  = e.key == GoalType.values.length - 1;
-              final g       = e.value;
+              final isLast = e.key == GoalType.values.length - 1;
+              final g = e.value;
               final selected = goalType == g;
-              final color   = _goalTypeColor(g);
+              final color = _goalTypeColor(g);
 
               return Expanded(
                 child: Padding(
@@ -462,14 +486,16 @@ class _ParametersCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              ...BmrFormula.values.map((f) => Padding(
-                padding: const EdgeInsets.only(left: 6),
-                child: _SelectChip(
-                  label: _bmrFormulaLabel(f),
-                  selected: formula == f,
-                  onTap: saving ? null : () => onFormulaChanged(f),
+              ...BmrFormula.values.map(
+                (f) => Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: _SelectChip(
+                    label: _bmrFormulaLabel(f),
+                    selected: formula == f,
+                    onTap: saving ? null : () => onFormulaChanged(f),
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -526,7 +552,9 @@ class _ParametersCard extends StatelessWidget {
                         child: _SelectChip(
                           label: s.label,
                           selected: sex == s,
-                          onTap: saving ? null : () => onSexChanged(sex == s ? null : s),
+                          onTap: saving
+                              ? null
+                              : () => onSexChanged(sex == s ? null : s),
                         ),
                       );
                     }).toList(),
@@ -548,16 +576,22 @@ class _ParametersCard extends StatelessWidget {
                           _SelectChip(
                             label: '—',
                             selected: activity == null,
-                            onTap: saving ? null : () => onActivityChanged(null),
+                            onTap: saving
+                                ? null
+                                : () => onActivityChanged(null),
                           ),
-                          ...PhysicalActivity.values.map((a) => Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: _SelectChip(
-                              label: a.label,
-                              selected: activity == a,
-                              onTap: saving ? null : () => onActivityChanged(a),
+                          ...PhysicalActivity.values.map(
+                            (a) => Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: _SelectChip(
+                                label: a.label,
+                                selected: activity == a,
+                                onTap: saving
+                                    ? null
+                                    : () => onActivityChanged(a),
+                              ),
                             ),
-                          )),
+                          ),
                         ],
                       ),
                     ),
@@ -605,7 +639,7 @@ class _ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs        = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final hasResult = result != null && result!.isValid;
 
     return Container(
@@ -622,8 +656,11 @@ class _ResultCard extends StatelessWidget {
           // ── Header ──────────────────────────────────────────────────
           Row(
             children: [
-              Icon(Icons.local_fire_department_outlined,
-                  size: 16, color: cs.primary),
+              Icon(
+                Icons.local_fire_department_outlined,
+                size: 16,
+                color: cs.primary,
+              ),
               const SizedBox(width: 6),
               Text(
                 'Resultado',
@@ -639,15 +676,20 @@ class _ResultCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'Completa los datos para calcular',
-              style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ] else ...[
             const SizedBox(height: 14),
             // TMB
             Row(
               children: [
-                Text('TMB',
-                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface)),
+                Text(
+                  'TMB',
+                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+                ),
                 const Spacer(),
                 Text(
                   '${result!.bmr.toStringAsFixed(0)} kcal',
@@ -663,8 +705,10 @@ class _ResultCard extends StatelessWidget {
             // TDEE
             Row(
               children: [
-                Text('TDEE',
-                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface)),
+                Text(
+                  'TDEE',
+                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface),
+                ),
                 const Spacer(),
                 Text(
                   '${result!.tdee.toStringAsFixed(0)} kcal',
@@ -724,7 +768,7 @@ class _MacrosCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs        = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final hasResult = result != null && result!.isValid;
 
     return Container(
@@ -787,7 +831,10 @@ class _MacrosCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'Completa los datos para ver la distribución',
-              style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
           ],
@@ -805,13 +852,17 @@ class _MacrosCard extends StatelessWidget {
                             width: 14,
                             height: 14,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Icon(Icons.save_outlined, size: 15),
                     label: Text(
                       'Guardar cálculo',
                       style: GoogleFonts.inter(
-                          fontSize: 13, fontWeight: FontWeight.w600),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
@@ -819,7 +870,8 @@ class _MacrosCard extends StatelessWidget {
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       shape: const RoundedRectangleBorder(
-                          borderRadius: clientsBorderRadius),
+                        borderRadius: clientsBorderRadius,
+                      ),
                     ),
                   ),
                 ),
@@ -833,14 +885,17 @@ class _MacrosCard extends StatelessWidget {
                   label: Text(
                     'Reset',
                     style: GoogleFonts.inter(
-                        fontSize: 13, fontWeight: FontWeight.w500),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: cs.onSurfaceVariant,
                     side: BorderSide(color: cs.outlineVariant),
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     shape: const RoundedRectangleBorder(
-                        borderRadius: clientsBorderRadius),
+                      borderRadius: clientsBorderRadius,
+                    ),
                   ),
                 ),
               ),
@@ -864,9 +919,49 @@ class _MacroBar extends StatelessWidget {
     final target = result.kcalTarget;
     if (target <= 0) return const SizedBox.shrink();
 
-    final proteinRatio = (result.proteinKcal / target).clamp(0.01, 0.97);
-    final carbRatio    = (result.carbKcal    / target).clamp(0.01, 0.97);
-    final fatRatio     = (1.0 - proteinRatio - carbRatio).clamp(0.01, 0.97);
+    final proteinKcal = result.proteinKcal;
+    final carbKcal = result.carbKcal;
+    final fatKcal = result.fatKcal;
+    final totalMacros = proteinKcal + carbKcal + fatKcal;
+
+    if (totalMacros <= 0) {
+      return ClipRRect(
+        borderRadius: clientsChipBorderRadius,
+        child: SizedBox(
+          height: 12,
+          child: Container(
+            width: double.infinity,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          ),
+        ),
+      );
+    }
+
+    double proteinRatio = proteinKcal / totalMacros;
+    double carbRatio = carbKcal / totalMacros;
+    double fatRatio = fatKcal / totalMacros;
+
+    if (proteinRatio.isNaN || proteinRatio.isInfinite) proteinRatio = 0;
+    if (carbRatio.isNaN || carbRatio.isInfinite) carbRatio = 0;
+    if (fatRatio.isNaN || fatRatio.isInfinite) fatRatio = 0;
+
+    final hasAnyValue = proteinRatio > 0 || carbRatio > 0 || fatRatio > 0;
+    if (!hasAnyValue) {
+      return ClipRRect(
+        borderRadius: clientsChipBorderRadius,
+        child: SizedBox(
+          height: 12,
+          child: Container(
+            width: double.infinity,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          ),
+        ),
+      );
+    }
+
+    final proteinWidth = proteinRatio;
+    final carbWidth = carbRatio;
+    final fatWidth = fatRatio;
 
     return ClipRRect(
       borderRadius: clientsChipBorderRadius,
@@ -878,24 +973,34 @@ class _MacroBar extends StatelessWidget {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOut,
-                  width: proteinRatio * w,
-                  color: _kProteinColor,
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOut,
-                  width: carbRatio * w,
-                  color: _kCarbColor,
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOut,
-                  width: fatRatio * w,
-                  color: _kFatColor,
-                ),
+                if (proteinWidth > 0)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+                    width: proteinWidth * w,
+                    color: _kProteinColor,
+                  ),
+                if (carbWidth > 0)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+                    width: carbWidth * w,
+                    color: _kCarbColor,
+                  ),
+                if (fatWidth > 0)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+                    width: fatWidth * w,
+                    color: _kFatColor,
+                  ),
+                if (proteinWidth == 0 && carbWidth == 0 && fatWidth == 0)
+                  Container(
+                    width: w,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                  ),
               ],
             );
           },
@@ -924,7 +1029,7 @@ class _MacroRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs  = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final pct = totalKcal > 0 ? (kcal / totalKcal * 100).round() : 0;
 
     return Row(
@@ -954,8 +1059,7 @@ class _MacroRow extends StatelessWidget {
           width: 32,
           child: Text(
             '$pct%',
-            style: GoogleFonts.inter(
-                fontSize: 12, color: cs.onSurfaceVariant),
+            style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
             textAlign: TextAlign.right,
           ),
         ),
@@ -1075,7 +1179,7 @@ class _HistoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs        = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final goalColor = _goalTypeColor(calc.goalType);
 
     return Padding(
@@ -1209,7 +1313,9 @@ class _DeleteButtonState extends State<_DeleteButton>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
     _scale = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(
         parent: _controller,
@@ -1227,7 +1333,7 @@ class _DeleteButtonState extends State<_DeleteButton>
 
   @override
   Widget build(BuildContext context) {
-    final cs      = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final enabled = widget.onPressed != null;
 
     return Tooltip(
@@ -1235,10 +1341,16 @@ class _DeleteButtonState extends State<_DeleteButton>
       child: MouseRegion(
         cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
         onEnter: enabled
-            ? (_) { setState(() => _hovered = true);  _controller.forward(); }
+            ? (_) {
+                setState(() => _hovered = true);
+                _controller.forward();
+              }
             : null,
         onExit: enabled
-            ? (_) { setState(() => _hovered = false); _controller.reverse(); }
+            ? (_) {
+                setState(() => _hovered = false);
+                _controller.reverse();
+              }
             : null,
         child: GestureDetector(
           onTap: widget.onPressed,
@@ -1248,7 +1360,8 @@ class _DeleteButtonState extends State<_DeleteButton>
                 Transform.scale(scale: _scale.value, child: child),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
-              width: 28, height: 28,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 color: _hovered
                     ? _red.withValues(alpha: 0.08)
@@ -1292,23 +1405,27 @@ class _EmptyHistoryState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.calculate_outlined,
-              size: 36,
-              color: cs.onSurfaceVariant.withValues(alpha: 0.4)),
+          Icon(
+            Icons.calculate_outlined,
+            size: 36,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
           Text(
             'Sin cálculos guardados',
             style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: cs.onSurfaceVariant),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: cs.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Completa el formulario y guarda para registrar un cálculo.',
             style: GoogleFonts.inter(
-                fontSize: 13,
-                color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+              fontSize: 13,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
           ),
         ],
       ),
@@ -1362,8 +1479,10 @@ class _NumericField extends StatelessWidget {
         TextField(
           controller: controller,
           enabled: enabled,
-          keyboardType:
-              TextInputType.numberWithOptions(decimal: decimal, signed: false),
+          keyboardType: TextInputType.numberWithOptions(
+            decimal: decimal,
+            signed: false,
+          ),
           style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
           decoration: _fieldDecoration(cs),
         ),
@@ -1377,15 +1496,11 @@ class _SelectChip extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
 
-  const _SelectChip({
-    required this.label,
-    required this.selected,
-    this.onTap,
-  });
+  const _SelectChip({required this.label, required this.selected, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs    = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final color = cs.primary;
 
     return InkWell(
@@ -1395,9 +1510,7 @@ class _SelectChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.10)
-              : Colors.transparent,
+          color: selected ? color.withValues(alpha: 0.10) : Colors.transparent,
           borderRadius: clientsChipBorderRadius,
           border: Border.all(
             color: selected ? color : cs.outlineVariant,
@@ -1420,53 +1533,63 @@ class _SelectChip extends StatelessWidget {
 // ── Shared decoration helper ──────────────────────────────────────────────────
 
 InputDecoration _fieldDecoration(ColorScheme cs) => InputDecoration(
-      isDense: true,
-      filled: true,
-      fillColor: cs.surfaceContainerHighest,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      border: OutlineInputBorder(
-        borderRadius: clientsChipBorderRadius,
-        borderSide: BorderSide(color: cs.outlineVariant),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: clientsChipBorderRadius,
-        borderSide: BorderSide(color: cs.outlineVariant),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: clientsChipBorderRadius,
-        borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
-      ),
-    );
+  isDense: true,
+  filled: true,
+  fillColor: cs.surfaceContainerHighest,
+  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+  border: OutlineInputBorder(
+    borderRadius: clientsChipBorderRadius,
+    borderSide: BorderSide(color: cs.outlineVariant),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: clientsChipBorderRadius,
+    borderSide: BorderSide(color: cs.outlineVariant),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: clientsChipBorderRadius,
+    borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
+  ),
+);
 
 // ── Date / label helpers ──────────────────────────────────────────────────────
 
 String _formatDateShort(DateTime d) {
   const months = [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+    'ene',
+    'feb',
+    'mar',
+    'abr',
+    'may',
+    'jun',
+    'jul',
+    'ago',
+    'sep',
+    'oct',
+    'nov',
+    'dic',
   ];
   return '${d.day} ${months[d.month - 1]} ${d.year}';
 }
 
 String _goalTypeLabel(GoalType type) => switch (type) {
-      GoalType.deficit     => 'Déficit',
-      GoalType.maintenance => 'Mantenimiento',
-      GoalType.surplus     => 'Superávit',
-    };
+  GoalType.deficit => 'Déficit',
+  GoalType.maintenance => 'Mantenimiento',
+  GoalType.surplus => 'Superávit',
+};
 
 String _goalTypeSubtitle(GoalType type) => switch (type) {
-      GoalType.deficit     => '-10% TDEE',
-      GoalType.maintenance => '= TDEE',
-      GoalType.surplus     => '+10% TDEE',
-    };
+  GoalType.deficit => '-10% TDEE',
+  GoalType.maintenance => '= TDEE',
+  GoalType.surplus => '+10% TDEE',
+};
 
 Color _goalTypeColor(GoalType type) => switch (type) {
-      GoalType.deficit     => const Color(0xFF3B82F6),
-      GoalType.maintenance => const Color(0xFF22C55E),
-      GoalType.surplus     => const Color(0xFFE3A12A),
-    };
+  GoalType.deficit => const Color(0xFF3B82F6),
+  GoalType.maintenance => const Color(0xFF22C55E),
+  GoalType.surplus => const Color(0xFFE3A12A),
+};
 
 String _bmrFormulaLabel(BmrFormula formula) => switch (formula) {
-      BmrFormula.mifflinStJeor  => 'Mifflin-St Jeor',
-      BmrFormula.harrisBenedict => 'Harris-Benedict',
-    };
+  BmrFormula.mifflinStJeor => 'Mifflin-St Jeor',
+  BmrFormula.harrisBenedict => 'Harris-Benedict',
+};
