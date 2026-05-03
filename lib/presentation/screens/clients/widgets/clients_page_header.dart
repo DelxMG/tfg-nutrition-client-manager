@@ -24,19 +24,19 @@ class ClientsPageHeader extends StatelessWidget {
             Text(
               'Clientes',
               style: GoogleFonts.inter(
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                height: 1.08,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                height: 1.1,
                 color: cs.onSurface,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               '$count clientes registrados',
               style: GoogleFonts.inter(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: cs.onSurfaceVariant,
+                color: cs.onSurfaceVariant.withValues(alpha: 0.8),
               ),
             ),
           ],

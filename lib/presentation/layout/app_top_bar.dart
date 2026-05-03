@@ -10,55 +10,137 @@ class AppTopBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = ref.watch(themeProvider) == ThemeMode.dark;
-
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      height: appTopBarHeight,
-      padding: const EdgeInsets.fromLTRB(22, 14, 24, 14),
+      height: 64,
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: cs.surfaceContainerLow,
         border: Border(
-          bottom: BorderSide(color: cs.outlineVariant),
+          bottom: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3)),
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 300,
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
-              borderRadius: appBorderRadius,
-              border: Border.all(color: cs.outlineVariant),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.search, size: 16, color: cs.onSurfaceVariant),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Buscar clientes, planes...',
-                    style: GoogleFonts.inter(
-                      color: cs.onSurfaceVariant,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final leftWidth = 24.0 + 32.0 + 8.0;
+          final rightWidth = 24.0 + 56.0;
+          final availableCenter = constraints.maxWidth - leftWidth - rightWidth;
+
+          return Stack(
+            children: [
+              // ── Logo (izquierda) ─────────────────────────────────────────
+              Positioned(
+                left: 24,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: appBrandColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.show_chart,
+                      color: Colors.white,
+                      size: 18,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          IconButton(
-            tooltip: 'Cambiar tema',
-            icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20),
-            color: cs.onSurfaceVariant,
-            onPressed: () => ref.read(themeProvider.notifier).state =
-                isDark ? ThemeMode.light : ThemeMode.dark,
-          ),
-        ],
+              ),
+
+              // ── Texto centrado (centro real) ─────────────────────────────
+              Positioned(
+                left: leftWidth,
+                right: rightWidth,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Text(
+                    'NutriTrack',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Toggle theme (derecha) ───────────────────────────────────
+              Positioned(
+                right: 24,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cs.outlineVariant),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _ThemeIcon(
+                          icon: Icons.light_mode_outlined,
+                          isActive: !isDark,
+                          onTap: () => ref.read(themeProvider.notifier).state =
+                              ThemeMode.light,
+                        ),
+                        _ThemeIcon(
+                          icon: Icons.dark_mode_outlined,
+                          isActive: isDark,
+                          onTap: () => ref.read(themeProvider.notifier).state =
+                              ThemeMode.dark,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ThemeIcon extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _ThemeIcon({
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: isActive
+              ? appBrandColor.withValues(alpha: 0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: isActive ? appBrandColor : cs.onSurfaceVariant,
+        ),
       ),
     );
   }

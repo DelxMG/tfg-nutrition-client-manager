@@ -21,7 +21,7 @@ class AppSidebar extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
-      width: isCollapsed ? appSidebarCollapsedWidth : appSidebarExpandedWidth,
+      width: isCollapsed ? 72 : 222,
       decoration: BoxDecoration(
         color: cs.surfaceContainer,
         border: Border(

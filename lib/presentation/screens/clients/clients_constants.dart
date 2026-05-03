@@ -18,8 +18,6 @@ const BorderRadius clientsChipBorderRadius = appChipBorderRadius;
 const double clientsTopBarHeight = appTopBarHeight;
 const double clientsButtonHeight = appButtonHeight;
 const double clientsIconSize = appIconSize;
-const double clientsSidebarExpandedWidth = appSidebarExpandedWidth;
-const double clientsSidebarCollapsedWidth = appSidebarCollapsedWidth;
 
 // ── Clients-specific (not promoted to global layout) ──────────────────────────
 const double clientsHorizontalPadding = 22;

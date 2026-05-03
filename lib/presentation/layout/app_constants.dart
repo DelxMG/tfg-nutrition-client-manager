@@ -25,5 +25,3 @@ const BorderRadius appChipBorderRadius = BorderRadius.all(Radius.circular(8));
 const double appTopBarHeight = 74;
 const double appButtonHeight = 40;
 const double appIconSize = 18;
-const double appSidebarExpandedWidth = 222;
-const double appSidebarCollapsedWidth = 72;
