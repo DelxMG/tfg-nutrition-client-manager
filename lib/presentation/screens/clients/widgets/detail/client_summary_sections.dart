@@ -4,14 +4,10 @@ import 'package:nutritrack/data/models/client_summary.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
 
-/// Three info blocks rendered side-by-side on desktop.
 class ClientSummarySections extends StatelessWidget {
   final ClientSummary summary;
 
-  const ClientSummarySections({
-    super.key,
-    required this.summary,
-  });
+  const ClientSummarySections({super.key, required this.summary});
 
   @override
   Widget build(BuildContext context) {
@@ -23,63 +19,62 @@ class ClientSummarySections extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Información personal ──────────────────────────────────────────────
+        // Columna izquierda (~60%): Información personal
         Expanded(
+          flex: 6,
           child: _InfoCard(
+            icon: Icons.person_outline,
             title: 'Información personal',
             rows: [
-              _InfoRow('Nombre', client.name),
+              _InfoRow('Nombre completo', client.name),
               _InfoRow('Email', client.email ?? '—'),
               _InfoRow('Teléfono', client.phone ?? '—'),
               _InfoRow('Edad', age != null ? '$age años' : '—'),
               _InfoRow('Género', client.sex?.label ?? '—'),
-              _InfoRow('Altura', client.height != null ? '${client.height} cm' : '—'),
+              _InfoRow(
+                'Altura',
+                client.height != null ? '${client.height} cm' : '—',
+              ),
               _InfoRow('Ocupación', anamnesis?.occupation ?? '—'),
               _InfoRow('Fecha de inicio', formatDate(client.createdAt)),
             ],
           ),
         ),
         const SizedBox(width: 14),
-        // ── Objetivo y actividad ──────────────────────────────────────────────
+        // Columna derecha (~40%): Objetivo y actividad + Anamnesis (apilados)
         Expanded(
-          child: _InfoCard(
-            title: 'Objetivo y actividad',
-            rows: [
-              _InfoRow('Objetivo', anamnesis?.objective ?? '—'),
-              _InfoRow(
-                'Nivel de actividad',
-                anamnesis?.physicalActivity?.label ?? '—',
+          flex: 4,
+          child: Column(
+            children: [
+              _InfoCard(
+                icon: Icons.flag_outlined,
+                title: 'Objetivo y actividad',
+                rows: [
+                  _InfoRow('Objetivo', anamnesis?.objective ?? '—'),
+                  _InfoRow(
+                    'Nivel de actividad',
+                    anamnesis?.physicalActivity?.label ?? '—',
+                  ),
+                  _InfoRow('Suplementos', anamnesis?.supplements ?? '—'),
+                  _InfoRow('Última visita', formatDate(summary.lastVisit)),
+                ],
               ),
-              _InfoRow(
-                'Suplementos',
-                anamnesis?.supplements ?? '—',
-                multiline: true,
-              ),
-              _InfoRow('Última visita', formatDate(summary.lastVisit)),
-            ],
-          ),
-        ),
-        const SizedBox(width: 14),
-        // ── Anamnesis ─────────────────────────────────────────────────────────
-        Expanded(
-          child: _InfoCard(
-            title: 'Anamnesis',
-            rows: [
-              _InfoRow('Fecha de anamnesis', formatDate(anamnesis?.date)),
-              _InfoRow(
-                'Alergias e intolerancias',
-                anamnesis?.allergies ?? '—',
-                multiline: true,
-              ),
-              _InfoRow(
-                'Condiciones médicas',
-                anamnesis?.pathologies ?? '—',
-                multiline: true,
-              ),
-              _InfoRow(
-                'Observaciones',
-                anamnesis?.observations ?? '—',
-                multiline: true,
+              const SizedBox(height: 14),
+              _InfoCard(
+                icon: Icons.medical_information_outlined,
+                title: 'Anamnesis',
+                rows: [
+                  _InfoRow('Fecha de anamnesis', formatDate(anamnesis?.date)),
+                  _InfoRow(
+                    'Alergias e intolerancias',
+                    anamnesis?.allergies ?? '—',
+                  ),
+                  _InfoRow(
+                    'Condiciones médicas',
+                    anamnesis?.pathologies ?? '—',
+                  ),
+                  _InfoRow('Observaciones', anamnesis?.observations ?? '—'),
+                ],
               ),
             ],
           ),
@@ -89,13 +84,16 @@ class ClientSummarySections extends StatelessWidget {
   }
 }
 
-// ── Info card ─────────────────────────────────────────────────────────────────
-
 class _InfoCard extends StatelessWidget {
+  final IconData? icon;
   final String title;
   final List<_InfoRow> rows;
 
-  const _InfoCard({required this.title, required this.rows});
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.rows,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,23 +109,29 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-              letterSpacing: 0.1,
-            ),
-          ),
-          const SizedBox(height: 14),
-          for (final row in rows) ...[
-            _InfoRowWidget(row: row),
-            if (row != rows.last)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+          Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: cs.onSurfaceVariant),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                  letterSpacing: 0.1,
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+          const SizedBox(height: 12),
+          for (int i = 0; i < rows.length; i++) ...[
+            _InfoRowWidget(row: rows[i]),
+            if (i < rows.length - 1) const SizedBox(height: 12),
           ],
         ],
       ),
@@ -135,14 +139,11 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-// ── Single row inside a card ──────────────────────────────────────────────────
-
 class _InfoRow {
   final String label;
   final String value;
-  final bool multiline;
 
-  const _InfoRow(this.label, this.value, {this.multiline = false});
+  const _InfoRow(this.label, this.value);
 }
 
 class _InfoRowWidget extends StatelessWidget {
@@ -155,50 +156,23 @@ class _InfoRowWidget extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final isEmpty = row.value == '—';
 
-    if (row.multiline) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            row.label,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: cs.onSurfaceVariant,
-              letterSpacing: 0.4,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            row.value,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: isEmpty ? cs.onSurfaceVariant : cs.onSurface,
-              height: 1.5,
-            ),
-          ),
-        ],
-      );
-    }
-
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            row.label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: cs.onSurfaceVariant,
-            ),
+        Text(
+          row.label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: cs.onSurfaceVariant,
           ),
         ),
-        Expanded(
+        const SizedBox(width: 16),
+        Flexible(
           child: Text(
             row.value,
+            textAlign: TextAlign.end,
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w500,

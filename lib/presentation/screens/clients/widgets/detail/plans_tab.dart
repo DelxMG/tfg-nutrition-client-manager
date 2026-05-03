@@ -13,40 +13,50 @@ import 'package:open_filex/open_filex.dart';
 
 extension _PlanStatusX on PlanStatus {
   String get label => switch (this) {
-        PlanStatus.draft    => 'Borrador',
-        PlanStatus.active   => 'Activo',
-        PlanStatus.archived => 'Archivado',
-      };
+    PlanStatus.draft => 'Borrador',
+    PlanStatus.active => 'Activo',
+    PlanStatus.archived => 'Archivado',
+  };
 
   Color get color => switch (this) {
-        PlanStatus.draft    => const Color(0xFFE3A12A),
-        PlanStatus.active   => const Color(0xFF22C55E),
-        PlanStatus.archived => const Color(0xFF9E9E9E),
-      };
+    PlanStatus.draft => const Color(0xFFE3A12A),
+    PlanStatus.active => const Color(0xFF22C55E),
+    PlanStatus.archived => const Color(0xFF9E9E9E),
+  };
 }
 
 // ── GoalType helpers ───────────────────────────────────────────────────────────
 
 extension _GoalTypeX on GoalType {
   String get label => switch (this) {
-        GoalType.deficit     => 'Déficit',
-        GoalType.maintenance => 'Mantenimiento',
-        GoalType.surplus     => 'Superávit',
-      };
+    GoalType.deficit => 'Déficit',
+    GoalType.maintenance => 'Mantenimiento',
+    GoalType.surplus => 'Superávit',
+  };
 
   Color get color => switch (this) {
-        GoalType.deficit     => const Color(0xFF3B82F6),
-        GoalType.maintenance => const Color(0xFF22C55E),
-        GoalType.surplus     => const Color(0xFFE3A12A),
-      };
+    GoalType.deficit => const Color(0xFF3B82F6),
+    GoalType.maintenance => const Color(0xFF22C55E),
+    GoalType.surplus => const Color(0xFFE3A12A),
+  };
 }
 
 // ── Date helper ────────────────────────────────────────────────────────────────
 
 String _fmtDate(DateTime d) {
   const months = [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+    'ene',
+    'feb',
+    'mar',
+    'abr',
+    'may',
+    'jun',
+    'jul',
+    'ago',
+    'sep',
+    'oct',
+    'nov',
+    'dic',
   ];
   return '${d.day} ${months[d.month - 1]} ${d.year}';
 }
@@ -250,7 +260,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs       = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final goalType = plan.goalType;
 
     final isActive = plan.status == PlanStatus.active;
@@ -479,15 +489,15 @@ class _ViewButtonState extends State<_ViewButton> {
 
   @override
   Widget build(BuildContext context) {
-    final cs      = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final enabled = widget.onPressed != null;
 
     return Tooltip(
       message: 'Ver PDF',
       child: MouseRegion(
         cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
-        onEnter: enabled ? (_) => setState(() => _hovered = true)  : null,
-        onExit:  enabled ? (_) => setState(() => _hovered = false) : null,
+        onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+        onExit: enabled ? (_) => setState(() => _hovered = false) : null,
         child: GestureDetector(
           onTap: widget.onPressed,
           child: AnimatedContainer(
@@ -500,10 +510,8 @@ class _ViewButtonState extends State<_ViewButton> {
             ),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 150),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
+              transitionBuilder: (child, animation) =>
+                  FadeTransition(opacity: animation, child: child),
               child: Icon(
                 _hovered
                     ? Icons.visibility_outlined
@@ -536,15 +544,15 @@ class _EditButtonState extends State<_EditButton> {
 
   @override
   Widget build(BuildContext context) {
-    final cs      = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final enabled = widget.onPressed != null;
 
     return Tooltip(
       message: 'Editar plan',
       child: MouseRegion(
         cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
-        onEnter: enabled ? (_) => setState(() => _hovered = true)  : null,
-        onExit:  enabled ? (_) => setState(() => _hovered = false) : null,
+        onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+        onExit: enabled ? (_) => setState(() => _hovered = false) : null,
         child: GestureDetector(
           onTap: widget.onPressed,
           child: AnimatedContainer(
@@ -612,7 +620,7 @@ class _DeleteButtonState extends State<_DeleteButton>
 
   @override
   Widget build(BuildContext context) {
-    final cs      = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final enabled = widget.onPressed != null;
 
     return Tooltip(
@@ -635,10 +643,8 @@ class _DeleteButtonState extends State<_DeleteButton>
           onTap: widget.onPressed,
           child: AnimatedBuilder(
             animation: _scale,
-            builder: (context, child) => Transform.scale(
-              scale: _scale.value,
-              child: child,
-            ),
+            builder: (context, child) =>
+                Transform.scale(scale: _scale.value, child: child),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               width: 28,
@@ -651,10 +657,8 @@ class _DeleteButtonState extends State<_DeleteButton>
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 150),
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
                 child: Icon(
                   _hovered ? Icons.delete : Icons.delete_outline,
                   key: ValueKey(_hovered),
@@ -681,38 +685,60 @@ class _EmptyPlansState extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.assignment_outlined,
-            size: 48,
-            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Sin planes todavía',
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: cs.onSurface,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.assignment_outlined,
+              size: 48,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.4),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Crea un plan manualmente o desde un cálculo guardado.',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: cs.onSurfaceVariant,
+            const SizedBox(height: 16),
+            Text(
+              'Sin planes todavía',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface,
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          FilledButton.tonal(
-            onPressed: onCreate,
-            child: const Text('Crear primer plan'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'Crea un plan manualmente o desde un cálculo guardado.',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: cs.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: clientsButtonHeight,
+              child: ElevatedButton.icon(
+                onPressed: onCreate,
+                icon: const Icon(Icons.add, size: 16),
+                label: Text(
+                  'Crear primer plan',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cs.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: clientsBorderRadius,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

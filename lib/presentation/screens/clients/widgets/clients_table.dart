@@ -103,155 +103,167 @@ class ClientsTable extends StatelessWidget {
   }
 }
 
-class _ClientRow extends StatelessWidget {
+class _ClientRow extends StatefulWidget {
   final Client client;
   final ValueChanged<int> onTap;
 
   const _ClientRow({required this.client, required this.onTap});
 
   @override
+  State<_ClientRow> createState() => _ClientRowState();
+}
+
+class _ClientRowState extends State<_ClientRow> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final initials = getClientInitials(client.name);
-    final age = calculateClientAge(client.birthDate);
+    final initials = getClientInitials(widget.client.name);
+    final age = calculateClientAge(widget.client.birthDate);
 
-    return InkWell(
-      onTap: () => onTap(client.clientId),
-      child: Container(
-        height: 58,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            // ── Client name + email ───────────────────────────────────────
-            Expanded(
-              flex: 3,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 15,
-                    backgroundColor: const Color(0xFFE7F4F0),
-                    child: Text(
-                      initials,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: clientsBrandColor,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        color: _hovered
+            ? cs.primary.withValues(alpha: 0.06)
+            : Colors.transparent,
+        child: InkWell(
+          onTap: () => widget.onTap(widget.client.clientId),
+          child: Container(
+            height: 58,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 15,
+                        backgroundColor: const Color(0xFFE7F4F0),
+                        child: Text(
+                          initials,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: clientsBrandColor,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          client.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            height: 1.1,
-                            color: cs.onSurface,
-                          ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.client.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1.1,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              widget.client.email ?? 'Sin email',
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w400,
+                                height: 1.1,
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          client.email ?? 'Sin email',
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w400,
-                            height: 1.1,
-                            color: cs.onSurfaceVariant,
-                          ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: widget.client.status.color,
+                          shape: BoxShape.circle,
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.client.status.label,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    '—',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
-                ],
-              ),
-            ),
-            // ── Status ────────────────────────────────────────────────────
-            Expanded(
-              flex: 2,
-              child: Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: client.status.color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    client.status.label,
+                ),
+                Expanded(
+                  child: Text(
+                    age?.toString() ?? '—',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: cs.onSurface,
                     ),
                   ),
-                ],
-              ),
-            ),
-            // ── Objetivo (placeholder) ─────────────────────────────────────
-            Expanded(
-              flex: 2,
-              child: Text(
-                '—',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: cs.onSurfaceVariant,
                 ),
-              ),
-            ),
-            // ── Edad ──────────────────────────────────────────────────────
-            Expanded(
-              child: Text(
-                age?.toString() ?? '—',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: cs.onSurface,
+                Expanded(
+                  child: Text(
+                    '—',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // ── Peso (placeholder) ────────────────────────────────────────
-            Expanded(
-              child: Text(
-                '—',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: cs.onSurfaceVariant,
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    '—',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // ── Última visita (placeholder) ───────────────────────────────
-            Expanded(
-              flex: 2,
-              child: Text(
-                '—',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: cs.onSurfaceVariant,
+                SizedBox(
+                  width: 20,
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: 17,
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
-              ),
+              ],
             ),
-            SizedBox(
-              width: 20,
-              child: Icon(
-                Icons.chevron_right,
-                size: 17,
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -259,8 +271,8 @@ class _ClientRow extends StatelessWidget {
 }
 
 TextStyle _headerTextStyle(ColorScheme cs) => GoogleFonts.inter(
-      fontSize: 12,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 0.7,
-      color: cs.onSurfaceVariant,
-    );
+  fontSize: 12,
+  fontWeight: FontWeight.w700,
+  letterSpacing: 0.7,
+  color: cs.onSurfaceVariant,
+);
