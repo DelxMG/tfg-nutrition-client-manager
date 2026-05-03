@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/app_database.dart';
 import 'package:nutritrack/data/models/client_summary.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientSummaryCards extends StatelessWidget {
@@ -22,34 +23,55 @@ class ClientSummaryCards extends StatelessWidget {
     final bmi = summary.bmi;
     final weightDelta = _calcWeightDelta(allMeasurements);
 
-    return Row(
-      children: [
-        _MetricCard(
-          icon: Icons.monitor_weight_outlined,
-          label: 'Peso actual',
-          value: weight != null ? '${weight.toStringAsFixed(1)} kg' : '—',
-          subtitle: weightDelta != null ? _formatDelta(weightDelta) : null,
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.calculate_outlined,
-          label: 'IMC',
-          value: bmi != null ? bmi.toStringAsFixed(1) : '—',
-          badge: bmi != null ? _bmiBadge(bmi) : null,
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.water_drop_outlined,
-          label: 'Grasa corporal',
-          value: bodyFat != null ? '${bodyFat.toStringAsFixed(1)} %' : '—',
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.fitness_center_outlined,
-          label: 'Masa muscular',
-          value: muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
-        ),
-      ],
+    final cards = [
+      _MetricCard(
+        icon: Icons.monitor_weight_outlined,
+        label: 'Peso actual',
+        value: weight != null ? '${weight.toStringAsFixed(1)} kg' : '—',
+        subtitle: weightDelta != null ? _formatDelta(weightDelta) : null,
+      ),
+      _MetricCard(
+        icon: Icons.calculate_outlined,
+        label: 'IMC',
+        value: bmi != null ? bmi.toStringAsFixed(1) : '—',
+        badge: bmi != null ? _bmiBadge(bmi) : null,
+      ),
+      _MetricCard(
+        icon: Icons.water_drop_outlined,
+        label: 'Grasa corporal',
+        value: bodyFat != null ? '${bodyFat.toStringAsFixed(1)} %' : '—',
+      ),
+      _MetricCard(
+        icon: Icons.fitness_center_outlined,
+        label: 'Masa muscular',
+        value: muscleMass != null
+            ? '${muscleMass.toStringAsFixed(1)} kg'
+            : '—',
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (isCompactWidth(constraints.maxWidth)) {
+          final cardWidth = (constraints.maxWidth - 12) / 2;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final card in cards) SizedBox(width: cardWidth, child: card),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            for (int i = 0; i < cards.length; i++) ...[
+              Expanded(child: cards[i]),
+              if (i < cards.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
     );
   }
 
@@ -95,63 +117,61 @@ class _MetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: clientsBorderRadius,
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 15, color: cs.onSurfaceVariant),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface,
-                  ),
-                ),
-                if (badge != null) ...[
-                  const SizedBox(width: 8),
-                  badge!,
-                ],
-              ],
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 4),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 15, color: cs.onSurfaceVariant),
+              const SizedBox(width: 6),
               Text(
-                subtitle!,
+                label,
                 style: GoogleFonts.inter(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: cs.onSurfaceVariant,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+              if (badge != null) ...[
+                const SizedBox(width: 8),
+                badge!,
+              ],
+            ],
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle!,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

@@ -25,17 +25,20 @@ class ClientDetailTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 38,
-      child: Row(
-        children: [
-          for (int i = 0; i < _kTabLabels.length; i++)
-            _TabItem(
-              label:     _kTabLabels[i],
-              icon:      _kTabIcons[i],
-              isActive:  i == activeIndex,
-              isEnabled: i <= 4,
-              onTap:     i <= 4 ? () => onTabChanged(i) : null,
-            ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (int i = 0; i < _kTabLabels.length; i++)
+              _TabItem(
+                label:     _kTabLabels[i],
+                icon:      _kTabIcons[i],
+                isActive:  i == activeIndex,
+                isEnabled: i <= 4,
+                onTap:     i <= 4 ? () => onTabChanged(i) : null,
+              ),
+          ],
+        ),
       ),
     );
   }
