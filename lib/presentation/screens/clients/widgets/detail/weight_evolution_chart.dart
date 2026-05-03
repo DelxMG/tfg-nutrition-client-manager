@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/app_database.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class WeightEvolutionChart extends StatelessWidget {
@@ -11,9 +12,7 @@ class WeightEvolutionChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final withWeight = measurements
-        .where((m) => m.weight != null)
-        .toList()
+    final withWeight = measurements.where((m) => m.weight != null).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
 
     return switch (withWeight.length) {
@@ -181,149 +180,169 @@ class _LineChart extends StatelessWidget {
     final rawStep = yRange / 4;
     final yStep = rawStep < 0.5 ? 0.5 : rawStep.ceilToDouble();
 
-    final labelEvery = n <= 7 ? 1 : (n / 6).floor().clamp(1, n);
+    // Desktop: show every nth label so ~4 labels appear
+    final labelEvery = n <= 5 ? n : (n / 4).ceil().clamp(1, n);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 12, 8),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: clientsBorderRadius,
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _ChartHeader(),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 200,
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: (n - 1).toDouble(),
-                minY: yMin,
-                maxY: yMax,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: yStep,
-                  getDrawingHorizontalLine: (_) => FlLine(
-                    color: cs.outlineVariant.withValues(alpha: 0.5),
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: yStep,
-                      reservedSize: 42,
-                      getTitlesWidget: (value, meta) {
-                        if (value == meta.min || value == meta.max) {
-                          return const SizedBox();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: Text(
-                            value.toStringAsFixed(1),
-                            style: GoogleFonts.inter(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = isCompactWidth(constraints.maxWidth);
+
+        // Compact: wider x margins so edge labels aren't clipped at the border
+        final xMargin = compact ? 0.5 : 0.15;
+        final xMin = -xMargin;
+        final xMax = (n - 1).toDouble() + xMargin;
+
+        // Compact: show only first, middle, last label to avoid crowding
+        final compactIdxs = <int>{0, (n - 1) ~/ 2, n - 1};
+
+        return Container(
+          padding: compact
+              ? const EdgeInsets.fromLTRB(20, 16, 20, 12)
+              : const EdgeInsets.fromLTRB(20, 16, 16, 8),
+          decoration: BoxDecoration(
+            color: cs.surface,
+            borderRadius: clientsBorderRadius,
+            border: Border.all(color: cs.outlineVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _ChartHeader(),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: compact ? 160 : 200,
+                child: LineChart(
+                  LineChartData(
+                    minX: xMin,
+                    maxX: xMax,
+                    minY: yMin,
+                    maxY: yMax,
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: yStep,
+                      getDrawingHorizontalLine: (_) => FlLine(
+                        color: cs.outlineVariant.withValues(alpha: 0.5),
+                        strokeWidth: 1,
+                        dashArray: [4, 4],
+                      ),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: yStep,
+                          reservedSize: 42,
+                          getTitlesWidget: (value, meta) {
+                            if (value == meta.min || value == meta.max) {
+                              return const SizedBox();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Text(
+                                value.toStringAsFixed(1),
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 1,
+                          reservedSize: 28,
+                          getTitlesWidget: (value, _) {
+                            final idx = value.round();
+                            if (idx < 0 || idx >= n) return const SizedBox();
+
+                            final show = compact
+                                ? compactIdxs.contains(idx)
+                                : (idx == 0 ||
+                                    idx == n - 1 ||
+                                    (n > 3 && idx % labelEvery == 0));
+                            if (!show) return const SizedBox();
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                _fmtDate(measurements[idx].date),
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    lineTouchData: LineTouchData(
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipColor: (_) => cs.surfaceContainerHigh,
+                        tooltipRoundedRadius: 8,
+                        getTooltipItems: (spots) => spots.map((spot) {
+                          final m = measurements[spot.x.round()];
+                          return LineTooltipItem(
+                            '${_fmtDateFull(m.date)}\n',
+                            GoogleFonts.inter(
                               fontSize: 11,
                               color: cs.onSurfaceVariant,
                             ),
-                            textAlign: TextAlign.right,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      reservedSize: 28,
-                      getTitlesWidget: (value, _) {
-                        final idx = value.round();
-                        if (idx < 0 || idx >= n) return const SizedBox();
-                        final isFirst = idx == 0;
-                        final isLast = idx == n - 1;
-                        if (!isFirst && !isLast && idx % labelEvery != 0) {
-                          return const SizedBox();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            _fmtDate(measurements[idx].date),
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) => cs.surfaceContainerHigh,
-                    tooltipRoundedRadius: 8,
-                    getTooltipItems: (spots) => spots.map((spot) {
-                      final m = measurements[spot.x.round()];
-                      return LineTooltipItem(
-                        '${_fmtDateFull(m.date)}\n',
-                        GoogleFonts.inter(
-                          fontSize: 11,
-                          color: cs.onSurfaceVariant,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: '${m.weight!.toStringAsFixed(1)} kg',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    curveSmoothness: 0.3,
-                    color: cs.primary,
-                    barWidth: 2,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (_, _, _, _) => FlDotCirclePainter(
-                        radius: 3.5,
-                        color: cs.primary,
-                        strokeWidth: 1.5,
-                        strokeColor: cs.surface,
+                            children: [
+                              TextSpan(
+                                text: '${m.weight!.toStringAsFixed(1)} kg',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
                       ),
                     ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: cs.primary.withValues(alpha: 0.06),
-                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots,
+                        isCurved: true,
+                        curveSmoothness: 0.3,
+                        color: cs.primary,
+                        barWidth: 2,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (_, _, _, _) => FlDotCirclePainter(
+                            radius: 3.5,
+                            color: cs.primary,
+                            strokeWidth: 1.5,
+                            strokeColor: cs.surface,
+                          ),
+                        ),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: cs.primary.withValues(alpha: 0.06),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

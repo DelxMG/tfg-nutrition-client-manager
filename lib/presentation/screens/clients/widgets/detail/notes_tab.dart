@@ -72,8 +72,7 @@ class _NotesContentState extends State<_NotesContent> {
     super.dispose();
   }
 
-  bool get _canSubmit =>
-      !_submitting && _controller.text.trim().isNotEmpty;
+  bool get _canSubmit => !_submitting && _controller.text.trim().isNotEmpty;
 
   Future<void> _submit() async {
     final text = _controller.text.trim();
@@ -177,10 +176,7 @@ class _NotesContentState extends State<_NotesContent> {
           // ── List / empty state ────────────────────────────────────────
           widget.notes.isEmpty
               ? const _EmptyState()
-              : _NotesList(
-                  notes: widget.notes,
-                  onDelete: _confirmDelete,
-                ),
+              : _NotesList(notes: widget.notes, onDelete: _confirmDelete),
           const SizedBox(height: 24),
         ],
       ),
@@ -222,47 +218,43 @@ class _NoteComposer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Type selector ───────────────────────────────────────────
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: NoteType.values.map((type) {
-                final selected = type == selectedType;
-                final badgeColor = _noteTypeBadgeColor(type);
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: InkWell(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: NoteType.values.map((type) {
+              final selected = type == selectedType;
+              final badgeColor = _noteTypeBadgeColor(type);
+              return InkWell(
+                borderRadius: clientsChipBorderRadius,
+                onTap: submitting ? null : () => onTypeChanged(type),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? badgeColor.withValues(alpha: 0.12)
+                        : cs.surfaceContainerHighest,
                     borderRadius: clientsChipBorderRadius,
-                    onTap: submitting ? null : () => onTypeChanged(type),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? badgeColor.withValues(alpha: 0.12)
-                            : cs.surfaceContainerHighest,
-                        borderRadius: clientsChipBorderRadius,
-                        border: Border.all(
-                          color: selected
-                              ? badgeColor.withValues(alpha: 0.45)
-                              : cs.outlineVariant,
-                        ),
-                      ),
-                      child: Text(
-                        _noteTypeLabel(type),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: selected
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                          color: selected ? badgeColor : cs.onSurfaceVariant,
-                        ),
-                      ),
+                    border: Border.all(
+                      color: selected
+                          ? badgeColor.withValues(alpha: 0.45)
+                          : cs.outlineVariant,
                     ),
                   ),
-                );
-              }).toList(),
-            ),
+                  child: Text(
+                    _noteTypeLabel(type),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected ? badgeColor : cs.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 12),
 
@@ -276,11 +268,15 @@ class _NoteComposer extends StatelessWidget {
             decoration: InputDecoration(
               hintText: 'Escribe una nota...',
               hintStyle: GoogleFonts.inter(
-                  fontSize: 14, color: cs.onSurfaceVariant),
+                fontSize: 14,
+                color: cs.onSurfaceVariant,
+              ),
               filled: true,
               fillColor: cs.surfaceContainerHighest,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
               border: OutlineInputBorder(
                 borderRadius: clientsChipBorderRadius,
                 borderSide: BorderSide(color: cs.outlineVariant),
@@ -291,8 +287,9 @@ class _NoteComposer extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: clientsChipBorderRadius,
-                borderSide:
-                    BorderSide(color: cs.primary.withValues(alpha: 0.7)),
+                borderSide: BorderSide(
+                  color: cs.primary.withValues(alpha: 0.7),
+                ),
               ),
             ),
           ),
@@ -386,8 +383,7 @@ class _NoteCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
                   color: badgeColor.withValues(alpha: 0.12),
                   borderRadius: clientsChipBorderRadius,
@@ -496,10 +492,8 @@ class _DeleteButtonState extends State<_DeleteButton>
           onTap: widget.onPressed,
           child: AnimatedBuilder(
             animation: _scale,
-            builder: (context, child) => Transform.scale(
-              scale: _scale.value,
-              child: child,
-            ),
+            builder: (context, child) =>
+                Transform.scale(scale: _scale.value, child: child),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               width: 28,
@@ -512,10 +506,8 @@ class _DeleteButtonState extends State<_DeleteButton>
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 150),
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
                 child: Icon(
                   _hovered ? Icons.delete : Icons.delete_outline,
                   key: ValueKey(_hovered),

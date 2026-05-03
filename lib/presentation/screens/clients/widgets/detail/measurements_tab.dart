@@ -5,6 +5,7 @@ import 'package:nutritrack/application/providers/database_provider.dart';
 import 'package:nutritrack/data/db/app_database.dart';
 import 'package:nutritrack/data/repositories/measurement_repository.dart';
 import 'package:nutritrack/domain/services/bmi_calculator.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurement_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/weight_evolution_chart.dart';
@@ -60,17 +61,37 @@ class _MeasurementsContent extends StatelessWidget {
   void _openNewMeasurementDialog(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (_) => MeasurementFormDialog(
-        clientId: clientId,
-        repository: repository,
-      ),
+      builder: (_) =>
+          MeasurementFormDialog(clientId: clientId, repository: repository),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final compact = context.isCompact;
     final latest = measurements.isNotEmpty ? measurements.first : null;
+
+    final newButton = SizedBox(
+      height: clientsButtonHeight,
+      child: ElevatedButton.icon(
+        onPressed: () => _openNewMeasurementDialog(context),
+        icon: const Icon(Icons.add, size: 16),
+        label: Text(
+          'Nueva medición',
+          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: cs.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: const RoundedRectangleBorder(
+            borderRadius: clientsBorderRadius,
+          ),
+        ),
+      ),
+    );
 
     return SingleChildScrollView(
       child: Column(
@@ -86,43 +107,38 @@ class _MeasurementsContent extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
-          // ── History header + button ───────────────────────────────────
-          Row(
-            children: [
-              Text(
-                'Historial de mediciones',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface,
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                height: clientsButtonHeight,
-                child: ElevatedButton.icon(
-                  onPressed: () => _openNewMeasurementDialog(context),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: Text(
-                    'Nueva medición',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cs.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: clientsBorderRadius,
-                    ),
+          // ── History header + button ────────────────────────────────────
+          if (compact)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Historial de mediciones',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(height: 8),
+                SizedBox(width: double.infinity, child: newButton),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Text(
+                  'Historial de mediciones',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const Spacer(),
+                newButton,
+              ],
+            ),
           const SizedBox(height: 12),
 
           // ── History list ──────────────────────────────────────────────
@@ -153,26 +169,46 @@ class _MetricCardsRow extends StatelessWidget {
     final bodyFat = latest?.bodyFat;
     final muscleMass = latest?.muscleMass;
 
-    return Row(
-      children: [
-        _MetricCard(
-          icon: Icons.monitor_weight_outlined,
-          label: 'Peso actual',
-          value: weight != null ? '${weight.toStringAsFixed(1)} kg' : '—',
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.water_drop_outlined,
-          label: 'Grasa corporal',
-          value: bodyFat != null ? '${bodyFat.toStringAsFixed(1)} %' : '—',
-        ),
-        const SizedBox(width: 12),
-        _MetricCard(
-          icon: Icons.fitness_center_outlined,
-          label: 'Masa muscular',
-          value: muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
-        ),
-      ],
+    final cards = [
+      _MetricCard(
+        icon: Icons.monitor_weight_outlined,
+        label: 'Peso actual',
+        value: weight != null ? '${weight.toStringAsFixed(1)} kg' : '—',
+      ),
+      _MetricCard(
+        icon: Icons.water_drop_outlined,
+        label: 'Grasa corporal',
+        value: bodyFat != null ? '${bodyFat.toStringAsFixed(1)} %' : '—',
+      ),
+      _MetricCard(
+        icon: Icons.fitness_center_outlined,
+        label: 'Masa muscular',
+        value: muscleMass != null ? '${muscleMass.toStringAsFixed(1)} kg' : '—',
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (isCompactWidth(constraints.maxWidth)) {
+          final cardWidth = (constraints.maxWidth - 12) / 2;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final card in cards) SizedBox(width: cardWidth, child: card),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            for (int i = 0; i < cards.length; i++) ...[
+              Expanded(child: cards[i]),
+              if (i < cards.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -192,42 +228,40 @@ class _MetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: clientsBorderRadius,
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 15, color: cs.onSurfaceVariant),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: cs.onSurfaceVariant,
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 15, color: cs.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: cs.onSurfaceVariant,
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -293,6 +327,24 @@ class _MeasurementsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final compact = context.isCompact;
+
+    if (compact) {
+      return ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: measurements.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (ctx, index) {
+          final m = measurements[index];
+          return _MeasurementCard(
+            measurement: m,
+            bmi: calculateBmi(heightCm: clientHeight, weightKg: m.weight),
+            onDelete: () => _confirmDelete(ctx, m),
+          );
+        },
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -329,6 +381,8 @@ class _MeasurementsList extends StatelessWidget {
   }
 }
 
+// ── Desktop: table header ─────────────────────────────────────────────────────
+
 class _TableHeader extends StatelessWidget {
   const _TableHeader();
 
@@ -340,34 +394,43 @@ class _TableHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          Expanded(flex: 2, child: Text('Fecha', style: _headerStyle(cs))),
-          Expanded(child: Text('Peso', style: _headerStyle(cs))),
-          Expanded(child: Text('Grasa', style: _headerStyle(cs))),
-          Expanded(child: Text('Músculo', style: _headerStyle(cs))),
-          Expanded(child: Text('IMC', style: _headerStyle(cs))),
+          Expanded(flex: 2, child: Text('Fecha',       style: _headerStyle(cs))),
+          Expanded(child: _h('Peso',        cs)),
+          Expanded(child: _h('Grasa',       cs)),
+          Expanded(child: _h('Músculo',     cs)),
+          Expanded(child: _h('Brazo',       cs)),
+          Expanded(child: _h('Muslo',       cs)),
+          Expanded(child: _h('Pecho',       cs)),
+          Expanded(child: _h('Cintura',     cs)),
+          Expanded(child: _h('Pantorrilla', cs)),
+          Expanded(child: _h('IMC',         cs)),
           const SizedBox(width: 40),
         ],
       ),
     );
   }
 
+  Widget _h(String label, ColorScheme cs) => Text(
+    label,
+    overflow: TextOverflow.ellipsis,
+    style: _headerStyle(cs),
+  );
+
   TextStyle _headerStyle(ColorScheme cs) => GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: cs.onSurfaceVariant,
-      );
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    color: cs.onSurfaceVariant,
+  );
 }
+
+// ── Desktop: table row ────────────────────────────────────────────────────────
 
 class _MeasurementRow extends StatelessWidget {
   final Measurement measurement;
   final double? bmi;
   final VoidCallback? onDelete;
 
-  const _MeasurementRow({
-    required this.measurement,
-    this.bmi,
-    this.onDelete,
-  });
+  const _MeasurementRow({required this.measurement, this.bmi, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -407,6 +470,46 @@ class _MeasurementRow extends StatelessWidget {
           ),
           Expanded(
             child: Text(
+              measurement.arm != null
+                  ? '${measurement.arm!.toStringAsFixed(1)} cm'
+                  : '—',
+              style: _cellStyle(cs),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              measurement.thigh != null
+                  ? '${measurement.thigh!.toStringAsFixed(1)} cm'
+                  : '—',
+              style: _cellStyle(cs),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              measurement.chest != null
+                  ? '${measurement.chest!.toStringAsFixed(1)} cm'
+                  : '—',
+              style: _cellStyle(cs),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              measurement.waist != null
+                  ? '${measurement.waist!.toStringAsFixed(1)} cm'
+                  : '—',
+              style: _cellStyle(cs),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              measurement.calf != null
+                  ? '${measurement.calf!.toStringAsFixed(1)} cm'
+                  : '—',
+              style: _cellStyle(cs),
+            ),
+          ),
+          Expanded(
+            child: Text(
               bmi != null ? bmi!.toStringAsFixed(1) : '—',
               style: _cellStyle(cs),
             ),
@@ -421,10 +524,148 @@ class _MeasurementRow extends StatelessWidget {
   }
 
   TextStyle _cellStyle(ColorScheme cs) => GoogleFonts.inter(
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
-        color: cs.onSurface,
-      );
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: cs.onSurface,
+  );
+}
+
+// ── Compact: measurement card ─────────────────────────────────────────────────
+
+class _MeasurementCard extends StatelessWidget {
+  final Measurement measurement;
+  final double? bmi;
+  final VoidCallback? onDelete;
+
+  const _MeasurementCard({required this.measurement, this.bmi, this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final d = measurement.date;
+    final dateStr =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+    final items = <(String, String)>[
+      if (measurement.weight != null)
+        ('Peso', '${measurement.weight!.toStringAsFixed(1)} kg'),
+      if (bmi != null) ('IMC', bmi!.toStringAsFixed(1)),
+      if (measurement.bodyFat != null)
+        ('Grasa', '${measurement.bodyFat!.toStringAsFixed(1)} %'),
+      if (measurement.muscleMass != null)
+        ('Músculo', '${measurement.muscleMass!.toStringAsFixed(1)} kg'),
+      if (measurement.waist != null)
+        ('Cintura', '${measurement.waist!.toStringAsFixed(1)} cm'),
+      if (measurement.arm != null)
+        ('Brazo', '${measurement.arm!.toStringAsFixed(1)} cm'),
+      if (measurement.chest != null)
+        ('Pecho', '${measurement.chest!.toStringAsFixed(1)} cm'),
+      if (measurement.thigh != null)
+        ('Muslo', '${measurement.thigh!.toStringAsFixed(1)} cm'),
+      if (measurement.calf != null)
+        ('Pantorrilla', '${measurement.calf!.toStringAsFixed(1)} cm'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header: date + delete ────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            child: Row(
+              children: [
+                Text(
+                  dateStr,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: onDelete,
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: cs.onSurfaceVariant,
+                  ),
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: const Size(36, 36),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (items.isNotEmpty) ...[
+            Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+            // ── Metrics: 2-column grid ─────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final colWidth = (constraints.maxWidth - 16) / 2;
+                  return Wrap(
+                    spacing: 16,
+                    runSpacing: 12,
+                    children: [
+                      for (final (label, value) in items)
+                        SizedBox(
+                          width: colWidth,
+                          child: _MetricItem(label: label, value: value),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MetricItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: cs.onSurface,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 // ── Delete button with hover animation ───────────────────────────────────────
@@ -493,10 +734,8 @@ class _DeleteButtonState extends State<_DeleteButton>
           onTap: widget.onPressed,
           child: AnimatedBuilder(
             animation: _scale,
-            builder: (context, child) => Transform.scale(
-              scale: _scale.value,
-              child: child,
-            ),
+            builder: (context, child) =>
+                Transform.scale(scale: _scale.value, child: child),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               width: 28,
@@ -509,10 +748,8 @@ class _DeleteButtonState extends State<_DeleteButton>
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 150),
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
                 child: Icon(
                   _hovered ? Icons.delete : Icons.delete_outline,
                   key: ValueKey(_hovered),
@@ -541,7 +778,7 @@ class _EmptyState extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: clientsBorderRadius,
@@ -566,6 +803,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Añade la primera medición para empezar a hacer seguimiento.',
+            textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
               color: cs.onSurfaceVariant.withValues(alpha: 0.7),
@@ -579,7 +817,7 @@ class _EmptyState extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.primary,
+                color: cs.primary,
               ),
             ),
           ),
