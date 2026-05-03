@@ -14,99 +14,107 @@ class AppTopBar extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      height: 64,
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         border: Border(
           bottom: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3)),
         ),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final leftWidth = 24.0 + 32.0 + 8.0;
-          final rightWidth = 24.0 + 56.0;
+      child: SafeArea(
+        top: true,
+        bottom: false,
+        child: SizedBox(
+          height: 64,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final leftWidth = 24.0 + 32.0 + 8.0;
+              final rightWidth = 24.0 + 56.0;
 
-          final showTitle = isDesktopWidth(constraints.maxWidth);
+              final showTitle = isDesktopWidth(constraints.maxWidth);
 
-          return Stack(
-            children: [
-              // ── Logo (izquierda) ─────────────────────────────────────────
-              Positioned(
-                left: 24,
-                top: 0,
-                bottom: 0,
-                child: Center(
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: appBrandColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.show_chart,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Texto centrado — solo en desktop ─────────────────────────
-              if (showTitle)
-                Positioned(
-                  left: leftWidth,
-                  right: rightWidth,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: Text(
-                      'NutriTrack',
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: cs.onSurface,
+              return Stack(
+                children: [
+                  // ── Logo (izquierda) ───────────────────────────────────────
+                  Positioned(
+                    left: 24,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: appBrandColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.show_chart,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-              // ── Toggle theme (derecha) ───────────────────────────────────
-              Positioned(
-                right: 24,
-                top: 0,
-                bottom: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: cs.outlineVariant),
+                  // ── Texto centrado — solo en desktop ───────────────────────
+                  if (showTitle)
+                    Positioned(
+                      left: leftWidth,
+                      right: rightWidth,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: Text(
+                          'NutriTrack',
+                          style: GoogleFonts.inter(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _ThemeIcon(
-                          icon: Icons.light_mode_outlined,
-                          isActive: !isDark,
-                          onTap: () => ref.read(themeProvider.notifier).state =
-                              ThemeMode.light,
+
+                  // ── Toggle theme (derecha) ─────────────────────────────────
+                  Positioned(
+                    right: 24,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cs.outlineVariant),
                         ),
-                        _ThemeIcon(
-                          icon: Icons.dark_mode_outlined,
-                          isActive: isDark,
-                          onTap: () => ref.read(themeProvider.notifier).state =
-                              ThemeMode.dark,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _ThemeIcon(
+                              icon: Icons.light_mode_outlined,
+                              isActive: !isDark,
+                              onTap: () =>
+                                  ref.read(themeProvider.notifier).state =
+                                      ThemeMode.light,
+                            ),
+                            _ThemeIcon(
+                              icon: Icons.dark_mode_outlined,
+                              isActive: isDark,
+                              onTap: () =>
+                                  ref.read(themeProvider.notifier).state =
+                                      ThemeMode.dark,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ],
-          );
-        },
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
