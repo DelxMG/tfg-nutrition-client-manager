@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/application/providers/database_provider.dart';
 import 'package:nutritrack/data/db/app_database.dart';
 import 'package:nutritrack/domain/enums.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:path/path.dart' as p;
 
@@ -195,13 +196,23 @@ class _PlanFormDialogState extends ConsumerState<PlanFormDialog> {
       if (idx >= 0) selectedCalc = calculations[idx];
     }
 
+    final compact = context.isCompact;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
+
     return Dialog(
       backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 16.0 : 40.0,
+        vertical: 24,
+      ),
       child: SizedBox(
-        width: 580,
+        width: compact ? double.infinity : 580,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 680),
+          constraints: BoxConstraints(
+            maxHeight: compact ? screenHeight - 48 : 680,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -273,6 +284,76 @@ class _PlanFormDialogState extends ConsumerState<PlanFormDialog> {
                         const SizedBox(height: 16),
 
                         // Comidas/día + Cálculo base
+                        if (compact)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _Field(
+                                label: 'Comidas/día',
+                                child: TextFormField(
+                                  controller: _mealsCtrl,
+                                  enabled: !_saving,
+                                  decoration: _dec('Ej. 5', cs),
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _Field(
+                                label: 'Cálculo base',
+                                child: InputDecorator(
+                                  decoration: _dec(null, cs).copyWith(
+                                    contentPadding:
+                                        const EdgeInsets.fromLTRB(12, 4, 4, 4),
+                                    enabled: !isEdit,
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<int?>(
+                                      value: _selectedCalculationId,
+                                      isDense: true,
+                                      isExpanded: true,
+                                      onChanged: isEdit || _saving
+                                          ? null
+                                          : (v) => setState(() {
+                                                _selectedCalculationId = v;
+                                                if (v != null) {
+                                                  _kcalCtrl.clear();
+                                                  _goalType      = null;
+                                                  _goalTypeError = false;
+                                                }
+                                              }),
+                                      items: [
+                                        DropdownMenuItem<int?>(
+                                          value: null,
+                                          child: Text(
+                                            'Manual (sin cálculo)',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 14,
+                                              color: cs.onSurface,
+                                            ),
+                                          ),
+                                        ),
+                                        for (final c in calculations)
+                                          DropdownMenuItem<int?>(
+                                            value: c.calculationId,
+                                            child: Text(
+                                              '${_fmtDate(c.date)} · ${c.kcalTarget.toStringAsFixed(0)} kcal',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                color: cs.onSurface,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -514,7 +595,7 @@ class _PlanFormDialogState extends ConsumerState<PlanFormDialog> {
                                   ],
                                 ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: keyboardBottom > 0 ? keyboardBottom : 24),
                       ],
                     ),
                   ),

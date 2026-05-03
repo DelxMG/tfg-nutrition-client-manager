@@ -7,6 +7,7 @@ import 'package:nutritrack/data/repositories/anamnesis_repository.dart';
 import 'package:nutritrack/data/repositories/client_repository.dart';
 import 'package:nutritrack/data/repositories/measurement_repository.dart';
 import 'package:nutritrack/domain/enums.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
 
@@ -215,14 +216,23 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final compact = context.isCompact;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
 
     return Dialog(
       backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 16.0 : 40.0,
+        vertical: 24,
+      ),
       child: SizedBox(
-        width: 600,
+        width: compact ? double.infinity : 600,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 720),
+          constraints: BoxConstraints(
+            maxHeight: compact ? screenHeight - 48 : 720,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -241,14 +251,14 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildPersonalSection(cs),
+                        _buildPersonalSection(cs, compact),
                         const SizedBox(height: 24),
-                        _buildAnamnesisSection(cs),
+                        _buildAnamnesisSection(cs, compact),
                         if (!widget.hasExistingMeasurements) ...[
                           const SizedBox(height: 24),
-                          _buildInitialMeasurementSection(cs),
+                          _buildInitialMeasurementSection(cs, compact),
                         ],
-                        const SizedBox(height: 24),
+                        SizedBox(height: keyboardBottom > 0 ? keyboardBottom : 24),
                       ],
                     ),
                   ),
@@ -270,14 +280,89 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
 
   // ── Section builders ──────────────────────────────────────────────────────
 
-  Widget _buildPersonalSection(ColorScheme cs) {
+  Widget _buildPersonalSection(ColorScheme cs, bool compact) {
+    final phoneField = _Field(
+      label: 'Teléfono',
+      child: TextFormField(
+        controller: _phoneController,
+        enabled: !_submitting,
+        decoration: _dec('Ej. 612 345 678', cs),
+        keyboardType: TextInputType.phone,
+      ),
+    );
+    final heightField = _Field(
+      label: 'Altura (cm)',
+      child: TextFormField(
+        controller: _heightController,
+        enabled: !_submitting,
+        decoration: _dec('Ej. 170', cs),
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) return null;
+          final h = int.tryParse(v.trim());
+          if (h == null || h <= 0) return 'Altura no válida';
+          return null;
+        },
+      ),
+    );
+    final sexField = _Field(
+      label: 'Sexo',
+      child: DropdownButtonFormField<Sex?>(
+        value: _sex,
+        decoration: _dec(null, cs),
+        hint: _hintText('Sin especificar', cs),
+        items: [
+          _dropdownItem<Sex?>(null, 'Sin especificar'),
+          ...Sex.values.map((s) => _dropdownItem(s, s.label)),
+        ],
+        onChanged: _submitting ? null : (v) => setState(() => _sex = v),
+      ),
+    );
+    final statusField = _Field(
+      label: 'Estado',
+      child: DropdownButtonFormField<ClientStatus>(
+        value: _status,
+        decoration: _dec(null, cs),
+        items: ClientStatus.values.map((s) => _dropdownItem(s, s.label)).toList(),
+        onChanged: _submitting
+            ? null
+            : (v) => setState(() => _status = v ?? _status),
+      ),
+    );
+    final birthDateField = _Field(
+      label: 'Fecha de nacimiento',
+      child: _DateButton(
+        date: _birthDate,
+        placeholder: 'Sin especificar',
+        disabled: _submitting,
+        onTap: () => _pickDate(
+          current: _birthDate ?? DateTime(1990),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+          onPicked: (d) => setState(() => _birthDate = d),
+        ),
+      ),
+    );
+    final createdAtField = _Field(
+      label: 'Fecha de inicio',
+      child: _DateButton(
+        date: _createdAt,
+        disabled: _submitting,
+        onTap: () => _pickDate(
+          current: _createdAt,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+          onPicked: (d) => setState(() => _createdAt = d),
+        ),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionTitle('Datos personales'),
         const SizedBox(height: 14),
-
-        // Name
         _Field(
           label: 'Nombre *',
           child: TextFormField(
@@ -289,8 +374,6 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Email
         _Field(
           label: 'Email',
           child: TextFormField(
@@ -306,125 +389,83 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
         // Phone + Height
-        Row(
-          children: [
-            Expanded(
-              child: _Field(
-                label: 'Teléfono',
-                child: TextFormField(
-                  controller: _phoneController,
-                  enabled: !_submitting,
-                  decoration: _dec('Ej. 612 345 678', cs),
-                  keyboardType: TextInputType.phone,
-                ),
-              ),
-            ),
+        if (compact)
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            phoneField, const SizedBox(height: 12), heightField,
+          ])
+        else
+          Row(children: [
+            Expanded(child: phoneField),
             const SizedBox(width: 12),
-            Expanded(
-              child: _Field(
-                label: 'Altura (cm)',
-                child: TextFormField(
-                  controller: _heightController,
-                  enabled: !_submitting,
-                  decoration: _dec('Ej. 170', cs),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null;
-                    final h = int.tryParse(v.trim());
-                    if (h == null || h <= 0) return 'Altura no válida';
-                    return null;
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+            Expanded(child: heightField),
+          ]),
         const SizedBox(height: 12),
-
         // Sex + Status
-        Row(
-          children: [
-            Expanded(
-              child: _Field(
-                label: 'Sexo',
-                child: DropdownButtonFormField<Sex?>(
-                  value: _sex,
-                  decoration: _dec(null, cs),
-                  hint: _hintText('Sin especificar', cs),
-                  items: [
-                    _dropdownItem<Sex?>(null, 'Sin especificar'),
-                    ...Sex.values.map((s) => _dropdownItem(s, s.label)),
-                  ],
-                  onChanged:
-                      _submitting ? null : (v) => setState(() => _sex = v),
-                ),
-              ),
-            ),
+        if (compact)
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            sexField, const SizedBox(height: 12), statusField,
+          ])
+        else
+          Row(children: [
+            Expanded(child: sexField),
             const SizedBox(width: 12),
-            Expanded(
-              child: _Field(
-                label: 'Estado',
-                child: DropdownButtonFormField<ClientStatus>(
-                  value: _status,
-                  decoration: _dec(null, cs),
-                  items: ClientStatus.values
-                      .map((s) => _dropdownItem(s, s.label))
-                      .toList(),
-                  onChanged: _submitting
-                      ? null
-                      : (v) => setState(() => _status = v ?? _status),
-                ),
-              ),
-            ),
-          ],
-        ),
+            Expanded(child: statusField),
+          ]),
         const SizedBox(height: 12),
-
         // BirthDate + CreatedAt
-        Row(
-          children: [
-            Expanded(
-              child: _Field(
-                label: 'Fecha de nacimiento',
-                child: _DateButton(
-                  date: _birthDate,
-                  placeholder: 'Sin especificar',
-                  disabled: _submitting,
-                  onTap: () => _pickDate(
-                    current: _birthDate ?? DateTime(1990),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                    onPicked: (d) => setState(() => _birthDate = d),
-                  ),
-                ),
-              ),
-            ),
+        if (compact)
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            birthDateField, const SizedBox(height: 12), createdAtField,
+          ])
+        else
+          Row(children: [
+            Expanded(child: birthDateField),
             const SizedBox(width: 12),
-            Expanded(
-              child: _Field(
-                label: 'Fecha de inicio',
-                child: _DateButton(
-                  date: _createdAt,
-                  disabled: _submitting,
-                  onTap: () => _pickDate(
-                    current: _createdAt,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now(),
-                    onPicked: (d) => setState(() => _createdAt = d),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+            Expanded(child: createdAtField),
+          ]),
       ],
     );
   }
 
-  Widget _buildAnamnesisSection(ColorScheme cs) {
+  Widget _buildAnamnesisSection(ColorScheme cs, bool compact) {
+    final activityField = _Field(
+      label: 'Actividad física',
+      child: DropdownButtonFormField<PhysicalActivity?>(
+        value: _physicalActivity,
+        decoration: _dec(null, cs),
+        hint: _hintText('Sin especificar', cs),
+        items: [
+          _dropdownItem<PhysicalActivity?>(null, 'Sin especificar'),
+          ...PhysicalActivity.values.map((a) => _dropdownItem(a, a.label)),
+        ],
+        onChanged: _submitting
+            ? null
+            : (v) => setState(() => _physicalActivity = v),
+      ),
+    );
+    final occupationField = _Field(
+      label: 'Ocupación',
+      child: TextFormField(
+        controller: _occupationController,
+        enabled: !_submitting,
+        decoration: _dec('Ej. administrativo...', cs),
+      ),
+    );
+    final anamnesisDateField = _Field(
+      label: 'Fecha de anamnesis',
+      child: _DateButton(
+        date: _anamnesisDate,
+        disabled: _submitting,
+        onTap: () => _pickDate(
+          current: _anamnesisDate,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+          onPicked: (d) => setState(() => _anamnesisDate = d),
+        ),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -432,8 +473,6 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
         const SizedBox(height: 16),
         const _SectionTitle('Anamnesis'),
         const SizedBox(height: 14),
-
-        // Objective
         _Field(
           label: 'Objetivo',
           child: TextFormField(
@@ -443,44 +482,18 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
         // PhysicalActivity + Occupation
-        Row(
-          children: [
-            Expanded(
-              child: _Field(
-                label: 'Actividad física',
-                child: DropdownButtonFormField<PhysicalActivity?>(
-                  value: _physicalActivity,
-                  decoration: _dec(null, cs),
-                  hint: _hintText('Sin especificar', cs),
-                  items: [
-                    _dropdownItem<PhysicalActivity?>(null, 'Sin especificar'),
-                    ...PhysicalActivity.values
-                        .map((a) => _dropdownItem(a, a.label)),
-                  ],
-                  onChanged: _submitting
-                      ? null
-                      : (v) => setState(() => _physicalActivity = v),
-                ),
-              ),
-            ),
+        if (compact)
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            activityField, const SizedBox(height: 12), occupationField,
+          ])
+        else
+          Row(children: [
+            Expanded(child: activityField),
             const SizedBox(width: 12),
-            Expanded(
-              child: _Field(
-                label: 'Ocupación',
-                child: TextFormField(
-                  controller: _occupationController,
-                  enabled: !_submitting,
-                  decoration: _dec('Ej. administrativo...', cs),
-                ),
-              ),
-            ),
-          ],
-        ),
+            Expanded(child: occupationField),
+          ]),
         const SizedBox(height: 12),
-
-        // Allergies
         _Field(
           label: 'Alergias e intolerancias',
           child: TextFormField(
@@ -493,8 +506,6 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Pathologies
         _Field(
           label: 'Condiciones médicas',
           child: TextFormField(
@@ -507,8 +518,6 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Observations
         _Field(
           label: 'Observaciones',
           child: TextFormField(
@@ -521,8 +530,6 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Supplements
         _Field(
           label: 'Suplementos',
           child: TextFormField(
@@ -535,29 +542,84 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Anamnesis date
-        SizedBox(
-          width: (600 - 56 - 12) / 2,
-          child: _Field(
-            label: 'Fecha de anamnesis',
-            child: _DateButton(
-              date: _anamnesisDate,
-              disabled: _submitting,
-              onTap: () => _pickDate(
-                current: _anamnesisDate,
-                firstDate: DateTime(2000),
-                lastDate: DateTime.now(),
-                onPicked: (d) => setState(() => _anamnesisDate = d),
-              ),
-            ),
-          ),
-        ),
+        // Anamnesis date: half-width on desktop, full-width on compact
+        if (compact)
+          anamnesisDateField
+        else
+          SizedBox(width: (600 - 56 - 12) / 2, child: anamnesisDateField),
       ],
     );
   }
 
-  Widget _buildInitialMeasurementSection(ColorScheme cs) {
+  Widget _buildInitialMeasurementSection(ColorScheme cs, bool compact) {
+    final weightField = _Field(
+      label: 'Peso (kg)',
+      child: TextFormField(
+        controller: _initialWeightController,
+        enabled: !_submitting,
+        decoration: _dec('ej. 72.5', cs),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) return null;
+          final val = double.tryParse(v.trim());
+          if (val == null || val <= 0) return 'Peso no válido';
+          return null;
+        },
+      ),
+    );
+    final bodyFatField = _Field(
+      label: 'Grasa corporal (%)',
+      child: TextFormField(
+        controller: _initialBodyFatController,
+        enabled: !_submitting,
+        decoration: _dec('ej. 18.0', cs),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) return null;
+          final val = double.tryParse(v.trim());
+          if (val == null || val < 0 || val > 100) return 'Valor entre 0 y 100';
+          return null;
+        },
+      ),
+    );
+    final muscleMassField = _Field(
+      label: 'Masa muscular (kg)',
+      child: TextFormField(
+        controller: _initialMuscleMassController,
+        enabled: !_submitting,
+        decoration: _dec('ej. 35.0', cs),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) return null;
+          final val = double.tryParse(v.trim());
+          if (val == null || val <= 0) return 'Valor no válido';
+          return null;
+        },
+      ),
+    );
+    final initialDateField = _Field(
+      label: 'Fecha',
+      child: _DateButton(
+        date: _initialDate,
+        disabled: _submitting,
+        onTap: () => _pickDate(
+          current: _initialDate,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+          onPicked: (d) => setState(() => _initialDate = d),
+        ),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -570,98 +632,29 @@ class _ClientProfileFormDialogState extends State<ClientProfileFormDialog> {
           style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 14),
-
-        // Date
-        SizedBox(
-          width: (600 - 56 - 12) / 2,
-          child: _Field(
-            label: 'Fecha',
-            child: _DateButton(
-              date: _initialDate,
-              disabled: _submitting,
-              onTap: () => _pickDate(
-                current: _initialDate,
-                firstDate: DateTime(2000),
-                lastDate: DateTime.now(),
-                onPicked: (d) => setState(() => _initialDate = d),
-              ),
-            ),
-          ),
-        ),
+        // Date: half-width on desktop, full-width on compact
+        if (compact)
+          initialDateField
+        else
+          SizedBox(width: (600 - 56 - 12) / 2, child: initialDateField),
         const SizedBox(height: 12),
-
         // Weight + BodyFat + MuscleMass
-        Row(
-          children: [
-            Expanded(
-              child: _Field(
-                label: 'Peso (kg)',
-                child: TextFormField(
-                  controller: _initialWeightController,
-                  enabled: !_submitting,
-                  decoration: _dec('ej. 72.5', cs),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                  ],
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null;
-                    final val = double.tryParse(v.trim());
-                    if (val == null || val <= 0) return 'Peso no válido';
-                    return null;
-                  },
-                ),
-              ),
-            ),
+        if (compact)
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            weightField,
+            const SizedBox(height: 12),
+            bodyFatField,
+            const SizedBox(height: 12),
+            muscleMassField,
+          ])
+        else
+          Row(children: [
+            Expanded(child: weightField),
             const SizedBox(width: 12),
-            Expanded(
-              child: _Field(
-                label: 'Grasa corporal (%)',
-                child: TextFormField(
-                  controller: _initialBodyFatController,
-                  enabled: !_submitting,
-                  decoration: _dec('ej. 18.0', cs),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                  ],
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null;
-                    final val = double.tryParse(v.trim());
-                    if (val == null || val < 0 || val > 100) {
-                      return 'Valor entre 0 y 100';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ),
+            Expanded(child: bodyFatField),
             const SizedBox(width: 12),
-            Expanded(
-              child: _Field(
-                label: 'Masa muscular (kg)',
-                child: TextFormField(
-                  controller: _initialMuscleMassController,
-                  enabled: !_submitting,
-                  decoration: _dec('ej. 35.0', cs),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                  ],
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null;
-                    final val = double.tryParse(v.trim());
-                    if (val == null || val <= 0) return 'Valor no válido';
-                    return null;
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+            Expanded(child: muscleMassField),
+          ]),
       ],
     );
   }

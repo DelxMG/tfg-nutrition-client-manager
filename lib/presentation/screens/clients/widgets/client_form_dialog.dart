@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/repositories/client_repository.dart';
 import 'package:nutritrack/domain/enums.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientFormDialog extends StatefulWidget {
@@ -81,22 +82,121 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final compact = context.isCompact;
+    final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final emailField = _Field(
+      label: 'Email',
+      child: TextFormField(
+        controller: _emailController,
+        enabled: !_submitting,
+        decoration: _dec('correo@ejemplo.com', cs),
+        keyboardType: TextInputType.emailAddress,
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) return null;
+          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
+            return 'Email inválido';
+          }
+          return null;
+        },
+      ),
+    );
+    final phoneField = _Field(
+      label: 'Teléfono',
+      child: TextFormField(
+        controller: _phoneController,
+        enabled: !_submitting,
+        decoration: _dec('+34 600 000 000', cs),
+        keyboardType: TextInputType.phone,
+      ),
+    );
+    final heightField = _Field(
+      label: 'Altura (cm)',
+      child: TextFormField(
+        controller: _heightController,
+        enabled: !_submitting,
+        decoration: _dec('170', cs),
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        validator: (v) {
+          if (v == null || v.isEmpty) return null;
+          final h = int.tryParse(v);
+          if (h == null || h <= 0) return 'Altura inválida';
+          return null;
+        },
+      ),
+    );
+    final sexField = _Field(
+      label: 'Sexo',
+      child: DropdownButtonFormField<Sex>(
+        value: _sex,
+        decoration: _dec(null, cs),
+        hint: Text(
+          'Seleccionar',
+          style: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
+        ),
+        items: const [
+          DropdownMenuItem(value: Sex.male, child: Text('Hombre')),
+          DropdownMenuItem(value: Sex.female, child: Text('Mujer')),
+        ],
+        onChanged: _submitting ? null : (v) => setState(() => _sex = v),
+      ),
+    );
+    final birthDateField = _Field(
+      label: 'Fecha de nacimiento',
+      child: InkWell(
+        onTap: _submitting ? null : _pickDate,
+        borderRadius: clientsChipBorderRadius,
+        child: InputDecorator(
+          decoration: _dec(null, cs),
+          child: Text(
+            _birthDate == null
+                ? 'Seleccionar fecha'
+                : '${_birthDate!.day.toString().padLeft(2, '0')}/'
+                    '${_birthDate!.month.toString().padLeft(2, '0')}/'
+                    '${_birthDate!.year}',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: _birthDate == null ? cs.onSurfaceVariant : cs.onSurface,
+            ),
+          ),
+        ),
+      ),
+    );
+    final statusField = _Field(
+      label: 'Estado',
+      child: DropdownButtonFormField<ClientStatus>(
+        value: _status,
+        decoration: _dec(null, cs),
+        items: const [
+          DropdownMenuItem(value: ClientStatus.active, child: Text('Activo')),
+          DropdownMenuItem(value: ClientStatus.inactive, child: Text('Inactivo')),
+          DropdownMenuItem(value: ClientStatus.pending, child: Text('Pendiente')),
+        ],
+        onChanged: _submitting ? null : (v) => setState(() => _status = v!),
+      ),
+    );
 
     return Dialog(
       backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 16.0 : 40.0,
+        vertical: 24,
+      ),
       child: SizedBox(
-        width: 480,
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Header ──────────────────────────────────────────────
-                Row(
+        width: compact ? double.infinity : 480,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
+                child: Row(
                   children: [
                     Text(
                       'Nuevo cliente',
@@ -116,179 +216,103 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+              ),
 
-                // ── Nombre ───────────────────────────────────────────────
-                _Field(
-                  label: 'Nombre *',
-                  child: TextFormField(
-                    controller: _nameController,
-                    enabled: !_submitting,
-                    decoration: _dec('Nombre completo', cs),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return 'El nombre es obligatorio';
-                      }
-                      return null;
-                    },
+              // ── Scrollable body ──────────────────────────────────────
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: screenHeight - 48 - (compact ? 0 : 120),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(28, 20, 28, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Nombre
+                      _Field(
+                        label: 'Nombre *',
+                        child: TextFormField(
+                          controller: _nameController,
+                          enabled: !_submitting,
+                          decoration: _dec('Nombre completo', cs),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'El nombre es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Email / Teléfono
+                      if (compact)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            emailField,
+                            const SizedBox(height: 12),
+                            phoneField,
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(child: emailField),
+                            const SizedBox(width: 12),
+                            Expanded(child: phoneField),
+                          ],
+                        ),
+                      const SizedBox(height: 14),
+
+                      // Altura / Sexo
+                      if (compact)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            heightField,
+                            const SizedBox(height: 12),
+                            sexField,
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(child: heightField),
+                            const SizedBox(width: 12),
+                            Expanded(child: sexField),
+                          ],
+                        ),
+                      const SizedBox(height: 14),
+
+                      // Fecha nacimiento / Estado
+                      if (compact)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            birthDateField,
+                            const SizedBox(height: 12),
+                            statusField,
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(child: birthDateField),
+                            const SizedBox(width: 12),
+                            Expanded(child: statusField),
+                          ],
+                        ),
+                      SizedBox(height: keyboardBottom > 0 ? keyboardBottom : 24),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 14),
+              ),
 
-                // ── Email / Teléfono ──────────────────────────────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: _Field(
-                        label: 'Email',
-                        child: TextFormField(
-                          controller: _emailController,
-                          enabled: !_submitting,
-                          decoration: _dec('correo@ejemplo.com', cs),
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) return null;
-
-                            final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                            if (!emailRegex.hasMatch(v.trim())) {
-                              return 'Email inválido';
-                            }
-
-                            return null;
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Field(
-                        label: 'Teléfono',
-                        child: TextFormField(
-                          controller: _phoneController,
-                          enabled: !_submitting,
-                          decoration: _dec('+34 600 000 000', cs),
-                          keyboardType: TextInputType.phone,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // ── Altura / Sexo ─────────────────────────────────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: _Field(
-                        label: 'Altura (cm)',
-                        child: TextFormField(
-                          controller: _heightController,
-                          enabled: !_submitting,
-                          decoration: _dec('170', cs),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return null;
-
-                            final height = int.tryParse(v);
-                            if (height == null || height <= 0) {
-                              return 'Altura inválida';
-                            }
-
-                            return null;
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Field(
-                        label: 'Sexo',
-                        child: DropdownButtonFormField<Sex>(
-                          value: _sex,
-                          decoration: _dec(null, cs),
-                          hint: Text(
-                            'Seleccionar',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                                value: Sex.male, child: Text('Hombre')),
-                            DropdownMenuItem(
-                                value: Sex.female, child: Text('Mujer')),
-                          ],
-                          onChanged:
-                              _submitting ? null : (v) => setState(() => _sex = v),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // ── Fecha nacimiento / Estado ─────────────────────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: _Field(
-                        label: 'Fecha de nacimiento',
-                        child: InkWell(
-                          onTap: _submitting ? null : _pickDate,
-                          borderRadius: clientsChipBorderRadius,
-                          child: InputDecorator(
-                            decoration: _dec(null, cs),
-                            child: Text(
-                              _birthDate == null
-                                  ? 'Seleccionar fecha'
-                                  : '${_birthDate!.day.toString().padLeft(2, '0')}/'
-                                      '${_birthDate!.month.toString().padLeft(2, '0')}/'
-                                      '${_birthDate!.year}',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: _birthDate == null
-                                    ? cs.onSurfaceVariant
-                                    : cs.onSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Field(
-                        label: 'Estado',
-                        child: DropdownButtonFormField<ClientStatus>(
-                          value: _status,
-                          decoration: _dec(null, cs),
-                          items: const [
-                            DropdownMenuItem(
-                                value: ClientStatus.active,
-                                child: Text('Activo')),
-                            DropdownMenuItem(
-                                value: ClientStatus.inactive,
-                                child: Text('Inactivo')),
-                            DropdownMenuItem(
-                                value: ClientStatus.pending,
-                                child: Text('Pendiente')),
-                          ],
-                          onChanged: _submitting
-                              ? null
-                              : (v) => setState(() => _status = v!),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // ── Botones ───────────────────────────────────────────────
-                Row(
+              // ── Botones ───────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
@@ -336,8 +360,8 @@ class _ClientFormDialogState extends State<ClientFormDialog> {
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

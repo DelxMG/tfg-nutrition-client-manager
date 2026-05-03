@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/repositories/measurement_repository.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class MeasurementFormDialog extends StatefulWidget {
@@ -98,13 +99,51 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final compact = context.isCompact;
     final maxScrollHeight = MediaQuery.of(context).size.height * 0.6;
+    final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
+
+    final bodyFatField = _Field(
+      label: 'Grasa corporal (%)',
+      child: TextFormField(
+        controller: _bodyFatController,
+        enabled: !_submitting,
+        decoration: _dec('ej. 18.0', cs),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) return null;
+          final val = double.tryParse(v.trim());
+          if (val == null || val < 0 || val > 100) return 'Valor entre 0 y 100';
+          return null;
+        },
+      ),
+    );
+    final muscleMassField = _Field(
+      label: 'Masa muscular (kg)',
+      child: TextFormField(
+        controller: _muscleMassController,
+        enabled: !_submitting,
+        decoration: _dec('ej. 35.0', cs),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        validator: _positiveOptional,
+      ),
+    );
 
     return Dialog(
       backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 16.0 : 40.0,
+        vertical: 24,
+      ),
       child: SizedBox(
-        width: 420,
+        width: compact ? double.infinity : 420,
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
@@ -196,60 +235,23 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                         const SizedBox(height: 14),
 
                         // Grasa / Músculo
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _Field(
-                                label: 'Grasa corporal (%)',
-                                child: TextFormField(
-                                  controller: _bodyFatController,
-                                  enabled: !_submitting,
-                                  decoration: _dec('ej. 18.0', cs),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*'),
-                                    ),
-                                  ],
-                                  validator: (v) {
-                                    if (v == null || v.trim().isEmpty) {
-                                      return null;
-                                    }
-                                    final val = double.tryParse(v.trim());
-                                    if (val == null || val < 0 || val > 100) {
-                                      return 'Valor entre 0 y 100';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _Field(
-                                label: 'Masa muscular (kg)',
-                                child: TextFormField(
-                                  controller: _muscleMassController,
-                                  enabled: !_submitting,
-                                  decoration: _dec('ej. 35.0', cs),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*'),
-                                    ),
-                                  ],
-                                  validator: _positiveOptional,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        if (compact)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              bodyFatField,
+                              const SizedBox(height: 12),
+                              muscleMassField,
+                            ],
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(child: bodyFatField),
+                              const SizedBox(width: 12),
+                              Expanded(child: muscleMassField),
+                            ],
+                          ),
                         const SizedBox(height: 20),
 
                         // ── Medidas corporales ──────────────────────────
@@ -264,78 +266,51 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                         const SizedBox(height: 10),
 
                         // Cintura / Pecho
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _Field(
-                                label: 'Cintura',
-                                child: _cmField(
-                                  _waistController,
-                                  'ej. 80.0',
-                                  cs,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _Field(
-                                label: 'Pecho',
-                                child: _cmField(
-                                  _chestController,
-                                  'ej. 95.0',
-                                  cs,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        if (compact)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _Field(label: 'Cintura', child: _cmField(_waistController, 'ej. 80.0', cs)),
+                              const SizedBox(height: 12),
+                              _Field(label: 'Pecho', child: _cmField(_chestController, 'ej. 95.0', cs)),
+                            ],
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(child: _Field(label: 'Cintura', child: _cmField(_waistController, 'ej. 80.0', cs))),
+                              const SizedBox(width: 12),
+                              Expanded(child: _Field(label: 'Pecho', child: _cmField(_chestController, 'ej. 95.0', cs))),
+                            ],
+                          ),
                         const SizedBox(height: 12),
 
                         // Brazo / Muslo
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _Field(
-                                label: 'Brazo',
-                                child: _cmField(
-                                  _armController,
-                                  'ej. 32.0',
-                                  cs,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _Field(
-                                label: 'Muslo',
-                                child: _cmField(
-                                  _thighController,
-                                  'ej. 55.0',
-                                  cs,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        if (compact)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _Field(label: 'Brazo', child: _cmField(_armController, 'ej. 32.0', cs)),
+                              const SizedBox(height: 12),
+                              _Field(label: 'Muslo', child: _cmField(_thighController, 'ej. 55.0', cs)),
+                            ],
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(child: _Field(label: 'Brazo', child: _cmField(_armController, 'ej. 32.0', cs))),
+                              const SizedBox(width: 12),
+                              Expanded(child: _Field(label: 'Muslo', child: _cmField(_thighController, 'ej. 55.0', cs))),
+                            ],
+                          ),
                         const SizedBox(height: 12),
 
                         // Pantorrilla
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _Field(
-                                label: 'Pantorrilla',
-                                child: _cmField(
-                                  _calfController,
-                                  'ej. 36.0',
-                                  cs,
-                                ),
-                              ),
-                            ),
-                            const Expanded(child: SizedBox.shrink()),
-                          ],
+                        _Field(
+                          label: 'Pantorrilla',
+                          child: _cmField(_calfController, 'ej. 36.0', cs),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: keyboardBottom > 0 ? keyboardBottom : 4),
                       ],
                     ),
                   ),
@@ -368,8 +343,7 @@ class _MeasurementFormDialogState extends State<MeasurementFormDialog> {
                         backgroundColor: cs.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         shape: const RoundedRectangleBorder(
                           borderRadius: clientsBorderRadius,
                         ),
