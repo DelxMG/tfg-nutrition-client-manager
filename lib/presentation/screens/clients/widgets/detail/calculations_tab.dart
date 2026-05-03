@@ -10,6 +10,7 @@ import 'package:nutritrack/domain/services/nutrition_calculator.dart';
 import 'package:nutritrack/domain/services/tdee_calculator.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/plan_form_dialog.dart';
 
 // ── Macro colour tokens ───────────────────────────────────────────────────────
@@ -236,65 +237,69 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final compact = context.isCompact;
     final calculationsAsync = ref.watch(
       clientNutritionCalculationsProvider(widget.clientId),
     );
     final result = _result;
 
+    final leftCol = Column(
+      children: [
+        _GoalCard(
+          goalType: _goalType,
+          saving: _saving,
+          onChanged: (g) => setState(() => _goalType = g),
+        ),
+        const SizedBox(height: 12),
+        _ParametersCard(
+          weightController: _weightController,
+          heightController: _heightController,
+          ageController: _ageController,
+          proteinPerKgController: _proteinPerKgController,
+          fatPerKgController: _fatPerKgController,
+          sex: _sex,
+          activity: _activity,
+          formula: _formula,
+          saving: _saving,
+          onSexChanged: (s) => setState(() => _sex = s),
+          onActivityChanged: (a) => setState(() => _activity = a),
+          onFormulaChanged: (f) => setState(() => _formula = f),
+        ),
+      ],
+    );
+
+    final rightCol = Column(
+      children: [
+        _ResultCard(result: result),
+        const SizedBox(height: 12),
+        _MacrosCard(
+          result: result,
+          saving: _saving,
+          canSave: _canSave,
+          onSave: _save,
+          onReset: _reset,
+        ),
+      ],
+    );
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── 2-column dashboard ────────────────────────────────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left column
-              Expanded(
-                child: Column(
-                  children: [
-                    _GoalCard(
-                      goalType: _goalType,
-                      saving: _saving,
-                      onChanged: (g) => setState(() => _goalType = g),
-                    ),
-                    const SizedBox(height: 12),
-                    _ParametersCard(
-                      weightController: _weightController,
-                      heightController: _heightController,
-                      ageController: _ageController,
-                      proteinPerKgController: _proteinPerKgController,
-                      fatPerKgController: _fatPerKgController,
-                      sex: _sex,
-                      activity: _activity,
-                      formula: _formula,
-                      saving: _saving,
-                      onSexChanged: (s) => setState(() => _sex = s),
-                      onActivityChanged: (a) => setState(() => _activity = a),
-                      onFormulaChanged: (f) => setState(() => _formula = f),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Right column
-              Expanded(
-                child: Column(
-                  children: [
-                    _ResultCard(result: result),
-                    const SizedBox(height: 12),
-                    _MacrosCard(
-                      result: result,
-                      saving: _saving,
-                      canSave: _canSave,
-                      onSave: _save,
-                      onReset: _reset,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // ── Dashboard ─────────────────────────────────────────────────
+          if (compact) ...[
+            leftCol,
+            const SizedBox(height: 12),
+            rightCol,
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: leftCol),
+                const SizedBox(width: 16),
+                Expanded(child: rightCol),
+              ],
+            ),
           const SizedBox(height: 20),
 
           // ── History ───────────────────────────────────────────────────
@@ -318,11 +323,17 @@ class _CalculationsTabState extends ConsumerState<CalculationsTab> {
             ),
             data: (calcs) => calcs.isEmpty
                 ? const _EmptyHistoryState()
-                : _HistoryTable(
-                    calculations: calcs,
-                    onDelete: _confirmDelete,
-                    onGeneratePlan: _openPlanForm,
-                  ),
+                : compact
+                    ? _HistoryCardList(
+                        calculations: calcs,
+                        onDelete: _confirmDelete,
+                        onGeneratePlan: _openPlanForm,
+                      )
+                    : _HistoryTable(
+                        calculations: calcs,
+                        onDelete: _confirmDelete,
+                        onGeneratePlan: _openPlanForm,
+                      ),
           ),
           const SizedBox(height: 24),
         ],
@@ -475,28 +486,54 @@ class _ParametersCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Header: title + formula chips ────────────────────────────
-          Row(
-            children: [
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final titleText = Text(
                 'Parámetros',
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: cs.onSurface,
                 ),
-              ),
-              const Spacer(),
-              ...BmrFormula.values.map(
-                (f) => Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: _SelectChip(
-                    label: _bmrFormulaLabel(f),
-                    selected: formula == f,
-                    onTap: saving ? null : () => onFormulaChanged(f),
+              );
+              final chipRow = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: BmrFormula.values
+                    .map(
+                      (f) => Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: _SelectChip(
+                          label: _bmrFormulaLabel(f),
+                          selected: formula == f,
+                          onTap: saving ? null : () => onFormulaChanged(f),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              );
+              if (isCompactWidth(constraints.maxWidth)) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [titleText, const SizedBox(height: 8), chipRow],
+                );
+              }
+              return Row(
+                children: [
+                  titleText,
+                  const Spacer(),
+                  ...BmrFormula.values.map(
+                    (f) => Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: _SelectChip(
+                        label: _bmrFormulaLabel(f),
+                        selected: formula == f,
+                        onTap: saving ? null : () => onFormulaChanged(f),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 14),
 
@@ -1286,6 +1323,214 @@ class _HistoryRow extends StatelessWidget {
           _DeleteButton(onPressed: onDelete),
         ],
       ),
+    );
+  }
+}
+
+// ── Compact history: card list ────────────────────────────────────────────────
+
+class _HistoryCardList extends StatelessWidget {
+  final List<NutritionCalculation> calculations;
+  final Future<void> Function(NutritionCalculation) onDelete;
+  final void Function(NutritionCalculation) onGeneratePlan;
+
+  const _HistoryCardList({
+    required this.calculations,
+    required this.onDelete,
+    required this.onGeneratePlan,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: calculations.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (_, i) => _HistoryCard(
+        calc: calculations[i],
+        onDelete: () => onDelete(calculations[i]),
+        onGeneratePlan: () => onGeneratePlan(calculations[i]),
+      ),
+    );
+  }
+}
+
+class _HistoryCard extends StatelessWidget {
+  final NutritionCalculation calc;
+  final VoidCallback onDelete;
+  final VoidCallback onGeneratePlan;
+
+  const _HistoryCard({
+    required this.calc,
+    required this.onDelete,
+    required this.onGeneratePlan,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final goalColor = _goalTypeColor(calc.goalType);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: clientsBorderRadius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Card header: date · goal badge · actions ──────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            child: Row(
+              children: [
+                Text(
+                  _formatDateShort(calc.date),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: cs.primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: goalColor.withValues(alpha: 0.10),
+                    borderRadius: clientsChipBorderRadius,
+                  ),
+                  child: Text(
+                    _goalTypeLabel(calc.goalType),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: goalColor,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.assignment_outlined),
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  tooltip: 'Generar plan',
+                  onPressed: onGeneratePlan,
+                ),
+                _DeleteButton(onPressed: onDelete),
+              ],
+            ),
+          ),
+          Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+          // ── Metrics grid ─────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final colWidth = (constraints.maxWidth - 16) / 2;
+                return Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: colWidth,
+                      child: _CalcMetric(
+                        label: 'Kcal objetivo',
+                        value: '${calc.kcalTarget.toStringAsFixed(0)} kcal',
+                        highlight: true,
+                      ),
+                    ),
+                    SizedBox(
+                      width: colWidth,
+                      child: _CalcMetric(
+                        label: 'TMB',
+                        value: '${calc.bmr.toStringAsFixed(0)} kcal',
+                      ),
+                    ),
+                    SizedBox(
+                      width: colWidth,
+                      child: _CalcMetric(
+                        label: 'TDEE',
+                        value: '${calc.tdee.toStringAsFixed(0)} kcal',
+                      ),
+                    ),
+                    SizedBox(
+                      width: colWidth,
+                      child: _CalcMetric(
+                        label: 'Proteína',
+                        value: '${calc.proteins.toStringAsFixed(0)}g',
+                        color: _kProteinColor,
+                      ),
+                    ),
+                    SizedBox(
+                      width: colWidth,
+                      child: _CalcMetric(
+                        label: 'Carbohidratos',
+                        value: '${calc.carbohydrates.toStringAsFixed(0)}g',
+                        color: _kCarbColor,
+                      ),
+                    ),
+                    SizedBox(
+                      width: colWidth,
+                      child: _CalcMetric(
+                        label: 'Grasas',
+                        value: '${calc.fats.toStringAsFixed(0)}g',
+                        color: _kFatColor,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalcMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool highlight;
+  final Color? color;
+
+  const _CalcMetric({
+    required this.label,
+    required this.value,
+    this.highlight = false,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: highlight ? 16 : 14,
+            fontWeight: FontWeight.w700,
+            color: highlight ? cs.primary : (color ?? cs.onSurface),
+          ),
+        ),
+      ],
     );
   }
 }
