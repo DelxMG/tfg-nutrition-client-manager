@@ -95,7 +95,7 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
       controller: _searchController,
       style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
       decoration: InputDecoration(
-        hintText: 'Buscar por nombre, email...',
+        hintText: 'Buscar por nombre...',
         hintStyle: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
         prefixIcon: Icon(Icons.search, size: clientsIconSize, color: cs.onSurfaceVariant),
         filled: true,
