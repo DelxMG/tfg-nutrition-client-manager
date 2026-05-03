@@ -7,11 +7,13 @@ import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatte
 class ClientsTable extends StatelessWidget {
   final List<Client> clients;
   final ValueChanged<int> onClientTap;
+  final Future<void> Function(int clientId)? onDeleteClient;
 
   const ClientsTable({
     super.key,
     required this.clients,
     required this.onClientTap,
+    this.onDeleteClient,
   });
 
   @override
@@ -48,7 +50,11 @@ class ClientsTable extends StatelessWidget {
                     ),
                     itemBuilder: (context, index) {
                       final client = clients[index];
-                      return _ClientRow(client: client, onTap: onClientTap);
+                      return _ClientRow(
+                        client: client,
+                        onTap: onClientTap,
+                        onDeleteClient: onDeleteClient,
+                      );
                     },
                   ),
           ),
@@ -106,8 +112,13 @@ class ClientsTable extends StatelessWidget {
 class _ClientRow extends StatefulWidget {
   final Client client;
   final ValueChanged<int> onTap;
+  final Future<void> Function(int clientId)? onDeleteClient;
 
-  const _ClientRow({required this.client, required this.onTap});
+  const _ClientRow({
+    required this.client,
+    required this.onTap,
+    this.onDeleteClient,
+  });
 
   @override
   State<_ClientRow> createState() => _ClientRowState();
@@ -115,6 +126,50 @@ class _ClientRow extends StatefulWidget {
 
 class _ClientRowState extends State<_ClientRow> {
   bool _hovered = false;
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final cs = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar cliente'),
+        content: Text(
+          '¿Eliminar a "${widget.client.name}"? '
+          'Se eliminarán también todas sus mediciones, notas y planes. '
+          'Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFD94A4A),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && widget.onDeleteClient != null) {
+      try {
+        await widget.onDeleteClient!(widget.client.clientId);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Error al eliminar el cliente. Inténtalo de nuevo.',
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -254,12 +309,16 @@ class _ClientRowState extends State<_ClientRow> {
                   ),
                 ),
                 SizedBox(
-                  width: 20,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 17,
-                    color: cs.onSurfaceVariant,
-                  ),
+                  width: 32,
+                  child: widget.onDeleteClient != null
+                      ? _DeleteClientButton(
+                          onDelete: () => _confirmDelete(context),
+                        )
+                      : Icon(
+                          Icons.chevron_right,
+                          size: 17,
+                          color: cs.onSurfaceVariant,
+                        ),
                 ),
               ],
             ),
@@ -276,3 +335,45 @@ TextStyle _headerTextStyle(ColorScheme cs) => GoogleFonts.inter(
   letterSpacing: 0.7,
   color: cs.onSurfaceVariant,
 );
+
+class _DeleteClientButton extends StatefulWidget {
+  final VoidCallback onDelete;
+
+  const _DeleteClientButton({required this.onDelete});
+
+  @override
+  State<_DeleteClientButton> createState() => _DeleteClientButtonState();
+}
+
+class _DeleteClientButtonState extends State<_DeleteClientButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    const _red = Color(0xFFD94A4A);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onDelete,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: _hovered ? _red.withValues(alpha: 0.08) : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            _hovered ? Icons.delete : Icons.delete_outline,
+            size: 16,
+            color: _hovered ? _red : cs.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}

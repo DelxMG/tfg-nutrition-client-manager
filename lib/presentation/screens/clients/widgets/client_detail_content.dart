@@ -26,7 +26,8 @@ class ClientDetailContent extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ClientDetailContent> createState() => _ClientDetailContentState();
+  ConsumerState<ClientDetailContent> createState() =>
+      _ClientDetailContentState();
 }
 
 class _ClientDetailContentState extends ConsumerState<ClientDetailContent> {
@@ -109,11 +110,14 @@ class _ClientDetailBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final reactiveClient = ref
         .watch(clientByIdProvider(summary.client.clientId))
-        .maybeWhen(data: (c) => c ?? summary.client, orElse: () => summary.client);
+        .maybeWhen(
+          data: (c) => c ?? summary.client,
+          orElse: () => summary.client,
+        );
 
-    final allMeasurements = ref
-        .watch(clientMeasurementsProvider(summary.client.clientId))
-        .value ?? [];
+    final allMeasurements =
+        ref.watch(clientMeasurementsProvider(summary.client.clientId)).value ??
+        [];
     final latestMeasurement = allMeasurements.firstOrNull;
 
     final reactiveAnamnesis = ref
@@ -143,6 +147,38 @@ class _ClientDetailBody extends ConsumerWidget {
               measurementRepository: ref.read(measurementRepositoryProvider),
             ),
           ),
+          onDeletePressed: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Eliminar cliente'),
+                content: Text(
+                  '¿Eliminar a "${reactiveSummary.client.name}"? '
+                  'Se eliminarán también todas sus mediciones, notas y planes. '
+                  'Esta acción no se puede deshacer.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFD94A4A),
+                    ),
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Eliminar'),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true) {
+              await ref
+                  .read(clientRepositoryProvider)
+                  .deleteClient(reactiveSummary.client.clientId);
+              onBack();
+            }
+          },
         ),
         const SizedBox(height: 18),
 
@@ -156,17 +192,17 @@ class _ClientDetailBody extends ConsumerWidget {
                   clientHeight: reactiveSummary.client.height,
                 )
               : activeTab == 2
-                  ? NotesTab(clientId: reactiveSummary.client.clientId)
-                  : activeTab == 3
-                      ? CalculationsTab(
-                          clientId: reactiveSummary.client.clientId,
-                          client: reactiveClient,
-                          latestMeasurement: latestMeasurement,
-                          anamnesis: reactiveAnamnesis,
-                        )
-                      : activeTab == 4
-                          ? PlansTab(clientId: reactiveSummary.client.clientId)
-                          : SingleChildScrollView(
+              ? NotesTab(clientId: reactiveSummary.client.clientId)
+              : activeTab == 3
+              ? CalculationsTab(
+                  clientId: reactiveSummary.client.clientId,
+                  client: reactiveClient,
+                  latestMeasurement: latestMeasurement,
+                  anamnesis: reactiveAnamnesis,
+                )
+              : activeTab == 4
+              ? PlansTab(clientId: reactiveSummary.client.clientId)
+              : SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

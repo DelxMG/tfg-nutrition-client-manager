@@ -9,12 +9,14 @@ class ClientDetailHeader extends StatelessWidget {
   final Client client;
   final VoidCallback onBack;
   final VoidCallback? onEditPressed;
+  final VoidCallback? onDeletePressed;
 
   const ClientDetailHeader({
     super.key,
     required this.client,
     required this.onBack,
     this.onEditPressed,
+    this.onDeletePressed,
   });
 
   @override
@@ -36,7 +38,10 @@ class ClientDetailHeader extends StatelessWidget {
             icon: const Icon(Icons.arrow_back, size: 15),
             label: Text(
               'Volver a clientes',
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             style: TextButton.styleFrom(
               foregroundColor: cs.onSurfaceVariant,
@@ -99,17 +104,28 @@ class ClientDetailHeader extends StatelessWidget {
                 icon: const Icon(Icons.edit_outlined, size: 15),
                 label: Text(
                   'Editar',
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: cs.onSurface,
                   disabledForegroundColor: cs.onSurface.withValues(alpha: 0.4),
                   side: BorderSide(color: cs.outlineVariant),
-                  shape: const RoundedRectangleBorder(borderRadius: clientsBorderRadius),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: clientsBorderRadius,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 0,
+                  ),
                   minimumSize: const Size(0, clientsButtonHeight),
                 ),
               ),
+              const SizedBox(width: 8),
+              // Delete button
+              _DeleteClientButton(onDelete: () => onDeletePressed?.call()),
             ],
           ),
         ],
@@ -191,6 +207,59 @@ class _MetaRow extends StatelessWidget {
             ),
         ],
       ],
+    );
+  }
+}
+
+class _DeleteClientButton extends StatefulWidget {
+  final VoidCallback onDelete;
+
+  const _DeleteClientButton({required this.onDelete});
+
+  @override
+  State<_DeleteClientButton> createState() => _DeleteClientButtonState();
+}
+
+class _DeleteClientButtonState extends State<_DeleteClientButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    const red = Color(0xFFD94A4A);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: OutlinedButton.icon(
+        onPressed: widget.onDelete,
+        icon: Icon(
+          Icons.delete_outlined,
+          size: 15,
+          color: _hovered ? red : null,
+        ),
+        label: Text(
+          'Eliminar',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: _hovered ? red : null,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _hovered ? red : cs.onSurface,
+          backgroundColor: _hovered
+              ? red.withValues(alpha: 0.08)
+              : Colors.transparent,
+          side: BorderSide(color: _hovered ? red : cs.outlineVariant),
+          shape: const RoundedRectangleBorder(
+            borderRadius: clientsBorderRadius,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+          minimumSize: const Size(0, clientsButtonHeight),
+        ),
+      ),
     );
   }
 }

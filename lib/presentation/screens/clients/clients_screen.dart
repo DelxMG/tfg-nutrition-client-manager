@@ -29,10 +29,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(clientsHorizontalPadding, 20, 24, 18),
       child: StreamBuilder<List<Client>>(
-        stream: repository.watchClients(
-          search: search,
-          status: statusFilter,
-        ),
+        stream: repository.watchClients(search: search, status: statusFilter),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -64,7 +61,8 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                 search: search,
                 statusFilter: statusFilter,
                 onSearchChanged: (value) => setState(() => search = value),
-                onStatusChanged: (status) => setState(() => statusFilter = status),
+                onStatusChanged: (status) =>
+                    setState(() => statusFilter = status),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -72,6 +70,8 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   clients: clients,
                   onClientTap: (clientId) =>
                       setState(() => selectedClientId = clientId),
+                  onDeleteClient: (clientId) =>
+                      repository.deleteClient(clientId),
                 ),
               ),
             ],
