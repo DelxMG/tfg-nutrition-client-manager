@@ -628,6 +628,51 @@ class _KcalInfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final goalType = calculation.goalType;
+    final compact = context.isCompact;
+
+    final badge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: goalType.color.withValues(alpha: 0.10),
+        borderRadius: clientsChipBorderRadius,
+      ),
+      child: Text(
+        goalType.label,
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: goalType.color,
+        ),
+      ),
+    );
+
+    final primaryRow = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.local_fire_department_outlined,
+          size: 15,
+          color: cs.onSurfaceVariant,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '${calculation.kcalTarget.toStringAsFixed(0)} kcal/día',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: cs.onSurface,
+          ),
+        ),
+        const SizedBox(width: 10),
+        badge,
+      ],
+    );
+
+    final secondaryText = Text(
+      'Del cálculo del ${_fmtDate(calculation.date)}',
+      style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -641,55 +686,27 @@ class _KcalInfoRow extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Container(
-          height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
             borderRadius: clientsChipBorderRadius,
           ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.local_fire_department_outlined,
-                size: 15,
-                color: cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${calculation.kcalTarget.toStringAsFixed(0)} kcal/día',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: cs.onSurface,
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    primaryRow,
+                    const SizedBox(height: 4),
+                    secondaryText,
+                  ],
+                )
+              : Row(
+                  children: [
+                    primaryRow,
+                    const Spacer(),
+                    secondaryText,
+                  ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: goalType.color.withValues(alpha: 0.10),
-                  borderRadius: clientsChipBorderRadius,
-                ),
-                child: Text(
-                  goalType.label,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: goalType.color,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Del cálculo del ${_fmtDate(calculation.date)}',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );

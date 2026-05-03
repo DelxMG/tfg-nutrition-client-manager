@@ -56,6 +56,7 @@ class _NotesContentState extends State<_NotesContent> {
   final _controller = TextEditingController();
   NoteType _selectedType = NoteType.general;
   bool _submitting = false;
+  Note? _editingNote;
 
   @override
   void initState() {
@@ -74,18 +75,42 @@ class _NotesContentState extends State<_NotesContent> {
 
   bool get _canSubmit => !_submitting && _controller.text.trim().isNotEmpty;
 
+  void _startEditing(Note note) {
+    setState(() {
+      _editingNote = note;
+      _controller.text = note.content;
+      _selectedType = note.type;
+    });
+  }
+
+  void _cancelEditing() {
+    setState(() {
+      _editingNote = null;
+      _controller.clear();
+      _selectedType = NoteType.general;
+    });
+  }
+
   Future<void> _submit() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
     setState(() => _submitting = true);
     try {
-      await widget.repository.insertNote(
-        clientId: widget.clientId,
-        content: text,
-        type: _selectedType,
-      );
+      if (_editingNote != null) {
+        await widget.repository.updateNote(
+          _editingNote!.copyWith(content: text, type: _selectedType),
+        );
+        setState(() => _editingNote = null);
+      } else {
+        await widget.repository.insertNote(
+          clientId: widget.clientId,
+          content: text,
+          type: _selectedType,
+        );
+      }
       _controller.clear();
+      setState(() => _selectedType = NoteType.general);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -157,8 +182,10 @@ class _NotesContentState extends State<_NotesContent> {
             selectedType: _selectedType,
             submitting: _submitting,
             canSubmit: _canSubmit,
+            editingNote: _editingNote,
             onTypeChanged: (t) => setState(() => _selectedType = t),
             onSubmit: _submit,
+            onCancelEdit: _cancelEditing,
           ),
           const SizedBox(height: 20),
 
@@ -176,7 +203,12 @@ class _NotesContentState extends State<_NotesContent> {
           // ── List / empty state ────────────────────────────────────────
           widget.notes.isEmpty
               ? const _EmptyState()
-              : _NotesList(notes: widget.notes, onDelete: _confirmDelete),
+              : _NotesList(
+                  notes: widget.notes,
+                  onDelete: _confirmDelete,
+                  onEdit: _startEditing,
+                  editingNoteId: _editingNote?.noteId,
+                ),
           const SizedBox(height: 24),
         ],
       ),
@@ -191,32 +223,68 @@ class _NoteComposer extends StatelessWidget {
   final NoteType selectedType;
   final bool submitting;
   final bool canSubmit;
+  final Note? editingNote;
   final ValueChanged<NoteType> onTypeChanged;
   final VoidCallback onSubmit;
+  final VoidCallback onCancelEdit;
 
   const _NoteComposer({
     required this.controller,
     required this.selectedType,
     required this.submitting,
     required this.canSubmit,
+    required this.editingNote,
     required this.onTypeChanged,
     required this.onSubmit,
+    required this.onCancelEdit,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isEditing = editingNote != null;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: clientsBorderRadius,
-        border: Border.all(color: cs.outlineVariant),
+        border: Border.all(
+          color: isEditing
+              ? cs.primary.withValues(alpha: 0.45)
+              : cs.outlineVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Edit mode banner ────────────────────────────────────────
+          if (isEditing) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.08),
+                borderRadius: clientsChipBorderRadius,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit_outlined, size: 13, color: cs.primary),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Editando nota',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
           // ── Type selector ───────────────────────────────────────────
           Wrap(
             spacing: 8,
@@ -295,41 +363,59 @@ class _NoteComposer extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // ── Save button ─────────────────────────────────────────────
-          Align(
-            alignment: Alignment.centerRight,
-            child: SizedBox(
-              height: clientsButtonHeight,
-              child: ElevatedButton.icon(
-                onPressed: canSubmit ? onSubmit : null,
-                icon: submitting
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send, size: 15),
-                label: Text(
-                  'Guardar nota',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+          // ── Buttons ─────────────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (isEditing) ...[
+                TextButton(
+                  onPressed: submitting ? null : onCancelEdit,
+                  child: Text(
+                    'Cancelar',
+                    style: GoogleFonts.inter(
+                      color: cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: cs.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: clientsBorderRadius,
+                const SizedBox(width: 8),
+              ],
+              SizedBox(
+                height: clientsButtonHeight,
+                child: ElevatedButton.icon(
+                  onPressed: canSubmit ? onSubmit : null,
+                  icon: submitting
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(
+                          isEditing ? Icons.check : Icons.send,
+                          size: 15,
+                        ),
+                  label: Text(
+                    isEditing ? 'Guardar cambios' : 'Guardar nota',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cs.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: clientsBorderRadius,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -342,15 +428,27 @@ class _NoteComposer extends StatelessWidget {
 class _NotesList extends StatelessWidget {
   final List<Note> notes;
   final Future<void> Function(Note) onDelete;
+  final void Function(Note) onEdit;
+  final int? editingNoteId;
 
-  const _NotesList({required this.notes, required this.onDelete});
+  const _NotesList({
+    required this.notes,
+    required this.onDelete,
+    required this.onEdit,
+    required this.editingNoteId,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         for (int i = 0; i < notes.length; i++) ...[
-          _NoteCard(note: notes[i], onDelete: () => onDelete(notes[i])),
+          _NoteCard(
+            note: notes[i],
+            onDelete: () => onDelete(notes[i]),
+            onEdit: () => onEdit(notes[i]),
+            isBeingEdited: editingNoteId == notes[i].noteId,
+          ),
           if (i < notes.length - 1) const SizedBox(height: 8),
         ],
       ],
@@ -361,25 +459,39 @@ class _NotesList extends StatelessWidget {
 class _NoteCard extends StatelessWidget {
   final Note note;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
+  final bool isBeingEdited;
 
-  const _NoteCard({required this.note, required this.onDelete});
+  const _NoteCard({
+    required this.note,
+    required this.onDelete,
+    required this.onEdit,
+    required this.isBeingEdited,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final badgeColor = _noteTypeBadgeColor(note.type);
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: isBeingEdited
+            ? cs.primary.withValues(alpha: 0.04)
+            : cs.surface,
         borderRadius: clientsBorderRadius,
-        border: Border.all(color: cs.outlineVariant),
+        border: Border.all(
+          color: isBeingEdited
+              ? cs.primary.withValues(alpha: 0.45)
+              : cs.outlineVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header: badge + date + delete ──────────────────────────
+          // ── Header: badge + date + edit + delete ───────────────────
           Row(
             children: [
               Container(
@@ -405,7 +517,9 @@ class _NoteCard extends StatelessWidget {
                   color: cs.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
+              _EditButton(onPressed: isBeingEdited ? null : onEdit),
+              const SizedBox(width: 2),
               _DeleteButton(onPressed: onDelete),
             ],
           ),
@@ -421,6 +535,55 @@ class _NoteCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Edit button with hover colour ────────────────────────────────────────────
+
+class _EditButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+
+  const _EditButton({this.onPressed});
+
+  @override
+  State<_EditButton> createState() => _EditButtonState();
+}
+
+class _EditButtonState extends State<_EditButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final enabled = widget.onPressed != null;
+
+    return Tooltip(
+      message: 'Editar nota',
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+        onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+        onExit: enabled ? (_) => setState(() => _hovered = false) : null,
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: _hovered
+                  ? cs.primary.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              _hovered ? Icons.edit : Icons.edit_outlined,
+              size: 16,
+              color: _hovered ? cs.primary : cs.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
     );
   }
