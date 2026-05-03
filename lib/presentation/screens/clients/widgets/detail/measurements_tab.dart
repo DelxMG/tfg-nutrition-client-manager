@@ -7,6 +7,7 @@ import 'package:nutritrack/data/repositories/measurement_repository.dart';
 import 'package:nutritrack/domain/services/bmi_calculator.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/detail/measurement_form_dialog.dart';
+import 'package:nutritrack/presentation/screens/clients/widgets/detail/weight_evolution_chart.dart';
 
 class MeasurementsTab extends ConsumerWidget {
   final int clientId;
@@ -78,6 +79,12 @@ class _MeasurementsContent extends StatelessWidget {
           // ── Metric cards ──────────────────────────────────────────────
           _MetricCardsRow(latest: latest),
           const SizedBox(height: 20),
+
+          // ── Weight evolution chart ─────────────────────────────────────
+          if (measurements.any((m) => m.weight != null)) ...[
+            WeightEvolutionChart(measurements: measurements),
+            const SizedBox(height: 20),
+          ],
 
           // ── History header + button ───────────────────────────────────
           Row(

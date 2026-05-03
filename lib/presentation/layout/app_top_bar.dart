@@ -24,7 +24,6 @@ class AppTopBar extends ConsumerWidget {
         builder: (context, constraints) {
           final leftWidth = 24.0 + 32.0 + 8.0;
           final rightWidth = 24.0 + 56.0;
-          final availableCenter = constraints.maxWidth - leftWidth - rightWidth;
 
           return Stack(
             children: [

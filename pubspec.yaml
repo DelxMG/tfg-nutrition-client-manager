@@ -39,6 +39,7 @@ dependencies:
   path: ^1.9.0
   open_filex: ^4.4.0
   file_picker: ^8.0.0
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   drift_dev: ^2.16.0
