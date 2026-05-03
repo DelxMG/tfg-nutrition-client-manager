@@ -8,6 +8,7 @@ import 'package:nutritrack/presentation/screens/clients/widgets/client_detail_co
 import 'package:nutritrack/presentation/screens/clients/widgets/client_form_dialog.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_filters_bar.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_page_header.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/widgets/clients_table.dart';
 
 class ClientsScreen extends ConsumerStatefulWidget {
@@ -26,8 +27,9 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   Widget build(BuildContext context) {
     final repository = ref.watch(clientRepositoryProvider);
 
+    final hPad = context.isCompact ? 12.0 : clientsHorizontalPadding;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(clientsHorizontalPadding, 20, 24, 18),
+      padding: EdgeInsets.fromLTRB(hPad, 20, hPad, 18),
       child: StreamBuilder<List<Client>>(
         stream: repository.watchClients(search: search, status: statusFilter),
         builder: (context, snapshot) {

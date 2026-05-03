@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/application/providers/theme_provider.dart';
 import 'package:nutritrack/presentation/layout/app_constants.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 
 class AppTopBar extends ConsumerWidget {
   const AppTopBar({super.key});
@@ -24,6 +25,8 @@ class AppTopBar extends ConsumerWidget {
         builder: (context, constraints) {
           final leftWidth = 24.0 + 32.0 + 8.0;
           final rightWidth = 24.0 + 56.0;
+
+          final showTitle = isDesktopWidth(constraints.maxWidth);
 
           return Stack(
             children: [
@@ -49,23 +52,24 @@ class AppTopBar extends ConsumerWidget {
                 ),
               ),
 
-              // ── Texto centrado (centro real) ─────────────────────────────
-              Positioned(
-                left: leftWidth,
-                right: rightWidth,
-                top: 0,
-                bottom: 0,
-                child: Center(
-                  child: Text(
-                    'NutriTrack',
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
+              // ── Texto centrado — solo en desktop ─────────────────────────
+              if (showTitle)
+                Positioned(
+                  left: leftWidth,
+                  right: rightWidth,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Text(
+                      'NutriTrack',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
               // ── Toggle theme (derecha) ───────────────────────────────────
               Positioned(

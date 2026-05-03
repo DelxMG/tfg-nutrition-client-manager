@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/data/db/app_database.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 import 'package:nutritrack/presentation/screens/clients/helpers/clients_formatters.dart';
 
@@ -18,6 +19,12 @@ class ClientsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return context.isDesktop ? _buildTable(context) : _buildCardList(context);
+  }
+
+  // ── Desktop: tabla ────────────────────────────────────────────────────────
+
+  Widget _buildTable(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
@@ -107,7 +114,35 @@ class ClientsTable extends StatelessWidget {
       ],
     );
   }
+
+  // ── Compact: cards ───────────────────────────────────────────────────────
+
+  Widget _buildCardList(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    if (clients.isEmpty) {
+      return Center(
+        child: Text(
+          'No hay clientes',
+          style: GoogleFonts.inter(color: cs.onSurfaceVariant, fontSize: 14),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      itemCount: clients.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, index) => _ClientCard(
+        client: clients[index],
+        onTap: onClientTap,
+        onDeleteClient: onDeleteClient,
+      ),
+    );
+  }
 }
+
+// ── Desktop row ───────────────────────────────────────────────────────────────
 
 class _ClientRow extends StatefulWidget {
   final Client client;
@@ -128,7 +163,6 @@ class _ClientRowState extends State<_ClientRow> {
   bool _hovered = false;
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final cs = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -161,9 +195,7 @@ class _ClientRowState extends State<_ClientRow> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(
-                'Error al eliminar el cliente. Inténtalo de nuevo.',
-              ),
+              content: Text('Error al eliminar el cliente. Inténtalo de nuevo.'),
             ),
           );
         }
@@ -311,7 +343,7 @@ class _ClientRowState extends State<_ClientRow> {
                 SizedBox(
                   width: 32,
                   child: widget.onDeleteClient != null
-                      ? _DeleteClientButton(
+                      ? _RowDeleteButton(
                           onDelete: () => _confirmDelete(context),
                         )
                       : Icon(
@@ -329,29 +361,210 @@ class _ClientRowState extends State<_ClientRow> {
   }
 }
 
-TextStyle _headerTextStyle(ColorScheme cs) => GoogleFonts.inter(
-  fontSize: 12,
-  fontWeight: FontWeight.w700,
-  letterSpacing: 0.7,
-  color: cs.onSurfaceVariant,
-);
+// ── Compact card ─────────────────────────────────────────────────────────────
 
-class _DeleteClientButton extends StatefulWidget {
-  final VoidCallback onDelete;
+class _ClientCard extends StatelessWidget {
+  final Client client;
+  final ValueChanged<int> onTap;
+  final Future<void> Function(int clientId)? onDeleteClient;
 
-  const _DeleteClientButton({required this.onDelete});
+  const _ClientCard({
+    required this.client,
+    required this.onTap,
+    this.onDeleteClient,
+  });
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar cliente'),
+        content: Text(
+          '¿Eliminar a "${client.name}"? '
+          'Se eliminarán también todas sus mediciones, notas y planes. '
+          'Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFD94A4A),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && onDeleteClient != null) {
+      try {
+        await onDeleteClient!(client.clientId);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error al eliminar el cliente. Inténtalo de nuevo.'),
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
-  State<_DeleteClientButton> createState() => _DeleteClientButtonState();
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final initials = getClientInitials(client.name);
+    final age = calculateClientAge(client.birthDate);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => onTap(client.clientId),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 4, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: const Color(0xFFE7F4F0),
+                  child: Text(
+                    initials,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: clientsBrandColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              client.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                height: 1.1,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: client.status.color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            client.status.label,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        client.email ?? 'Sin email',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          height: 1.1,
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                      if (age != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          '$age años',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (onDeleteClient != null)
+                  Tooltip(
+                    message: 'Eliminar cliente',
+                    child: IconButton(
+                      onPressed: () => _confirmDelete(context),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: const Size(36, 36),
+                      ),
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Icon(
+                      Icons.chevron_right,
+                      size: 17,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _DeleteClientButtonState extends State<_DeleteClientButton> {
+// ── Row delete button (desktop only, with hover animation) ────────────────────
+
+class _RowDeleteButton extends StatefulWidget {
+  final VoidCallback onDelete;
+
+  const _RowDeleteButton({required this.onDelete});
+
+  @override
+  State<_RowDeleteButton> createState() => _RowDeleteButtonState();
+}
+
+class _RowDeleteButtonState extends State<_RowDeleteButton> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    const _red = Color(0xFFD94A4A);
+    const red = Color(0xFFD94A4A);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -364,16 +577,23 @@ class _DeleteClientButtonState extends State<_DeleteClientButton> {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: _hovered ? _red.withValues(alpha: 0.08) : Colors.transparent,
+            color: _hovered ? red.withValues(alpha: 0.08) : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(
             _hovered ? Icons.delete : Icons.delete_outline,
             size: 16,
-            color: _hovered ? _red : cs.onSurfaceVariant,
+            color: _hovered ? red : cs.onSurfaceVariant,
           ),
         ),
       ),
     );
   }
 }
+
+TextStyle _headerTextStyle(ColorScheme cs) => GoogleFonts.inter(
+  fontSize: 12,
+  fontWeight: FontWeight.w700,
+  letterSpacing: 0.7,
+  color: cs.onSurfaceVariant,
+);

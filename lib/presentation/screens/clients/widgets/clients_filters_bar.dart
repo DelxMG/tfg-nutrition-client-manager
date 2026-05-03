@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutritrack/domain/enums.dart';
+import 'package:nutritrack/presentation/layout/responsive_utils.dart';
 import 'package:nutritrack/presentation/screens/clients/clients_constants.dart';
 
 class ClientsFiltersBar extends StatefulWidget {
@@ -33,9 +34,6 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
   @override
   void didUpdateWidget(ClientsFiltersBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Sync controller when the parent resets the search value externally
-    // (e.g. a clear button), but only if the text actually changed to avoid
-    // disturbing the cursor position during normal typing.
     if (widget.search != _searchController.text) {
       _searchController.text = widget.search;
     }
@@ -49,6 +47,10 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
 
   @override
   Widget build(BuildContext context) {
+    return context.isCompact ? _buildCompact(context) : _buildDesktop(context);
+  }
+
+  Widget _buildDesktop(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
     return Row(
@@ -56,46 +58,67 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
         SizedBox(
           width: 280,
           height: 42,
-          child: TextField(
-            controller: _searchController,
-            style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
-            decoration: InputDecoration(
-              hintText: 'Buscar por nombre, email...',
-              hintStyle: GoogleFonts.inter(
-                fontSize: 14,
-                color: cs.onSurfaceVariant,
-              ),
-              prefixIcon: Icon(
-                Icons.search,
-                size: clientsIconSize,
-                color: cs.onSurfaceVariant,
-              ),
-              filled: true,
-              fillColor: cs.surfaceContainerHighest,
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: clientsBorderRadius,
-                borderSide: BorderSide(color: cs.outlineVariant),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: clientsBorderRadius,
-                borderSide: BorderSide(color: cs.outlineVariant),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: clientsBorderRadius,
-                borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
-              ),
-            ),
-            onChanged: widget.onSearchChanged,
+          child: _searchField(cs),
+        ),
+        const SizedBox(width: 12),
+        Icon(Icons.filter_alt_outlined, size: clientsIconSize, color: cs.onSurfaceVariant),
+        const SizedBox(width: 12),
+        ..._filterChips(),
+      ],
+    );
+  }
+
+  Widget _buildCompact(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 42, child: _searchField(cs)),
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Icon(Icons.filter_alt_outlined, size: clientsIconSize, color: cs.onSurfaceVariant),
+              const SizedBox(width: 8),
+              ..._filterChips(),
+            ],
           ),
         ),
-        const SizedBox(width: 12),
-        Icon(
-          Icons.filter_alt_outlined,
-          size: clientsIconSize,
-          color: cs.onSurfaceVariant,
+      ],
+    );
+  }
+
+  Widget _searchField(ColorScheme cs) {
+    return TextField(
+      controller: _searchController,
+      style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface),
+      decoration: InputDecoration(
+        hintText: 'Buscar por nombre, email...',
+        hintStyle: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
+        prefixIcon: Icon(Icons.search, size: clientsIconSize, color: cs.onSurfaceVariant),
+        filled: true,
+        fillColor: cs.surfaceContainerHighest,
+        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        border: OutlineInputBorder(
+          borderRadius: clientsBorderRadius,
+          borderSide: BorderSide(color: cs.outlineVariant),
         ),
-        const SizedBox(width: 12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: clientsBorderRadius,
+          borderSide: BorderSide(color: cs.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: clientsBorderRadius,
+          borderSide: BorderSide(color: cs.primary.withValues(alpha: 0.7)),
+        ),
+      ),
+      onChanged: widget.onSearchChanged,
+    );
+  }
+
+  List<Widget> _filterChips() => [
         _FilterChip(
           label: 'Todos',
           selected: widget.statusFilter == null,
@@ -116,9 +139,7 @@ class _ClientsFiltersBarState extends State<ClientsFiltersBar> {
           selected: widget.statusFilter == ClientStatus.pending,
           onTap: () => widget.onStatusChanged(ClientStatus.pending),
         ),
-      ],
-    );
-  }
+      ];
 }
 
 class _FilterChip extends StatelessWidget {
